@@ -1,10 +1,14 @@
 
-# electron-browserview-app
+# ElectronWM
 
-App which loads multiple webpages at once arranged neatly in a singular window.
+A window manager for [BrowserViews](https://www.electronjs.org/docs/latest/api/browser-view).
 
-Steps to get it running:
+---
 
-    yarn install
-    yarn tsc
-    yarn start
+Technologies:
+- Vite
+	- React
+	- Typescript
+	- Tailwind
+- Electron
+- [electron-vite](https://electron-vite.org/)
