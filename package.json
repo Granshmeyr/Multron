@@ -1,0 +1,17 @@
+{
+  "name": "electron-browserview-test",
+  "version": "1.0.0",
+  "description": "Testing the capabilites of BrowserView.",
+  "main": "dist/main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "keywords": [],
+  "author": "Grindle",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^29.0.1",
+    "typescript": "^5.3.3"
+  },
+  "type": "commonjs"
+}
