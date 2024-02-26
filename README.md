@@ -9,6 +9,6 @@ Technologies:
 - Vite
 	- React
 	- Typescript
-	- Tailwind
+- Tailwind
 - Electron
 - [electron-vite](https://electron-vite.org/)
