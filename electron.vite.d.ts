@@ -1,1 +1,1 @@
-/// <reference types="electron-vite/node" />
+/// <reference types='electron-vite/node' />
