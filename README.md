@@ -1,7 +1,8 @@
 
-# ElectronWM
 
-A window manager for [BrowserViews](https://www.electronjs.org/docs/latest/api/browser-view).
+# ElectronSpider
+
+Crawl the web faster and keep eyes on what matters.
 
 ---
 
