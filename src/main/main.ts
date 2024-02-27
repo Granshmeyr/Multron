@@ -1,25 +1,21 @@
-/* global process */
 import { app, BrowserWindow } from 'electron';
 
 let mainWindow: BrowserWindow | null;
 const viteURL = 'http://localhost:5173';
 
-function createWindow(): void {
-  mainWindow = new BrowserWindow();
-  mainWindow.loadURL(viteURL);
-  mainWindow.on('closed', () => mainWindow = null);
-}
-
 function main(): void {
-  async function initializeApp(): Promise<void> {
-    try {
-      await app.whenReady();
-      createWindow();
-    } catch (err) {
-      console.error(err);
-    }
+  function createWindow() {
+    const preloadPath = 'C:\\Users\\Grindle\\Documents\\Other\\Git\\ElectronSpider\\out\\preload\\preload.js';
+    mainWindow = new BrowserWindow({
+      webPreferences: {
+        preload: preloadPath
+      }
+    });
+    mainWindow.loadURL(viteURL);
+    mainWindow.on('closed', () => mainWindow = null);
   }
-  initializeApp();
+
+  initializeApp(createWindow);
 
   app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
@@ -32,6 +28,18 @@ function main(): void {
       createWindow();
     }
   });
+}
+
+async function initializeApp(
+  windowFunction: () => void
+): Promise<void> {
+  try {
+    await app.whenReady();
+    windowFunction();
+  }
+  catch (err) {
+    console.error(err);
+  }
 }
 
 main();

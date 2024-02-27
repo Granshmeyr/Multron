@@ -1,9 +1,7 @@
 import './App.css';
+import './ts/dragbar.ts';
+import { ScreenTile } from './ts/tiles.tsx';
 
-export default function App() {
-  return (
-    <h1 className="text-3xl font-bold underline bg-red-500">
-      Hello world!
-    </h1>
-  );
+export default function App(): JSX.Element {
+  return <ScreenTile />;
 }

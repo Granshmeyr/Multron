@@ -27,7 +27,9 @@
   },
   "include": [
     "src",
-    "electron.vite.d.ts",
+    "ts-configs/electron.vite.d.ts",
+    "ts-configs/interfaces.d.ts",
+    "ts-configs/types.d.ts"
   ],
   "references": [
     {
