@@ -1,21 +1,30 @@
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, ipcMain } from 'electron';
+import path from 'path';
+import * as listener from './listeners';
 
 let mainWindow: BrowserWindow | null;
 const viteURL = 'http://localhost:5173';
 
 function main(): void {
   function createWindow() {
-    const preloadPath = 'C:\\Users\\Grindle\\Documents\\Other\\Git\\ElectronSpider\\out\\preload\\preload.js';
     mainWindow = new BrowserWindow({
       webPreferences: {
-        preload: preloadPath
-      }
+        preload: path.join(app.getAppPath(),'out', 'preload', 'preload.js')
+      },
+      width: 1600,
+      height: 900
     });
     mainWindow.loadURL(viteURL);
     mainWindow.on('closed', () => mainWindow = null);
+    mainWindow.webContents.openDevTools();
   }
 
-  initializeApp(createWindow);
+  ipcMain.on('show-split-menu', async (event) => {
+    const result = await listener.onShowSplitMenuAsync(event);
+    event.reply('show-split-menu-response', result);
+  });
+
+  runOnAppReady(createWindow);
 
   app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
@@ -30,7 +39,7 @@ function main(): void {
   });
 }
 
-async function initializeApp(
+async function runOnAppReady(
   windowFunction: () => void
 ): Promise<void> {
   try {

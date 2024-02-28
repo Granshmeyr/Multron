@@ -1,9 +1,29 @@
-import { contextBridge, ipcMain, ipcRenderer } from 'electron';
-import * as listener from './listeners';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { contextBridge, ipcRenderer } from 'electron';
 
-console.log('preloader ran');
+contextBridge.exposeInMainWorld('electronAPI', {
+  send: (channel: string, ...args: any[]) => {
+    ipcRenderer.send(channel, args);
+  },
 
-ipcMain.on('show-split-menu', (event) => { listener.onShowSplitMenu(event); });
-contextBridge.exposeInMainWorld('electron', {
-  showSplitMenu: () => ipcRenderer.send('show-split-menu')
+  on: (
+    channel: string,
+    listener: (event: Electron.IpcRendererEvent, ...args: any[]) => void
+  ) => {
+    ipcRenderer.on(channel, listener);
+  },
+
+  once: (
+    channel: string,
+    listener: (event: Electron.IpcRendererEvent, ...args: any[]) => void
+  ) => {
+    ipcRenderer.once(channel, listener);
+  },
+
+  removeListener: (
+    channel: string,
+    listener: (event: Electron.IpcRendererEvent, ...args: any[]) => void
+  ) => {
+    ipcRenderer.removeListener(channel, listener);
+  },
 });

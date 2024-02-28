@@ -29,7 +29,8 @@
     "src",
     "ts-configs/electron.vite.d.ts",
     "ts-configs/interfaces.d.ts",
-    "ts-configs/types.d.ts"
+    "ts-configs/types.d.ts",
+    "ts-configs/global.d.ts"
   ],
   "references": [
     {

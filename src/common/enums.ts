@@ -1,0 +1,1 @@
+export enum Split { Up, Down, Left, Right }

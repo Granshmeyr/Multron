@@ -1,7 +1,6 @@
 import './App.css';
-import './ts/dragbar.ts';
-import { ScreenTile } from './ts/tiles.tsx';
+import { ScreenTile } from './components/tiles.tsx';
 
 export default function App(): JSX.Element {
-  return <ScreenTile />;
+  return <ScreenTile/>;
 }

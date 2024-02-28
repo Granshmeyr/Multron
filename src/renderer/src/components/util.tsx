@@ -8,7 +8,7 @@ export function nestElement(
   return nestedDiv;
 }
 
-export function concatElements(...elements: JSXElement[]): JSXElement {
+export function concatElement(...elements: JSXElement[]): JSXElement {
   return (
     <>
       {elements.map((element, index) => (
