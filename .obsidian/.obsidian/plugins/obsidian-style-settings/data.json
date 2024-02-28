@@ -1,0 +1,19 @@
+{
+  "minimal-style@@zoom-off": true,
+  "minimal-style@@folding-offset": 0,
+  "minimal-style@@checkbox-shape": "checkbox-square",
+  "minimal-style@@minimal-strike-lists": true,
+  "minimal-style@@sidebar-lines-off": false,
+  "minimal-style@@sidebar-tabs-style": "sidebar-tabs-default",
+  "minimal-style@@tag-radius": "0px",
+  "minimal-style@@tag-border-width": "1px",
+  "minimal-style@@image-muted": 1,
+  "minimal-style@@image-radius": 0,
+  "minimal-style@@active-line-on": false,
+  "minimal-style@@active-line-bg@@dark": "#FFFFFF08",
+  "minimal-style@@metadata-add-property-off": true,
+  "minimal-style@@metadata-icons-off": true,
+  "minimal-style@@metadata-dividers": true,
+  "minimal-advanced@@styled-scrollbars": false,
+  "minimal-advanced@@cursor": "default"
+}

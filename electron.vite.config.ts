@@ -1,11 +1,11 @@
-import react from '@vitejs/plugin-react-swc';
-import { defineConfig, swcPlugin } from 'electron-vite';
+import react from "@vitejs/plugin-react-swc";
+import { defineConfig, swcPlugin } from "electron-vite";
 
 export default defineConfig({
   main: {
     build: {
       lib: {
-        entry: 'src/main/main.ts'
+        entry: "src/main/main.ts"
       }
     },
     plugins: [swcPlugin()]
@@ -13,7 +13,7 @@ export default defineConfig({
   preload: {
     build: {
       lib: {
-        entry: 'src/preload/preload.ts'
+        entry: "src/preload/preload.ts"
       }
     }
   },

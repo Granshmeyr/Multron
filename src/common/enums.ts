@@ -1,1 +1,1 @@
-export enum Split { Up, Down, Left, Right }
+export enum Direction { Up, Down, Left, Right }
