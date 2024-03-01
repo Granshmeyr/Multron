@@ -1,4 +1,4 @@
-import { app, BrowserView, BrowserWindow, ipcMain } from "electron";
+import { app, BrowserWindow, ipcMain } from "electron";
 import path from "path";
 import * as listener from "./listeners";
 
@@ -14,29 +14,6 @@ function main(): void {
   onAppReady(
     () => {
       createMainWindow();
-      const browserView = new BrowserView({
-        webPreferences: {
-          preload: path.join(app.getAppPath(),"out", "preload", "preload.js")
-        },
-      });
-      mainWindow?.addBrowserView(browserView);
-      browserView.setBounds({ x: 0, y: 0, width: 800, height: 600 });
-      browserView.webContents.loadURL("https://www.instagram.com/p/C3i24COOXKi/");
-      browserView.webContents.once("did-finish-load", () => {
-        const floatingGUI = `
-          const floatingButton = document.createElement('button');
-          floatingButton.innerText = 'Click Me';
-          floatingButton.style.position = 'fixed';
-          floatingButton.style.bottom = '20px';
-          floatingButton.style.right = '20px';
-          floatingButton.style.zIndex = '1000';
-          floatingButton.onclick = function() {
-            alert('Button clicked!');
-          };
-          document.body.appendChild(floatingButton);
-        `;
-        browserView.webContents.executeJavaScript(floatingGUI);
-      });
     }
   );
 
@@ -58,6 +35,7 @@ function createMainWindow() {
     webPreferences: {
       preload: path.join(app.getAppPath(),"out", "preload", "preload.js")
     },
+    autoHideMenuBar: true,
     width: 1600,
     height: 900
   });

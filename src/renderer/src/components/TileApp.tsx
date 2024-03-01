@@ -1,40 +1,69 @@
-import { useState } from "react";
-import { Direction } from "../../../common/enums";
+import {ReactElement, useState} from "react";
+import {Direction} from "../../../common/enums";
 
 let listenerRegistered: boolean = false;
 
-export function TileApp(): JSXElement {
-  return <Tile className="h-screen w-screen z-50"/>;
+export function TileApp(): ReactElement {
+  return <div className="flex w-screen h-screen">
+    <Tile />
+  </div>;
 }
 
 function RowTile(
-  { children }: React.PropsWithChildren<unknown>
-): JSXElement {
-  return <div
-    className="flex flex-row flex-grow w-full h-full">
+  {children}: {children: [ReactElement, ReactElement]}
+): ReactElement {
+  return <div className="flex flex-row flex-grow w-full h-full">
     {children}
   </div>;
 }
 
 function ColumnTile(
-  { children }: React.PropsWithChildren<unknown>
-): JSXElement {
+  {children}: {children: [ReactElement, ReactElement]}
+): ReactElement {
   return <div
-    className=" flex flex-col flex-grow w-full h-full">
+    className="flex flex-col w-full h-full"
+    style={{ flex: "5" }}>
     {children}
   </div>;
 }
 
+function ColoredBar({color, width, height}: {color: string; width: string; height: string}): ReactElement {
+  return (
+    <div
+      style={{
+        backgroundColor: color,
+        width: width,
+        height: height,
+      }}
+    />
+  );
+}
+
+function OverlayCenter(
+  {children}: {children: [ReactElement, ReactElement]}
+): ReactElement {
+  return (
+    <div
+      className="relative flex items-center justify-center"
+      style={{flex: "5"}}>
+      {children[0]}
+      <div
+        className="absolute flex top-0 left-0 w-full h-full items-center justify-center"
+        style={{pointerEvents: "none"}}>
+        {children[1]}
+      </div>
+    </div>
+  );
+}
+
 function Tile(
-  {
-    className
-  }: {
+  {className}: {
     className?: string,
     key?: string | number
-  }
-): JSXElement {
+ }
+): ReactElement {
   const [splitDirection, setSplitDirection] = useState<Direction | null>(null);
-  const defaultClass: string = "flex flex-grow border-4 border-white border-opacity-50";
+  const defaultClass: string = "flex border-4 border-white border-opacity-50";
 
   async function showSplitMenu(): Promise<Direction | null> {
     return new Promise<Direction | null>((resolve) => {
@@ -51,9 +80,9 @@ function Tile(
     });
   }
 
-  function unsplit(): JSXElement {
+  function tileElement(): ReactElement {
     return <div
-      className={ `${defaultClass} ${className}` }
+      className={`${defaultClass} ${className}`}
       onContextMenu={
         async () => {
           const direction: Direction | null = await showSplitMenu();
@@ -62,15 +91,19 @@ function Tile(
           }
           setSplitDirection(direction);
         }
-      }>
+      }
+      style={{flex: "5"}}>
     </div>;
   }
 
-  function split(): JSXElement {
-    const element: JSXElement = (() => {
+  function splitLogic(): ReactElement {
+    const element: ReactElement = (() => {
       switch (splitDirection) {
       case Direction.Up:
-        return <ColumnTile><Tile /><Tile /></ColumnTile>;
+        return <OverlayCenter>
+          <ColumnTile><Tile /><Tile /></ColumnTile>
+          <ColoredBar color="blue" width="50px" height="5px" />
+        </OverlayCenter>;
       case Direction.Down:
         return <ColumnTile><Tile /><Tile /></ColumnTile>;
       case Direction.Left:
@@ -82,10 +115,8 @@ function Tile(
       }
     })();
 
-    return <div className={ `flex flex-grow ${className}` }>
-      {element}
-    </div>;
+    return element;
   }
 
-  return splitDirection == null ? unsplit() : split();
+  return splitDirection == null ? tileElement() : splitLogic();
 }

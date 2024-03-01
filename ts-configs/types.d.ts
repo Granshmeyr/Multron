@@ -1,1 +1,0 @@
-type JSXElement = React.JSX.Element;
