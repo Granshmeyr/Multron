@@ -2,6 +2,21 @@
 @tailwind components;
 @tailwind utilities;
 
+.handlebar {
+  background-color: rgba(0, 0, 0, 0.5);
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  cursor: move;
+  transform: translate(0%, -50%)
+ }
+
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
