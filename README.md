@@ -7,7 +7,13 @@ Scuttle the web (🕸️) more efficiently.
 
 ---
 
-Technologies:
+**Getting Started:**
+- `npm install`
+- `npm run dev` or `.\run-dev.ps1`
+
+---
+
+**Technologies:**
 - Vite
 	- React
 	- Typescript
