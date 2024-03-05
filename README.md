@@ -2,7 +2,7 @@
 
 # ElectronSpider
 
-Crawl the web faster and keep eyes on what matters.
+Build your web and crawl the web.
 
 ---
 
