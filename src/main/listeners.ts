@@ -18,7 +18,6 @@ export async function onShowSplitMenuAsync(
       {
         label: "Split Up",
         click: () => {
-          console.log("click function");
           direction = Direction.Up;
           setFinished(true);
         }
@@ -26,7 +25,6 @@ export async function onShowSplitMenuAsync(
       {
         label: "Split Down",
         click: () => {
-          console.log("click function");
           direction = Direction.Down;
           setFinished(true);
         }
@@ -34,7 +32,6 @@ export async function onShowSplitMenuAsync(
       {
         label: "Split Left",
         click: () => {
-          console.log("click function");
           direction = Direction.Left;
           setFinished(true);
         }
@@ -42,7 +39,6 @@ export async function onShowSplitMenuAsync(
       {
         label: "Split Right",
         click: () => {
-          console.log("click function");
           direction = Direction.Right;
           setFinished(true);
         }
@@ -54,7 +50,6 @@ export async function onShowSplitMenuAsync(
     menu.once("menu-will-close", async () => {
       const timeout = new Promise<void>((resolve) => setTimeout(resolve));
       await Promise.race([finished, timeout]);
-      console.log("menu closing");
       resolve(direction);
     });
   });

@@ -11,37 +11,94 @@ export function TileApp(): ReactElement {
   );
 }
 
-function RowTile(): ReactElement {
-  return (
-    <div className="flex grow flex-row">
-      <Tile className="grow" />
-      <Tile className="grow" />
-    </div>
-  );
-}
-
-function ColumnTile(): ReactElement {
-  const [verticalPercent, setVerticalPercent] = useState(0.5);
+function RowTile(
+  { style }: { style?: React.CSSProperties; }
+): ReactElement {
+  const [horizontalPercent, setHorizontalPercent] = useState(0.5);
   const [dragging, setDragging] = useState(false);
-  const column = useRef<HTMLDivElement>(null);
+  const rowRef = useRef<HTMLDivElement>(null);
 
-  function onMouseDown() {
+  function onMouseDown(e: React.DragEvent<HTMLDivElement>) {
+    if (e.button != 0) {
+      return;
+    }
     setDragging(true);
   }
 
   useEffect(() => {
     let updateScheduled = false;
 
-    function onMouseUp() {
+    function onMouseUp(e: MouseEvent) {
+      if (e.button != 0) {
+        return;
+      }
       setDragging(false);
     }
 
     function onMouseMove(e: MouseEvent) {
-      if (dragging && !updateScheduled && column.current) {
+      if (dragging && !updateScheduled && rowRef.current) {
         requestAnimationFrame(() => {
-          if (column.current) {
-            const divHeight = column.current.offsetHeight;
-            const mousePosition = e.clientY - column.current.getBoundingClientRect().top;
+          if (rowRef.current) {
+            const divWidth = rowRef.current.offsetWidth;
+            const mousePosition = e.clientX - rowRef.current.getBoundingClientRect().left;
+            setHorizontalPercent(mousePosition / divWidth);
+          }
+          updateScheduled = false;
+        });
+      }
+    }
+
+    document.addEventListener("mouseup", onMouseUp);
+    document.addEventListener("mousemove", onMouseMove);
+
+    return () => {
+      document.removeEventListener("mouseup", onMouseUp);
+      document.removeEventListener("mousemove", onMouseMove);
+    };
+  }, [dragging]);
+
+  const grow1: string = `${horizontalPercent}`;
+  const grow2: string = `${1 - horizontalPercent}`;
+
+  return (
+    <div ref={rowRef} className="flex grow flex-row" style={style}>
+      <Tile style={{flexGrow: grow1}} />
+      <RowHandle onMouseDown={onMouseDown} />
+      <Tile style={{flexGrow: grow2}} />
+    </div>
+  );
+}
+
+function ColumnTile(
+  { style }: { style?: React.CSSProperties; }
+): ReactElement {
+  const [verticalPercent, setVerticalPercent] = useState(0.5);
+  const [dragging, setDragging] = useState(false);
+  const columnRef = useRef<HTMLDivElement>(null);
+
+  function onMouseDown(e: React.DragEvent<HTMLDivElement>) {
+    if (e.button != 0) {
+      return;
+    }
+    setDragging(true);
+  }
+
+  useEffect(() => {
+    let updateScheduled = false;
+
+    function onMouseUp(e: MouseEvent) {
+      if (e.button != 0) {
+        return;
+      }
+      setDragging(false);
+    }
+
+    function onMouseMove(e: MouseEvent) {
+      if (dragging && !updateScheduled && columnRef.current) {
+        requestAnimationFrame(() => {
+          if (columnRef.current) {
+            const divHeight = columnRef.current.offsetHeight;
+            const mousePosition = e.clientY - columnRef.current.getBoundingClientRect().top;
             setVerticalPercent(mousePosition / divHeight);
           }
           updateScheduled = false;
@@ -62,30 +119,38 @@ function ColumnTile(): ReactElement {
   const grow2: string = `${1 - verticalPercent}`;
 
   return (
-    <div ref={column} className="flex grow flex-col">
+    <div ref={columnRef} className="flex grow flex-col" style={style}>
       <Tile style={{flexGrow: grow1}} />
-      <Handlebar onMouseDown={onMouseDown} />
+      <ColumnHandle onMouseDown={onMouseDown} />
       <Tile style={{flexGrow: grow2}} />
     </div>
   );
 }
 
-function Handlebar(
-  { onMouseDown }: {
-    onMouseDown: (e: React.DragEvent<HTMLDivElement>) => void;
-  }
+function ColumnHandle(
+  { onMouseDown }: { onMouseDown: (e: React.DragEvent<HTMLDivElement>) => void; }
 ): ReactElement {
   return (
     <div className="h-0 relative" onMouseDown={onMouseDown}>
-      <div className="handlebar" />
+      <div className="handle-col" />
+    </div>
+  );
+}
+
+function RowHandle(
+  { onMouseDown }: { onMouseDown: (e: React.DragEvent<HTMLDivElement>) => void; }
+): ReactElement {
+  return (
+    <div className="w-0 relative" onMouseDown={onMouseDown}>
+      <div className="handle-row" />
     </div>
   );
 }
 
 function Tile(
   {className, style}: {
-    className?: string
-    style?: React.CSSProperties
+    className?: string;
+    style?: React.CSSProperties;
  }
 ): ReactElement {
   const [splitDirection, setSplitDirection] = useState<Direction | null>(null);
@@ -129,13 +194,13 @@ function Tile(
     const element: ReactElement = (() => {
       switch (splitDirection) {
       case Direction.Up:
-        return <ColumnTile />;
+        return <ColumnTile style={style} />;
       case Direction.Down:
-        return <ColumnTile />;
+        return <ColumnTile style={style} />;
       case Direction.Left:
-        return <RowTile />;
+        return <RowTile style={style} />;
       case Direction.Right:
-        return <RowTile />;
+        return <RowTile style={style} />;
       default:
         return <></>;
       }

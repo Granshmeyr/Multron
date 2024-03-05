@@ -2,19 +2,36 @@
 @tailwind components;
 @tailwind utilities;
 
-.handlebar {
+.handle-col {
   background-color: rgba(0, 0, 0, 0.5);
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   height: 20px;
+  width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
   color: white;
   cursor: move;
   transform: translate(0%, -50%);
+ }
+
+ .handle-row {
+  background-color: rgba(0, 0, 0, 0.5);
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  width: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  cursor: move;
+  transform: translate(-50%, 0%);
  }
 
 :root {
