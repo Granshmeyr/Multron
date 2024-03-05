@@ -1,8 +1,9 @@
 
 
+
 # ElectronSpider
 
-Build your web and crawl the web.
+Scuttle the web (🕸️) more efficiently.
 
 ---
 
