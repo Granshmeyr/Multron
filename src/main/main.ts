@@ -1,21 +1,21 @@
 import { app, BrowserWindow, ipcMain } from "electron";
 import path from "path";
-import * as listener from "./listeners";
+import * as listeners from "./listeners";
 
 let mainWindow: BrowserWindow | null;
 const viteURL = "http://localhost:5173";
 
 function main(): void {
   ipcMain.on("show-split-menu", async (event) => {
-    const result = await listener.onShowSplitMenuAsync(event);
+    const result = await listeners.onShowSplitMenuAsync(event);
     event.reply("show-split-menu-response", result);
   });
 
-  onAppReady(
-    () => {
-      createMainWindow();
-    }
-  );
+  ipcMain.on("tile-data", (_event, args) => {
+    console.log("tile-data recieved: " + args[0]["id"]);
+  });
+
+  onAppReady(createMainWindow);
 
   app.on("window-all-closed", () => {
     if (process.platform !== "darwin") {
