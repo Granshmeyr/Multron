@@ -27,7 +27,8 @@ declare global {
                 listener: (
                     event: Electron.IpcRendererEvent,
                     ...args: unknown[]
-                ) => void) => void
+                ) => void
+            ) => void
         };
     }
 }

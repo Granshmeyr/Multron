@@ -1,218 +1,346 @@
-import React, { ReactElement, useEffect, useRef, useState } from "react";
+import { ReactElement, useEffect, useReducer, useRef, useState } from "react";
 import { Direction } from "../../../common/enums";
-import { v4 as uuidv4 } from "uuid";
+import { RowNode, TileTree, BaseNode, TileNode, ColumnNode} from "../../../common/nodes.tsx";
+import { buildContainerElements } from "../../../common/containerShared.tsx";
+import { ColumnProps, TileProps, RowProps, ColumnHandleProps, RowHandleProps } from "../../../common/props";
 
 let listenerRegistered: boolean = false;
+let contextEvent: MouseEvent;
+let clickedTileRef: React.RefObject<HTMLDivElement>;
 
 export function TileApp(): ReactElement {
+  const ref = useRef<HTMLDivElement>(null);
+  const behaviorProps: TileProps = {
+    splitBehavior: (id, direction: Direction) => { onSplit(id, direction); },
+    resizeBehavior: (id, rect) => { onResize(id, rect); }
+  };
+  const [tileTree] = useState<TileTree>(
+    new TileTree(
+      new TileNode({ ...behaviorProps })
+    )
+  );
+  const [root, setRoot] = useState<BaseNode>(tileTree.root);
+  const [, forceState] = useReducer(x => x + 1, 0);
+
+  useEffect(() => {
+    function onContextMenu(e: MouseEvent) { contextEvent = e; }
+
+    document.addEventListener("contextmenu", onContextMenu);
+    return () => {
+      document.removeEventListener("contextmenu", onContextMenu);
+    };
+  });
+
+  function onSplit(id: string, direction: Direction) {
+    const tile = tileTree.record[id];
+
+    function up() {
+      if (!ref.current) {
+        console.error("Ref is invalid");
+        return;
+      }
+      const divHeight = ref.current.offsetHeight;
+      const mousePosition = contextEvent.clientY - ref.current.getBoundingClientRect().top;
+      const splitPercent = mousePosition / divHeight;
+      setRoot(new ColumnNode(
+        tileTree,
+        forceState,
+        [tileTree.newTile(behaviorProps), tile],
+        splitPercent
+      ));
+    }
+
+    function down() {
+      if (!ref.current) {
+        console.error("Ref is invalid");
+        return;
+      }
+      const divHeight = ref.current.offsetHeight;
+      const mousePosition = contextEvent.clientY - ref.current.getBoundingClientRect().top;
+      const splitPercent = mousePosition / divHeight;
+      setRoot(new ColumnNode(
+        tileTree,
+        forceState,
+        [tile, tileTree.newTile(behaviorProps)],
+        splitPercent
+      ));
+    }
+
+    function left() {
+      if (!ref.current) {
+        console.error("Ref is invalid");
+        return;
+      }
+      const divWidth = ref.current.offsetWidth;
+      const mousePosition = contextEvent.clientX - ref.current.getBoundingClientRect().left;
+      const splitPercent = mousePosition / divWidth;
+      setRoot(new RowNode(
+        tileTree,
+        forceState,
+        [tileTree.newTile(behaviorProps), tile],
+        splitPercent
+      ));
+    }
+
+    function right() {
+      if (!ref.current) {
+        console.error("Ref is invalid");
+        return;
+      }
+      const divWidth = ref.current.offsetWidth;
+      const mousePosition = contextEvent.clientX - ref.current.getBoundingClientRect().left;
+      const splitPercent = mousePosition / divWidth;
+      setRoot(new RowNode(
+        tileTree,
+        forceState,
+        [tile, tileTree.newTile(behaviorProps)],
+        splitPercent
+      ));
+    }
+
+    switch (direction) {
+    case Direction.Up: up(); return;
+    case Direction.Down: down(); return;
+    case Direction.Left: left(); return;
+    case Direction.Right: right(); return;
+    }
+  }
+
+  function onResize(id: string, rect: DOMRect) {
+    return { id, rect };
+  }
+
   return (
-    <div className="flex w-screen h-screen">
-      <Tile className="grow"/>
+    <div ref={ref} className="flex w-screen h-screen">
+      {root.toElement()}
     </div>
   );
 }
 
-function RowTile(
-  { children, style }: {
-    children?: ReactElement[];
-    style?: React.CSSProperties;
-  }
+export function Row(
+  { tileTree, children, forceState, style, initialSplit }: RowProps
 ): ReactElement {
-  const [horizontalPercent, setHorizontalPercent] = useState(0.5);
-  const [dragging, setDragging] = useState(false);
+  const [handlePercents, setHandlePercents] = useState<number[]>(
+    [initialSplit === undefined ? 0.5 : initialSplit]
+  );
+  const [currentHandle, setCurrentHandle] = useState<number | null>(null);
   const ref = useRef<HTMLDivElement>(null);
-
-  function onMouseDown(e: React.DragEvent<HTMLDivElement>) {
-    if (e.button != 0) {
-      return;
-    }
-    setDragging(true);
-  }
+  const behaviorProps: TileProps = {
+    splitBehavior: (id, direction) => {
+      onSplit(id, direction);
+    },
+    resizeBehavior: (id, rect) => { return {id, rect}; }
+  };
 
   useEffect(() => {
     function onMouseUp(e: MouseEvent) {
-      if (e.button != 0) {
+      if (e.button !== 0) {
         return;
       }
-      setDragging(false);
+      setCurrentHandle(null);
     }
-
     function onMouseMove(e: MouseEvent) {
-      if (dragging && ref.current) {
+      if (currentHandle !== null && ref.current) {
         requestAnimationFrame(() => {
           if (ref.current) {
             const divWidth = ref.current.offsetWidth;
             const mousePosition = e.clientX - ref.current.getBoundingClientRect().left;
-            setHorizontalPercent(mousePosition / divWidth);
+            const newPercents = [...handlePercents];
+            newPercents[currentHandle] = mousePosition / divWidth;
+            setHandlePercents(newPercents);
           }
         });
       }
     }
+    function onContextMenu(e: MouseEvent) { contextEvent = e; }
 
+    document.addEventListener("contextmenu", onContextMenu);
     document.addEventListener("mouseup", onMouseUp);
     document.addEventListener("mousemove", onMouseMove);
-
     return () => {
+      document.removeEventListener("contextmenu", onContextMenu);
       document.removeEventListener("mouseup", onMouseUp);
       document.removeEventListener("mousemove", onMouseMove);
     };
-  }, [dragging]);
+  }, [currentHandle, handlePercents]);
 
-  const grow1: string = `${horizontalPercent}`;
-  const grow2: string = `${1 - horizontalPercent}`;
+  function onSplit(id: string, direction: Direction,) {
+    const tile = tileTree.record[id];
+    const parent = tile.parent as RowNode;
 
-  let child1: ReactElement | undefined;
-  if (children) {
-    const style = { flexGrow: grow1 };
-    child1 = React.cloneElement(children[0], {
-      ...children[0].props,
-      style: {
-        ...children[0].props.style,
-        ...style
+    function up() {
+      const tileIndex = parent.children.indexOf(tile);
+
+      if (!clickedTileRef.current) {
+        console.error("clickedTileRef is invalid");
+        return;
       }
-    });
-  }
+      const divHeight = clickedTileRef.current.offsetHeight;
+      const mousePosition = contextEvent.clientY - clickedTileRef.current.getBoundingClientRect().top;
+      const splitPercent = mousePosition / divHeight;
 
-  let child2: ReactElement | undefined;
-  if (children) {
-    const style = { flexGrow: grow2 };
-    child2 = React.cloneElement(children[1], {
-      ...children[1].props,
-      style: {
-        ...children[1].props.style,
-        ...style
+      const newTile = tileTree.newTile(behaviorProps);
+      const newColumn = new ColumnNode(tileTree, forceState, [newTile, tile], splitPercent);
+
+      parent.children[tileIndex] = newColumn;
+
+      forceState();
+    }
+
+    function down() {
+      const tileIndex = parent.children.indexOf(tile);
+
+      if (!clickedTileRef.current) {
+        console.error("clickedTileRef is invalid");
+        return;
       }
-    });
+      const divHeight = clickedTileRef.current.offsetHeight;
+      const mousePosition = contextEvent.clientY - clickedTileRef.current.getBoundingClientRect().top;
+      const splitPercent = mousePosition / divHeight;
+
+      const newTile = tileTree.newTile(behaviorProps);
+      const newColumn = new ColumnNode(tileTree, forceState, [tile, newTile], splitPercent);
+
+      parent.children[tileIndex] = newColumn;
+
+      forceState();
+    }
+
+    function left() {
+      const tileIndex = parent.children.indexOf(tile);
+
+      const newTile = tileTree.newTile(behaviorProps);
+      parent.children.splice(tileIndex, 0, newTile);
+      newTile.parent = parent;
+
+      if (!ref.current) {
+        console.log("Ref is invalid");
+        return;
+      }
+      const divWidth = ref.current.offsetWidth;
+      const mousePosition = contextEvent.clientX - ref.current.getBoundingClientRect().left;
+      const splitPercent = mousePosition / divWidth;
+      handlePercents.splice(tileIndex, 0, splitPercent);
+
+      forceState();
+    }
+
+    function right() {
+      const tileIndex = parent.children.indexOf(tile);
+
+      const newTile = tileTree.newTile(behaviorProps);
+      parent.children.splice(tileIndex + 1, 0, newTile);
+      newTile.parent = parent;
+
+      if (!ref.current) {
+        console.log("Ref is invalid");
+        return;
+      }
+      const divWidth = ref.current.offsetWidth;
+      const mousePosition = contextEvent.clientX - ref.current.getBoundingClientRect().left;
+      const splitPercent = mousePosition / divWidth;
+      handlePercents.splice(tileIndex, 0, splitPercent);
+
+      forceState();
+    }
+
+    switch (direction) {
+    case Direction.Up: up(); return;
+    case Direction.Down: down(); return;
+    case Direction.Left: left(); return;
+    case Direction.Right: right(); return;
+    }
   }
 
   return (
     <div ref={ref} className="flex grow flex-row" style={style}>
-      {child1}
-      <RowHandle onMouseDown={onMouseDown} />
-      {child2}
+      { buildContainerElements(children, behaviorProps, handlePercents, setCurrentHandle, RowHandle) }
     </div>
   );
 }
 
-function ColumnTile(
-  { children, style }: {
-    children?: ReactElement[];
-    style?: React.CSSProperties;
-  }
+export function Column(
+  { tileTree, children, forceState, style, initialSplit }: ColumnProps
 ): ReactElement {
-  const [verticalPercent, setVerticalPercent] = useState(0.5);
-  const [dragging, setDragging] = useState(false);
+  const [handlePercents, setHandlePercents] = useState<number[]>(
+    [initialSplit === undefined ? 0.5 : initialSplit]
+  );
+  const [currentHandle, setCurrentHandle] = useState<number | null>(null);
   const ref = useRef<HTMLDivElement>(null);
-
-  function onMouseDown(e: React.DragEvent<HTMLDivElement>) {
-    if (e.button != 0) {
-      return;
-    }
-    setDragging(true);
-  }
+  const behaviorProps: TileProps = {
+    splitBehavior: (id, direction: Direction) => {
+      onSplit(id, direction, tileTree, behaviorProps, ref, contextEvent, handlePercents, forceState);
+    },
+    resizeBehavior: (id, rect) => { return {id,rect}; }
+  };
 
   useEffect(() => {
     function onMouseUp(e: MouseEvent) {
-      if (e.button != 0) {
+      if (e.button !== 0) {
         return;
       }
-      setDragging(false);
+      setCurrentHandle(null);
     }
-
     function onMouseMove(e: MouseEvent) {
-      if (dragging && ref.current) {
+      if (currentHandle !== null && ref.current) {
         requestAnimationFrame(() => {
           if (ref.current) {
             const divHeight = ref.current.offsetHeight;
             const mousePosition = e.clientY - ref.current.getBoundingClientRect().top;
-            setVerticalPercent(mousePosition / divHeight);
+            const newPercents = [...handlePercents];
+            newPercents[currentHandle] = mousePosition / divHeight;
+            setHandlePercents(newPercents);
           }
         });
       }
     }
+    function onContextMenu(e: MouseEvent) { contextEvent = e; }
 
+    document.addEventListener("contextmenu", onContextMenu);
     document.addEventListener("mouseup", onMouseUp);
     document.addEventListener("mousemove", onMouseMove);
-
     return () => {
+      document.removeEventListener("contextmenu", onContextMenu);
       document.removeEventListener("mouseup", onMouseUp);
       document.removeEventListener("mousemove", onMouseMove);
     };
-  }, [dragging]);
-
-  const grow1: string = `${verticalPercent}`;
-  const grow2: string = `${1 - verticalPercent}`;
-
-  let child1: ReactElement | undefined;
-  if (children) {
-    const style = { flexGrow: grow1 };
-    child1 = React.cloneElement(children[0], {
-      ...children[0].props,
-      style: {
-        ...children[0].props.style,
-        ...style
-      }
-    });
-  }
-
-  let child2: ReactElement | undefined;
-  if (children) {
-    const style = { flexGrow: grow2 };
-    child2 = React.cloneElement(children[1], {
-      ...children[1].props,
-      style: {
-        ...children[1].props.style,
-        ...style
-      }
-    });
-  }
+  }, [currentHandle, handlePercents]);
 
   return (
     <div ref={ref} className="flex grow flex-col" style={style}>
-      {child1}
-      <ColumnHandle onMouseDown={onMouseDown} />
-      {child2}
+      { buildContainerElements(children, behaviorProps, handlePercents, setCurrentHandle, ColumnHandle) }
     </div>
   );
 }
 
-function ColumnHandle(
-  { onMouseDown }: { onMouseDown: (e: React.DragEvent<HTMLDivElement>) => void; }
-): ReactElement {
-  return (
-    <div className="h-0 relative" onMouseDown={onMouseDown}>
-      <div className="handle-col" />
-    </div>
-  );
-}
-
-function RowHandle(
-  { onMouseDown }: { onMouseDown: (e: React.DragEvent<HTMLDivElement>) => void; }
-): ReactElement {
+function RowHandle({ onMouseDown }: RowHandleProps): ReactElement {
   return (
     <div className="w-0 relative" onMouseDown={onMouseDown}>
-      <div className="handle-row" />
+      <div className="handle-row"></div>
     </div>
   );
 }
 
-function Tile(
-  {className, style, id = uuidv4(), url}: {
-    className?: string;
-    style?: React.CSSProperties;
-    id?: string;
-    url?: URL;
- }
-): ReactElement {
-  const [splitDirection, setSplitDirection] = useState<Direction | null>(null);
-  const defaultClass: string = "border-4 border-white border-opacity-50";
+function ColumnHandle({ onMouseDown }: ColumnHandleProps): ReactElement {
+  return (
+    <div className="h-0 relative" onMouseDown={onMouseDown}>
+      <div className="handle-col"></div>
+    </div>
+  );
+}
+
+export function Tile(props: TileProps): ReactElement {
+  const defaultClass: string = "border-4 border-white border-opacity-50 flex-grow";
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const resizeObserver = new ResizeObserver(() => {
       const rect = ref.current?.getBoundingClientRect();
-      const tileData = { id: id, rect: rect };
-      window.electronAPI.send("tile-data", tileData);
+      if (rect === undefined) {
+        console.error("rect is undefined");
+        return;
+      }
+      props.resizeBehavior?.(props.id as string, rect);
     });
 
     if (ref.current) {
@@ -222,7 +350,7 @@ function Tile(
     return () => {
       resizeObserver.disconnect();
     };
-  }, [id]);
+  });
 
   async function showSplitMenu(): Promise<Direction | null> {
     return new Promise<Direction | null>((resolve) => {
@@ -242,58 +370,24 @@ function Tile(
   function tileElement(): ReactElement {
     return (
       <div
-        id={id}
+        className={`${defaultClass} ${props.className}`}
+        style={props.style}
+        id={props.id}
         ref={ref}
-        className={`${defaultClass} ${className}`}
         onContextMenu={
           async () => {
+            clickedTileRef = ref;
             const direction: Direction | null = await showSplitMenu();
-            if (direction == null) {
+            if (direction === null) {
               return;
             }
-            setSplitDirection(direction);
+            props.splitBehavior?.(props.id as string, direction);
           }
         }
-        style={style}
       >
       </div>
     );
   }
 
-  function splitLogic(tiles: ReactElement[]): ReactElement {
-    const element: ReactElement = (() => {
-      switch (splitDirection) {
-      case Direction.Up:
-        return (
-          <ColumnTile style={style}>
-            {tiles}
-          </ColumnTile>
-        );
-      case Direction.Down:
-        return (
-          <ColumnTile style={style}>
-            {tiles}
-          </ColumnTile>
-        );
-      case Direction.Left:
-        return (
-          <RowTile style={style}>
-            {tiles}
-          </RowTile>
-        );
-      case Direction.Right:
-        return (
-          <RowTile style={style}>
-            {tiles}
-          </RowTile>
-        );
-      default:
-        return <></>;
-      }
-    })();
-
-    return element;
-  }
-
-  return splitDirection == null ? tileElement() : splitLogic();
+  return tileElement();
 }
