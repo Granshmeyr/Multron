@@ -1,22 +1,23 @@
-import { ReactElement } from "react";
-import { ColumnHandleProps, TileProps, RowHandleProps} from "./props";
-import React from "react";
+import React, { ReactElement } from "react";
 import { v4 as uuidv4 } from "uuid";
+import { Column, Row, Tile } from "../renderer/src/components/TileApp";
+import { BaseNode, ColumnNode, RowNode, TileNode, TileTree } from "./nodes";
+import { ColumnHandleProps, RowHandleProps, TileBehaviors } from "./props";
 
 function calculateGrow(
   index: number,
-  children: ReactElement[],
+  childCount: number,
   handlePercents: number[]
 ): number {
   let grow: number;
-  if (index >= children.length) {
+  if (index >= childCount) {
     console.error("Invalid index");
     grow = -1;
   }
   else if (index === 0) {
     grow = handlePercents[0];
   }
-  else if (index === children.length - 1) {
+  else if (index === childCount - 1) {
     grow = 1 - handlePercents[index - 1];
   }
   else {
@@ -25,28 +26,76 @@ function calculateGrow(
   return grow;
 }
 
-export function buildContainerElements(
-  children: ReactElement[],
-  behaviorProps: TileProps,
+function buildToTile(
+  index: number,
+  nodeCount: number,
+  baseNode: BaseNode,
+  behaviorProps: TileBehaviors,
+  handlePercents: number[],
+  tileTree: TileTree,
+  forceState: React.DispatchWithoutAction
+): ReactElement {
+  if (baseNode instanceof TileNode) {
+    return <Tile
+      {...baseNode.props}
+      {...behaviorProps}
+      style={
+        {
+          ...baseNode.props.style,
+          ...{ flexGrow: calculateGrow(index, nodeCount, handlePercents) }
+        }
+      }
+    ></Tile>;
+  }
+  else if (baseNode instanceof RowNode) {
+    return <Row
+      nodeArray={baseNode.children}
+      tileTree={tileTree}
+      forceState={forceState}
+      initialSplit={baseNode.initialSplit}
+      style={
+        { flexGrow: calculateGrow(index, nodeCount, handlePercents) }
+      }
+    ></Row>;
+  }
+  else if (baseNode instanceof ColumnNode) {
+    return <Column
+      nodeArray={baseNode.children}
+      tileTree={tileTree}
+      forceState={forceState}
+      initialSplit={baseNode.initialSplit}
+      style={
+        { flexGrow: calculateGrow(index, nodeCount, handlePercents) }
+      }
+    ></Column>;
+  }
+  return <></>;
+}
+
+export function buildTree(
+  tileTree: TileTree,
+  forceState: React.DispatchWithoutAction,
+  nodeArray: BaseNode[],
+  behaviorProps: TileBehaviors,
   handlePercents: number[],
   setCurrentHandle: (value: React.SetStateAction<number | null>) => void,
   Handle: React.ComponentType<RowHandleProps> | React.ComponentType<ColumnHandleProps>
 ): ReactElement[] {
   const elementArray: ReactElement[] = [];
-  for (let i = 0; i < children.length; i++) {
-    const tile: ReactElement = React.cloneElement(
-      children[i], {
-        ...children[i].props,
-        ...behaviorProps,
-        style: {
-          ...children[i].props.style,
-          ...{ flexGrow: calculateGrow(i, children, handlePercents) }
-        }
-      }
+  const nodeCount: number = nodeArray.length;
+  for (let index = 0; index < nodeCount; index++) {
+    const element = buildToTile(
+      index,
+      nodeArray.length,
+      nodeArray[index],
+      behaviorProps,
+      handlePercents,
+      tileTree,
+      forceState
     );
-    elementArray.push(tile);
+    elementArray.push(element);
 
-    if (i !== children.length - 1) {
+    if (index !== nodeCount - 1) {
       const handle: ReactElement = (
         <Handle
           key={ uuidv4() }
@@ -55,7 +104,7 @@ export function buildContainerElements(
               if (e.button !== 0) {
                 return;
               }
-              setCurrentHandle(i);
+              setCurrentHandle(index);
             }
           }
         ></Handle>

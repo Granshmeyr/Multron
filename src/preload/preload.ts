@@ -3,7 +3,7 @@ import { contextBridge, ipcRenderer } from "electron";
 
 contextBridge.exposeInMainWorld("electronAPI", {
   send: (channel: string, ...args: any[]) => {
-    ipcRenderer.send(channel, args);
+    ipcRenderer.send(channel, ...args);
   },
 
   on: (

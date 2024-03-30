@@ -1,5 +1,8 @@
-import { BrowserWindow, Menu } from "electron";
+import { BrowserView, BrowserWindow, Menu } from "electron";
 import { Direction } from "../common/enums.ts";
+import { BrowserViewData } from "../common/interfaces.ts";
+
+const browserViews: Record<string, BrowserViewData> = {};
 
 export async function onShowSplitMenuAsync(
   event: Electron.IpcMainEvent
@@ -53,4 +56,27 @@ export async function onShowSplitMenuAsync(
       resolve(direction);
     });
   });
+}
+
+export function onSetBrowserView(
+  _event: Electron.IpcMainEvent,
+  id: string,
+  rectangle: Electron.Rectangle,
+  mainWindow: BrowserWindow
+) {
+  if (!(id in browserViews)) {
+    const browserView = new BrowserView();
+    browserView.webContents.loadURL("https://www.google.com");
+    browserView.setBounds({
+      height: Math.floor(rectangle.height / 1.16),
+      width: Math.floor(rectangle.width / 1.6),
+      x: rectangle.x + 30,
+      y: rectangle.y + 30
+    });
+    mainWindow.addBrowserView(browserView);
+    browserViews[id] = {
+      browserView: browserView,
+      rectangle: rectangle
+    };
+  }
 }

@@ -1,27 +1,34 @@
 import { Direction } from "./enums";
-import React, { ReactElement } from "react";
-import { TileTree } from "./nodes";
+import React from "react";
+import { BaseNode, TileTree } from "./nodes";
 
 export interface TileProps {
-    className?: string;
-    style?: React.CSSProperties;
-    id?: string;
-    url?: URL;
-    splitBehavior?: (
-      id: string,
-      direction: Direction,
-    ) => void;
-    resizeBehavior?: (id: string, rect: DOMRect) => void;
-  }
+  className?: string;
+  style?: React.CSSProperties;
+  id: string;
+  url?: URL;
+  splitBehavior: (
+    id: string,
+    direction: Direction,
+  ) => void;
+  resizeBehavior: (id: string, rect: DOMRect) => void;
+}
+export interface TileBehaviors {
+  splitBehavior: (
+    id: string,
+    direction: Direction,
+  ) => void;
+  resizeBehavior: (id: string, rect: DOMRect) => void;
+}
 export interface RowProps {
-    children: ReactElement[];
-    tileTree: TileTree;
-    forceState: React.DispatchWithoutAction;
-    initialSplit?: number
-    style?: React.CSSProperties;
-  }
+  nodeArray: BaseNode[];
+  tileTree: TileTree;
+  forceState: React.DispatchWithoutAction;
+  initialSplit?: number
+  style?: React.CSSProperties;
+}
 export interface ColumnProps {
-    children: ReactElement[];
+    nodeArray: BaseNode[];
     tileTree: TileTree;
     forceState: React.DispatchWithoutAction;
     initialSplit?: number

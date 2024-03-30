@@ -11,8 +11,8 @@ function main(): void {
     event.reply("show-split-menu-response", result);
   });
 
-  ipcMain.on("tile-data", (_event, args) => {
-    console.log("tile-data recieved: " + args[0]["id"]);
+  ipcMain.on("set-browser-view", (event, id, rectangle) => {
+    listeners.onSetBrowserView(event, id, rectangle, mainWindow as BrowserWindow);
   });
 
   onAppReady(createMainWindow);
