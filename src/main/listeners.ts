@@ -62,21 +62,49 @@ export function onSetBrowserView(
   _event: Electron.IpcMainEvent,
   id: string,
   rectangle: Electron.Rectangle,
-  mainWindow: BrowserWindow
+  mainWindow: BrowserWindow,
+  margin: number = 30
 ) {
+  const marginRectangle = createMarginRectangle(rectangle, margin);
+
   if (!(id in browserViews)) {
+
     const browserView = new BrowserView();
     browserView.webContents.loadURL("https://www.google.com");
-    browserView.setBounds({
-      height: Math.floor(rectangle.height / 1.16),
-      width: Math.floor(rectangle.width / 1.6),
-      x: rectangle.x + 30,
-      y: rectangle.y + 30
-    });
+    browserView.setBounds(marginRectangle);
     mainWindow.addBrowserView(browserView);
     browserViews[id] = {
       browserView: browserView,
-      rectangle: rectangle
+      rectangle: marginRectangle
     };
+    return;
   }
+
+  browserViews[id].browserView.setBounds(marginRectangle);
+  browserViews[id].rectangle = marginRectangle;
+}
+
+function createMarginRectangle(
+  rectangle: Electron.Rectangle,
+  margin: number
+): Electron.Rectangle {
+  const numbers: number[] = [rectangle.height, rectangle.width, rectangle.x, rectangle.y];
+  for (let i = 1; i < numbers.length; i++) {
+    if (!(Number.isInteger(numbers[i]))) {
+      console.error("Rectangle parameter contains invalid values");
+      return {
+        height: 0,
+        width: 0,
+        x: 0,
+        y: 0
+      };
+    }
+  }
+
+  return {
+    height: rectangle.height - (margin * 2),
+    width: rectangle.width - (margin * 2),
+    x: rectangle.x + margin,
+    y: rectangle.y + margin
+  };
 }

@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain } from "electron";
+import { app, BrowserWindow, ipcMain, globalShortcut } from "electron";
 import path from "path";
 import * as listeners from "./listeners";
 
@@ -33,12 +33,30 @@ function main(): void {
 function createMainWindow() {
   mainWindow = new BrowserWindow({
     webPreferences: {
-      preload: path.join(app.getAppPath(),"out", "preload", "preload.js")
+      preload: path.join(app.getAppPath(), "out", "preload", "preload.js"),
+      zoomFactor: 1.0
     },
     autoHideMenuBar: true,
     width: 1600,
     height: 900
   });
+
+  mainWindow.on("focus", () => {
+    globalShortcut.register("CommandOrControl+0", () => { return; });
+    globalShortcut.register("CommandOrControl+plus", () => { return; });
+    globalShortcut.register("CommandOrControl+=", () => { return; });
+    globalShortcut.register("CommandOrControl+-", () => { return; });
+    globalShortcut.register("CommandOrControl+_", () => { return; });
+  });
+
+  mainWindow.on("blur", () => {
+    globalShortcut.unregister("CommandOrControl+0");
+    globalShortcut.unregister("CommandOrControl+plus");
+    globalShortcut.unregister("CommandOrControl+=");
+    globalShortcut.unregister("CommandOrControl+-");
+    globalShortcut.unregister("CommandOrControl+_");
+  });
+
   mainWindow.loadURL(viteURL);
   mainWindow.on("closed", () => mainWindow = null);
   mainWindow.webContents.openDevTools();

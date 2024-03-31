@@ -11,14 +11,14 @@ export interface TileProps {
     id: string,
     direction: Direction,
   ) => void;
-  resizeBehavior: (id: string, rect: DOMRect) => void;
+  resizeBehavior: (id: string, rectangle: Electron.Rectangle) => void;
 }
 export interface TileBehaviors {
   splitBehavior: (
     id: string,
     direction: Direction,
   ) => void;
-  resizeBehavior: (id: string, rect: DOMRect) => void;
+  resizeBehavior: (id: string, rectangle: Electron.Rectangle) => void;
 }
 export interface RowProps {
   nodeArray: BaseNode[];

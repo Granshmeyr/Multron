@@ -9,11 +9,15 @@ let lastMouseEvent: MouseEvent;
 let clickedTileRef: React.RefObject<HTMLDivElement>;
 const colors: Record<string, string> = {};
 
+function onResize(id: string, rectangle: Electron.Rectangle) {
+  window.electronAPI.send("set-browser-view", id, rectangle);
+}
+
 export function TileApp(): ReactElement {
   const ref = useRef<HTMLDivElement>(null);
   const tileBehaviors: TileBehaviors = {
     splitBehavior: (id, direction: Direction) => { onSplit(id, direction); },
-    resizeBehavior: (id, rect) => { onResize(id, rect); }
+    resizeBehavior: (id, rectangle) => { onResize(id, rectangle); }
   };
   const [tileTree] = useState<TileTree>(
     new TileTree(
@@ -89,10 +93,6 @@ export function TileApp(): ReactElement {
     }
   }
 
-  function onResize(id: string, rect: DOMRect) {
-    return { id, rect };
-  }
-
   return (
     <div ref={ref} className="flex w-screen h-screen">
       {(() => {
@@ -134,7 +134,7 @@ export function Row(
     splitBehavior: (id, direction) => {
       onSplit(id, direction);
     },
-    resizeBehavior: (id, rect) => { return {id, rect}; }
+    resizeBehavior: (id, rectangle) => { onResize(id, rectangle); }
   };
 
   useEffect(() => {
@@ -262,7 +262,7 @@ export function Column(
     splitBehavior: (id, direction) => {
       onSplit(id, direction);
     },
-    resizeBehavior: (id, rect) => { return {id, rect}; }
+    resizeBehavior: (id, rectangle) => { onResize(id, rectangle); }
   };
 
   useEffect(() => {
@@ -407,12 +407,18 @@ export function Tile({
     }
 
     const resizeObserver = new ResizeObserver(() => {
-      const rect = ref.current?.getBoundingClientRect();
-      if (rect === undefined) {
+      const domRect = ref.current?.getBoundingClientRect();
+      if (domRect === undefined) {
         console.error("rect is undefined");
         return;
       }
-      resizeBehavior?.(id as string, rect);
+      const rectangle: Electron.Rectangle = {
+        height: Math.floor(domRect.height),
+        width: Math.floor(domRect.width),
+        x: Math.floor(domRect.x),
+        y: Math.floor(domRect.y)
+      };
+      resizeBehavior?.(id as string, rectangle);
     });
 
     if (ref.current) {
