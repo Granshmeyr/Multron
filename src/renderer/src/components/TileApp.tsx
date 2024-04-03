@@ -3,17 +3,24 @@ import { buildTree } from "../../../common/containerShared.tsx";
 import { Direction } from "../../../common/enums";
 import { BaseNode, ColumnNode, RowNode, TileNode, TileTree } from "../../../common/nodes.tsx";
 import { ColumnHandleProps, ColumnProps, RowHandleProps, RowProps, TileBehaviors, TileProps } from "../../../common/props";
+import { onResize, randomColor } from "./TileFunctions.ts";
 
 let listenerRegistered: boolean = false;
 let lastMouseEvent: MouseEvent;
 let clickedTileRef: React.RefObject<HTMLDivElement>;
+let editModeEnabled: boolean = false;
 const colors: Record<string, string> = {};
 
-function onResize(id: string, rectangle: Electron.Rectangle) {
-  window.electronAPI.send("set-browser-view", id, rectangle);
+export function TileApp(): ReactElement {
+  window.electronAPI.on("toggle-edit-mode", (_, ...args: unknown[]) => {
+    editModeEnabled = args[0] as boolean;
+    document.dispatchEvent(new MouseEvent("mouseup", {bubbles: true}));
+  });
+
+  return Root();
 }
 
-export function TileApp(): ReactElement {
+function Root(): ReactElement {
   const ref = useRef<HTMLDivElement>(null);
   const tileBehaviors: TileBehaviors = {
     splitBehavior: (id, direction: Direction) => { onSplit(id, direction); },
@@ -145,16 +152,12 @@ export function Row(
       setCurrentHandle(null);
     }
     function onMouseMove(e: MouseEvent) {
-      if (currentHandle !== null && ref.current) {
-        requestAnimationFrame(() => {
-          if (ref.current) {
-            const divWidth = ref.current.offsetWidth;
-            const mousePosition = e.clientX - ref.current.getBoundingClientRect().left;
-            const newPercents = [...handlePercents];
-            newPercents[currentHandle] = mousePosition / divWidth;
-            setHandlePercents(newPercents);
-          }
-        });
+      if (currentHandle !== null && ref.current && editModeEnabled) {
+        const divWidth = ref.current.offsetWidth;
+        const mousePosition = e.clientX - ref.current.getBoundingClientRect().left;
+        const newPercents = [...handlePercents];
+        newPercents[currentHandle] = mousePosition / divWidth;
+        setHandlePercents(newPercents);
       }
     }
     function onContextMenu(e: MouseEvent) { lastMouseEvent = e; }
@@ -273,16 +276,12 @@ export function Column(
       setCurrentHandle(null);
     }
     function onMouseMove(e: MouseEvent) {
-      if (currentHandle !== null && ref.current) {
-        requestAnimationFrame(() => {
-          if (ref.current) {
-            const divHeight = ref.current.offsetHeight;
-            const mousePosition = e.clientY - ref.current.getBoundingClientRect().top;
-            const newPercents = [...handlePercents];
-            newPercents[currentHandle] = mousePosition / divHeight;
-            setHandlePercents(newPercents);
-          }
-        });
+      if (currentHandle !== null && ref.current && editModeEnabled) {
+        const divHeight = ref.current.offsetHeight;
+        const mousePosition = e.clientY - ref.current.getBoundingClientRect().top;
+        const newPercents = [...handlePercents];
+        newPercents[currentHandle] = mousePosition / divHeight;
+        setHandlePercents(newPercents);
       }
     }
     function onContextMenu(e: MouseEvent) { lastMouseEvent = e; }
@@ -413,10 +412,10 @@ export function Tile({
         return;
       }
       const rectangle: Electron.Rectangle = {
-        height: Math.floor(domRect.height),
-        width: Math.floor(domRect.width),
-        x: Math.floor(domRect.x),
-        y: Math.floor(domRect.y)
+        height: Math.round(domRect.height),
+        width: Math.round(domRect.width),
+        x: Math.round(domRect.x),
+        y: Math.round(domRect.y)
       };
       resizeBehavior?.(id as string, rectangle);
     });
@@ -489,9 +488,4 @@ function ColumnHandle({ onMouseDown }: ColumnHandleProps): ReactElement {
       <div className="handle-col"></div>
     </div>
   );
-}
-
-// https://stackoverflow.com/questions/1484506/random-color-generator#comment18632055_5365036
-function randomColor() {
-  return "#" + ("00000"+(Math.random()*(1<<24)|0).toString(16)).slice(-6);
 }

@@ -1,8 +1,8 @@
 import { BrowserView, BrowserWindow, Menu } from "electron";
 import { Direction } from "../common/enums.ts";
-import { BrowserViewData } from "../common/interfaces.ts";
+import { BrowserViewInstance, isRectangleValid } from "../common/types.ts";
 
-const browserViews: Record<string, BrowserViewData> = {};
+export const browserViews: Record<string, BrowserViewInstance> = {};
 
 export async function onShowSplitMenuAsync(
   event: Electron.IpcMainEvent
@@ -63,42 +63,33 @@ export function onSetBrowserView(
   id: string,
   rectangle: Electron.Rectangle,
   mainWindow: BrowserWindow,
-  margin: number = 30
+  margin: number = 0
 ) {
-  const marginRectangle = createMarginRectangle(rectangle, margin);
+  const marginRectangle = marginizeRectangle(rectangle, margin);
 
   if (!(id in browserViews)) {
-
-    const browserView = new BrowserView();
+    const browserView = new BrowserView({
+      webPreferences: {
+        enablePreferredSizeMode: true,
+        disableHtmlFullscreenWindowResize: true
+      }
+    });
     browserView.webContents.loadURL("https://www.google.com");
-    browserView.setBounds(marginRectangle);
     mainWindow.addBrowserView(browserView);
-    browserViews[id] = {
-      browserView: browserView,
-      rectangle: marginRectangle
-    };
+    browserViews[id] = new BrowserViewInstance(browserView);
+    browserViews[id].rectangle = marginRectangle;
     return;
   }
 
-  browserViews[id].browserView.setBounds(marginRectangle);
   browserViews[id].rectangle = marginRectangle;
 }
 
-function createMarginRectangle(
+function marginizeRectangle(
   rectangle: Electron.Rectangle,
   margin: number
 ): Electron.Rectangle {
-  const numbers: number[] = [rectangle.height, rectangle.width, rectangle.x, rectangle.y];
-  for (let i = 1; i < numbers.length; i++) {
-    if (!(Number.isInteger(numbers[i]))) {
-      console.error("Rectangle parameter contains invalid values");
-      return {
-        height: 0,
-        width: 0,
-        x: 0,
-        y: 0
-      };
-    }
+  if (!isRectangleValid(rectangle)) {
+    return { height: 100, width: 100, x: 0, y: 0 };
   }
 
   return {
