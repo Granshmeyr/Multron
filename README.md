@@ -1,20 +1,22 @@
 
 
 
-# Electron MultiView
+# MultronView
 
-A multiboxed (📦) browser experience.
+> A multiboxed browser experience (📦)
 
 Utilizes Electron's [BrowserView](https://www.electronjs.org/docs/latest/api/browser-view) to render multiple Chromium instances within the same window.
 
 ---
 
-**Roadmap:**
+**Planned Features:**
 
-* Set URL per BrowserView
-* Set zoom per BrowserView
-* Save layout of tiles / URLs
-* Restore layout from file
+ - [x] Dynamic layout editor w/ splitting, resizing 
+ - [ ] Set URL per BrowserView
+ - [ ] Set zoom per BrowserView
+ - [ ] Support per-view user sessions
+ - [ ] Save layout of tiles / URLs
+ - [ ] Restore layout from file
 
 ---
 
