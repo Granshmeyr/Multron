@@ -1,16 +1,15 @@
-import React from "react";
 import { v4 as uuidv4 } from "uuid";
-import { TileBehaviors, TileProps } from "./props";
+import { TileProps } from "./interfaces";
+
+export const tiles: Record<string, TileNode> = {};
 
 export class TileTree {
-  nodeRecord: Record<string, TileNode> = {};
-  refRecord: Record<string, React.RefObject<HTMLDivElement>> = {};
   root: BaseNode;
 
   constructor(root: BaseNode) {
     this.root = root;
     if (root instanceof TileNode && root.props.id) {
-      this.nodeRecord[root.props.id] = root;
+      tiles[root.props.id] = root;
     }
   }
 
@@ -18,17 +17,6 @@ export class TileTree {
     node: ColumnNode | RowNode, index: number
   ) {
     return node.children[index] as T;
-  }
-
-  newTile(behaviors: TileBehaviors, props?: TileProps): TileNode {
-    const tileNode = new TileNode(behaviors, props);
-    if (tileNode.props.id) {
-      this.nodeRecord[tileNode.props.id] = tileNode;
-    }
-    else {
-      tileNode.props.id = uuidv4();
-    }
-    return tileNode;
   }
 }
 
@@ -39,17 +27,20 @@ export abstract class BaseNode {
 
 export class TileNode extends BaseNode {
   props: TileProps;
+  ref: React.RefObject<HTMLDivElement> | null = null;
 
-  constructor(behaviors: TileBehaviors, props?: TileProps, parent: ColumnNode | RowNode | null = null) {
+  constructor(tileProps?: TileProps, parent: ColumnNode | RowNode | null = null) {
     super();
     this.parent = parent;
 
-    const id = props?.id || uuidv4();
+    const id = tileProps?.id || uuidv4();
     const parsedProps = {
-      ...props,
+      className: tileProps?.className || undefined,
+      style: tileProps?.style || undefined,
+      url: tileProps?.url || undefined,
+      splitBehavior: tileProps?.splitBehavior || (() => { console.log("no splitBehavior"); }),
+      resizeBehavior: tileProps?.resizeBehavior || (() => { console.log("no resizeBehavior"); }),
       id: id,
-      splitBehavior: behaviors.splitBehavior,
-      resizeBehavior: behaviors.resizeBehavior
     };
     this.props = parsedProps;
   }
@@ -91,4 +82,16 @@ export class RowNode extends BaseNode {
       }
     }
   }
+}
+
+export function newTile(tileProps?: TileProps): TileNode {
+  let tileNode: TileNode;
+  if (tileProps !== undefined) {
+    tileNode = new TileNode(tileProps);
+  }
+  else {
+    tileNode = new TileNode();
+  }
+  tiles[tileNode.props.id as unknown as number] = tileNode;
+  return tileNode;
 }

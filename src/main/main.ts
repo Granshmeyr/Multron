@@ -1,20 +1,22 @@
 import { app, BrowserWindow, ipcMain, globalShortcut } from "electron";
 import path from "path";
 import { onShowSplitMenuAsync, onSetBrowserView, browserViews } from "./listeners";
+import * as channels from "../common/channels";
 
-let mainWindow: BrowserWindow | null;
+export let mainWindow: BrowserWindow | null;
 const viteURL: string = "http://localhost:5173";
 const editShortcut: string = "Control+Shift+Alt+e";
 let focused: boolean = false;
 export let editModeEnabled: boolean = false;
+export const editMargin: number = 20;
 
 function main(): void {
-  ipcMain.on("show-split-menu", async (event) => {
-    const result = await onShowSplitMenuAsync(event);
-    event.reply("show-split-menu-response", result);
+  ipcMain.on(channels.showSplitMenu, async (event) => {
+    const result = await onShowSplitMenuAsync();
+    event.reply(channels.showSplitMenuResponse, result);
   });
 
-  ipcMain.on("set-browser-view", (event, id, rectangle) => {
+  ipcMain.on(channels.setBrowserView, (event, id, rectangle) => {
     onSetBrowserView(event, id, rectangle, mainWindow as BrowserWindow);
   });
 
@@ -75,6 +77,7 @@ function createMainWindow() {
   });
 
   mainWindow.loadURL(viteURL);
+  mainWindow.webContents.openDevTools();
   mainWindow.on("closed", () => mainWindow = null);
 }
 
@@ -96,17 +99,17 @@ function onEdit() {
   }
 
   if (editModeEnabled) {
-    mainWindow?.webContents.send("toggle-edit-mode", false);
+    mainWindow?.webContents.send(channels.toggleEditMode, false);
     editModeEnabled = false;
     for (const id in browserViews) {
-      browserViews[id].unhide();
+      browserViews[id].unshrink();
     }
   }
   else {
-    mainWindow?.webContents.send("toggle-edit-mode", true);
+    mainWindow?.webContents.send(channels.toggleEditMode, true);
     editModeEnabled = true;
     for (const id in browserViews) {
-      browserViews[id].hide();
+      browserViews[id].shrink(editMargin);
     }
   }
 }

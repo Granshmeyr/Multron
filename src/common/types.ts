@@ -1,10 +1,10 @@
 import { BrowserView } from "electron";
-import { editModeEnabled } from "../main/main";
+import { isRectangleValid, marginizeRectangle } from "./util";
 
 export class BrowserViewInstance {
   browserView: BrowserView;
+  currentMargin: number | null = null;
   private _rectangle: Electron.Rectangle;
-  private hideOffset: number = 10000;
 
   constructor(browserView: BrowserView) {
     this.browserView = browserView;
@@ -20,9 +20,7 @@ export class BrowserViewInstance {
       this._rectangle = value;
     }
 
-    if (!editModeEnabled) {
-      this.browserView.setBounds(this.rectangle);
-    }
+    this.browserView.setBounds(this.rectangle);
   }
 
   get rectangle(): Electron.Rectangle {
@@ -32,22 +30,33 @@ export class BrowserViewInstance {
   hide() {
     this.browserView.setBounds({
       ...this.rectangle,
-      y: this.rectangle.y + this.hideOffset
+      y: this.rectangle.y + 10000
     });
   }
 
   unhide() {
     this.browserView.setBounds(this.rectangle);
   }
-}
 
-export function isRectangleValid(rectangle: Electron.Rectangle): boolean {
-  const numbers: number[] = [rectangle.height, rectangle.width, rectangle.x, rectangle.y];
-  for (let i = 1; i < numbers.length; i++) {
-    if (!(Number.isInteger(numbers[i]))) {
-      console.error("Rectangle contains non-integer.");
-      return false;
+  shrink(margin: number) {
+    if (!Number.isInteger(margin)) {
+      console.error("Margin must be an integer");
+      return;
     }
+    const marginRectangle = marginizeRectangle(this._rectangle, margin);
+    this.browserView.setBounds(marginizeRectangle(marginRectangle, margin));
+    this.rectangle = marginRectangle;
+    this.currentMargin = margin;
   }
-  return true;
+
+  unshrink() {
+    if (this.currentMargin === null) {
+      console.error("Rectangle is not marginized");
+      return;
+    }
+    const marginRectangle = marginizeRectangle(this._rectangle, -this.currentMargin);
+    this.browserView.setBounds(marginRectangle);
+    this.rectangle = marginRectangle;
+    this.currentMargin = null;
+  }
 }

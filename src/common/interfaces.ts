@@ -5,19 +5,9 @@ import { BaseNode, TileTree } from "./nodes";
 export interface TileProps {
   className?: string;
   style?: React.CSSProperties;
-  id: string;
+  id?: string;
   url?: URL;
-  splitBehavior: (
-    id: string,
-    direction: Direction,
-  ) => void;
-  resizeBehavior: (id: string, rectangle: Electron.Rectangle) => void;
-}
-export interface TileBehaviors {
-  splitBehavior: (
-    id: string,
-    direction: Direction,
-  ) => void;
+  splitBehavior: (id: string, direction: Direction) => void;
   resizeBehavior: (id: string, rectangle: Electron.Rectangle) => void;
 }
 export interface RowProps {
@@ -36,3 +26,4 @@ export interface ColumnProps {
 }
 export interface ColumnHandleProps { onMouseDown: (e: React.DragEvent<HTMLDivElement>) => void; }
 export interface RowHandleProps { onMouseDown: (e: React.DragEvent<HTMLDivElement>) => void; }
+export interface Vector2 { x: number, y: number }

@@ -29,6 +29,10 @@ declare global {
                     ...args: unknown[]
                 ) => void
             ) => void
+
+            isListening: (
+                channel: string
+            ) => boolean
         };
     }
 }

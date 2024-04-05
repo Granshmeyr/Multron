@@ -1,8 +1,8 @@
 import React, { ReactElement } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { Column, Row, Tile } from "../renderer/src/components/TileApp";
+import { ColumnHandleProps, RowHandleProps, TileProps } from "./interfaces";
 import { BaseNode, ColumnNode, RowNode, TileNode, TileTree } from "./nodes";
-import { ColumnHandleProps, RowHandleProps, TileBehaviors } from "./props";
 
 function calculateGrow(
   index: number,
@@ -26,19 +26,19 @@ function calculateGrow(
   return grow;
 }
 
-function buildToTile(
+function createTileElement(
   index: number,
   nodeCount: number,
   baseNode: BaseNode,
-  behaviorProps: TileBehaviors,
   handlePercents: number[],
+  tileProps: TileProps,
   tileTree: TileTree,
   forceState: React.DispatchWithoutAction
 ): ReactElement {
   if (baseNode instanceof TileNode) {
     return <Tile
       {...baseNode.props}
-      {...behaviorProps}
+      {...tileProps}
       style={
         {
           ...baseNode.props.style,
@@ -73,10 +73,10 @@ function buildToTile(
 }
 
 export function buildTree(
+  tileProps: TileProps,
   tileTree: TileTree,
   forceState: React.DispatchWithoutAction,
   nodeArray: BaseNode[],
-  behaviorProps: TileBehaviors,
   handlePercents: number[],
   setCurrentHandle: (value: React.SetStateAction<number | null>) => void,
   Handle: React.ComponentType<RowHandleProps> | React.ComponentType<ColumnHandleProps>
@@ -84,12 +84,12 @@ export function buildTree(
   const elementArray: ReactElement[] = [];
   const nodeCount: number = nodeArray.length;
   for (let index = 0; index < nodeCount; index++) {
-    const element = buildToTile(
+    const element = createTileElement(
       index,
       nodeArray.length,
       nodeArray[index],
-      behaviorProps,
       handlePercents,
+      tileProps,
       tileTree,
       forceState
     );

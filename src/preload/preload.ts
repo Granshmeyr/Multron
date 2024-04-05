@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { contextBridge, ipcRenderer } from "electron";
 
+const listeners = new Set<string>();
+
 contextBridge.exposeInMainWorld("electronAPI", {
   send: (channel: string, ...args: any[]) => {
     ipcRenderer.send(channel, ...args);
@@ -10,6 +12,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
     channel: string,
     listener: (event: Electron.IpcRendererEvent, ...args: any[]) => void
   ) => {
+    listeners.add(channel);
     ipcRenderer.on(channel, listener);
   },
 
@@ -24,6 +27,13 @@ contextBridge.exposeInMainWorld("electronAPI", {
     channel: string,
     listener: (event: Electron.IpcRendererEvent, ...args: any[]) => void
   ) => {
+    listeners.delete(channel);
     ipcRenderer.removeListener(channel, listener);
   },
+
+  isListening: (
+    channel: string
+  ): boolean => {
+    return listeners.has(channel);
+  }
 });

@@ -1,12 +1,13 @@
 import { BrowserView, BrowserWindow, Menu } from "electron";
+import * as channels from "../common/channels.ts";
 import { Direction } from "../common/enums.ts";
-import { BrowserViewInstance, isRectangleValid } from "../common/types.ts";
+import { BrowserViewInstance } from "../common/types.ts";
+import { cursorViewportPosition, marginizeRectangle } from "../common/util.ts";
+import { editMargin, editModeEnabled } from "./main.ts";
 
 export const browserViews: Record<string, BrowserViewInstance> = {};
 
-export async function onShowSplitMenuAsync(
-  event: Electron.IpcMainEvent
-): Promise<Direction | null> {
+export async function onShowSplitMenuAsync(): Promise<Direction | null> {
   return new Promise<Direction | null>((resolve) => {
     let direction: Direction | null = null;
     let setFinished: (value: boolean) => void;
@@ -49,7 +50,7 @@ export async function onShowSplitMenuAsync(
     ];
 
     const menu: Electron.Menu = Menu.buildFromTemplate(options);
-    menu.popup({ window: BrowserWindow.fromWebContents(event.sender)! });
+    menu.popup();
     menu.once("menu-will-close", async () => {
       const timeout = new Promise<void>((resolve) => setTimeout(resolve));
       await Promise.race([finished, timeout]);
@@ -65,6 +66,10 @@ export function onSetBrowserView(
   mainWindow: BrowserWindow,
   margin: number = 0
 ) {
+  if (editModeEnabled) {
+    margin = editMargin;
+  }
+
   const marginRectangle = marginizeRectangle(rectangle, margin);
 
   if (!(id in browserViews)) {
@@ -75,27 +80,21 @@ export function onSetBrowserView(
       }
     });
     browserView.webContents.loadURL("https://www.google.com");
+    browserView.webContents.on("context-menu", async () => {
+      const position = cursorViewportPosition(mainWindow);
+      const direction = await onShowSplitMenuAsync();
+      mainWindow.webContents.send(
+        channels.browserViewSplit, id, direction, position
+      );
+    });
     mainWindow.addBrowserView(browserView);
     browserViews[id] = new BrowserViewInstance(browserView);
     browserViews[id].rectangle = marginRectangle;
+    if (editModeEnabled) {
+      browserViews[id].currentMargin = margin;
+    }
     return;
   }
 
   browserViews[id].rectangle = marginRectangle;
-}
-
-function marginizeRectangle(
-  rectangle: Electron.Rectangle,
-  margin: number
-): Electron.Rectangle {
-  if (!isRectangleValid(rectangle)) {
-    return { height: 100, width: 100, x: 0, y: 0 };
-  }
-
-  return {
-    height: rectangle.height - (margin * 2),
-    width: rectangle.width - (margin * 2),
-    x: rectangle.x + margin,
-    y: rectangle.y + margin
-  };
 }
