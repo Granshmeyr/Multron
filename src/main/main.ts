@@ -3,12 +3,12 @@ import path from "path";
 import { onShowSplitMenuAsync, onSetBrowserView, browserViews } from "./listeners";
 import * as channels from "../common/channels";
 
-export let mainWindow: BrowserWindow | null;
-const viteURL: string = "http://localhost:5173";
-const editShortcut: string = "Control+Shift+Alt+e";
-let focused: boolean = false;
-export let editModeEnabled: boolean = false;
 export const editMargin: number = 20;
+export let mainWindow: BrowserWindow | null;
+export let editModeEnabled: boolean = false;
+const viteURL: string = "http://localhost:5173";
+const editShortcut: string = "Control+e";
+let focused: boolean = false;
 
 function main(): void {
   ipcMain.on(channels.showSplitMenu, async (event) => {
@@ -48,7 +48,7 @@ function createMainWindow() {
   mainWindow = new BrowserWindow({
     webPreferences: {
       preload: path.join(app.getAppPath(), "out", "preload", "preload.js"),
-      zoomFactor: 1.0
+      zoomFactor: 1.0,
     },
     width: 1400,
     height: 700

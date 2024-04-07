@@ -1,6 +1,6 @@
-import { Direction } from "./enums";
 import React from "react";
-import { BaseNode, TileTree } from "./nodes";
+import { Direction } from "./enums";
+import { BaseNode } from "./nodes";
 
 export interface TileProps {
   className?: string;
@@ -11,18 +11,16 @@ export interface TileProps {
   resizeBehavior: (id: string, rectangle: Electron.Rectangle) => void;
 }
 export interface RowProps {
-  nodeArray: BaseNode[];
-  tileTree: TileTree;
+  children: BaseNode[];
   forceState: React.DispatchWithoutAction;
   initialSplit?: number
   style?: React.CSSProperties;
 }
 export interface ColumnProps {
-    nodeArray: BaseNode[];
-    tileTree: TileTree;
-    forceState: React.DispatchWithoutAction;
-    initialSplit?: number
-    style?: React.CSSProperties;
+  children: BaseNode[];
+  forceState: React.DispatchWithoutAction;
+  initialSplit?: number
+  style?: React.CSSProperties;
 }
 export interface ColumnHandleProps { onMouseDown: (e: React.DragEvent<HTMLDivElement>) => void; }
 export interface RowHandleProps { onMouseDown: (e: React.DragEvent<HTMLDivElement>) => void; }

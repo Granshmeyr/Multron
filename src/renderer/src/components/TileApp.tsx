@@ -3,13 +3,12 @@ import * as channels from "../../../common/channels.ts";
 import { buildTree } from "../../../common/containerShared.tsx";
 import { Direction } from "../../../common/enums";
 import { ColumnHandleProps, ColumnProps, RowHandleProps, RowProps, TileProps, Vector2 } from "../../../common/interfaces.ts";
-import { BaseNode, ColumnNode, RowNode, TileNode, TileTree, newTile, tiles } from "../../../common/nodes.tsx";
+import { BaseNode, ColumnNode, RowNode, TileNode, TileTree, recordTile, tiles } from "../../../common/nodes.tsx";
 import { onResize, randomColor } from "./TileFunctions.ts";
 
 const colors: Record<string, string> = {};
 let listenerRegistered: boolean = false;
 let clickedPosition: Vector2;
-let clickedId: string;
 let editModeEnabled: boolean = false;
 
 export function TileApp(): ReactElement {
@@ -20,7 +19,7 @@ export function TileApp(): ReactElement {
   };
   const [tileTree] = useState<TileTree>(
     new TileTree(
-      newTile(tileProps)
+      recordTile(tileProps)
     )
   );
   const [root, setRoot] = useState<BaseNode>(tileTree.root);
@@ -38,7 +37,6 @@ export function TileApp(): ReactElement {
       const direction = args[1] as Direction | null;
       const position = args[2] as Vector2;
       clickedPosition = position;
-      clickedId = id;
       if (direction === null) {
         return;
       }
@@ -46,7 +44,7 @@ export function TileApp(): ReactElement {
         console.error("ref is null");
         return;
       }
-      tiles[id].props.splitBehavior(id, direction);
+      tiles[id].split(id, direction);
     });
   }
 
@@ -63,7 +61,6 @@ export function TileApp(): ReactElement {
 
   function onSplit(id: string, direction: Direction) {
     const tile = tiles[id];
-
     function splitPercentY() {
       if (!ref.current) {
         console.error("Ref is invalid");
@@ -82,33 +79,34 @@ export function TileApp(): ReactElement {
       const mousePosition = clickedPosition.x - ref.current.getBoundingClientRect().left;
       return mousePosition / divWidth;
     }
-
     function up() {
-      setRoot(new ColumnNode(
-        [newTile(), tile],
-        splitPercentY()
-      ));
+      setRoot(new ColumnNode({
+        children: [recordTile(), tile],
+        initialSplit: splitPercentY(),
+        forceState: forceState
+      }));
     }
     function down() {
-      setRoot(new ColumnNode(
-        [tile, newTile()],
-        splitPercentY()
-      ));
+      setRoot(new ColumnNode({
+        children: [tile, recordTile()],
+        initialSplit: splitPercentY(),
+        forceState: forceState
+      }));
     }
     function left() {
-
-      setRoot(new RowNode(
-        [newTile(), tile],
-        splitPercentX()
-      ));
+      setRoot(new RowNode({
+        children: [recordTile(), tile],
+        initialSplit: splitPercentX(),
+        forceState: forceState
+      }));
     }
     function right() {
-      setRoot(new RowNode(
-        [tile, newTile()],
-        splitPercentX()
-      ));
+      setRoot(new RowNode({
+        children: [tile, recordTile()],
+        initialSplit: splitPercentX(),
+        forceState: forceState
+      }));
     }
-
     switch (direction) {
     case Direction.Up: up(); return;
     case Direction.Down: down(); return;
@@ -119,58 +117,28 @@ export function TileApp(): ReactElement {
 
   return (
     <div ref={ref} className="flex w-screen h-screen">
-      {(() => {
-        if (root instanceof TileNode) {
-          return <Tile
-            {...root.props}
-          ></Tile>;
-        }
-        else if (root instanceof RowNode) {
-          return <Row
-            nodeArray={root.children}
-            tileTree={tileTree}
-            forceState={forceState}
-            initialSplit={root.initialSplit}
-          ></Row>;
-        }
-        else if (root instanceof ColumnNode) {
-          return <Column
-            nodeArray={root.children}
-            tileTree={tileTree}
-            forceState={forceState}
-            initialSplit={root.initialSplit}
-          ></Column>;
-        }
-      })()}
+      {root.toElement()}
     </div>
   );
 }
 
 export function Row(
-  { tileTree, nodeArray, forceState, style, initialSplit }: RowProps
+  { children, forceState, style, initialSplit }: RowProps
 ): ReactElement {
   const [handlePercents, setHandlePercents] = useState<number[]>(
     [initialSplit === undefined ? 0.5 : initialSplit]
   );
   const [currentHandle, setCurrentHandle] = useState<number | null>(null);
   const ref = useRef<HTMLDivElement>(null);
-  const tileProps: TileProps = {
-    splitBehavior: (id, direction) => {
-      onSplit(id, direction);
-    },
-    resizeBehavior: (id, rectangle) => { onResize(id, rectangle); }
-  };
+
+  for (const child of children) {
+    if (child instanceof TileNode) {
+      child.setSplitBehavior(onSplit);
+      child.setResizeBehavior(onResize);
+    }
+  }
 
   useEffect(() => {
-    for (const node of nodeArray) {
-      if (node instanceof TileNode) {
-        node.props = {
-          ...node.props,
-          ...tileProps
-        };
-      }
-    }
-
     function onMouseUp(e: MouseEvent) {
       if (e.button !== 0) {
         return;
@@ -204,7 +172,6 @@ export function Row(
     const tile = tiles[id];
     const parent = tile.parent as RowNode;
     const tileRef = tiles[id].ref!;
-
     function splitPercentY(): number {
       if (!tileRef.current) {
         console.error("tile ref is invalid");
@@ -225,50 +192,44 @@ export function Row(
       console.log("mouse: ", clickedPosition.x);
       return mousePosition / divWidth;
     }
-
     function up() {
       const tileIndex = parent.children.indexOf(tile);
-
-      const splitTile = newTile();
-      const newColumn = new ColumnNode([splitTile, tile], splitPercentY());
-
+      const splitTile = recordTile();
+      const newColumn = new ColumnNode({
+        children: [splitTile, tile],
+        initialSplit: splitPercentY(),
+        forceState: forceState
+      });
       parent.children[tileIndex] = newColumn;
-
       forceState();
     }
     function down() {
       const tileIndex = parent.children.indexOf(tile);
-
-      const splitTile = newTile();
-      const newColumn = new ColumnNode([tile, splitTile], splitPercentY());
-
+      const splitTile = recordTile();
+      const newColumn = new ColumnNode({
+        children: [tile, splitTile],
+        initialSplit: splitPercentY(),
+        forceState: forceState
+      });
       parent.children[tileIndex] = newColumn;
-
       forceState();
     }
     function left() {
       const tileIndex = parent.children.indexOf(tile);
-
-      const splitTile = newTile();
+      const splitTile = recordTile();
       parent.children.splice(tileIndex, 0, splitTile);
       splitTile.parent = parent;
-
       handlePercents.splice(tileIndex, 0, splitPercentX());
-
       forceState();
     }
     function right() {
       const tileIndex = parent.children.indexOf(tile);
-
-      const splitTile = newTile();
+      const splitTile = recordTile();
       parent.children.splice(tileIndex + 1, 0, splitTile);
       splitTile.parent = parent;
-
       handlePercents.splice(tileIndex, 0, splitPercentX());
-
       forceState();
     }
-
     switch (direction) {
     case Direction.Up: up(); return;
     case Direction.Down: down(); return;
@@ -279,36 +240,28 @@ export function Row(
 
   return (
     <div ref={ref} className="flex grow flex-row" style={style}>
-      { buildTree(tileProps, tileTree, forceState, nodeArray, handlePercents, setCurrentHandle, RowHandle) }
+      { buildTree(children, handlePercents, setCurrentHandle, RowHandle) }
     </div>
   );
 }
 
 export function Column(
-  { tileTree, nodeArray, forceState, style, initialSplit }: ColumnProps
+  { children, forceState, style, initialSplit }: ColumnProps
 ): ReactElement {
   const [handlePercents, setHandlePercents] = useState<number[]>(
     [initialSplit === undefined ? 0.5 : initialSplit]
   );
   const [currentHandle, setCurrentHandle] = useState<number | null>(null);
   const ref = useRef<HTMLDivElement>(null);
-  const tileProps: TileProps = {
-    splitBehavior: (id, direction) => {
-      onSplit(id, direction);
-    },
-    resizeBehavior: (id, rectangle) => { onResize(id, rectangle); }
-  };
+
+  for (const child of children) {
+    if (child instanceof TileNode) {
+      child.setSplitBehavior(onSplit);
+      child.setResizeBehavior(onResize);
+    }
+  }
 
   useEffect(() => {
-    for (const node of nodeArray) {
-      if (node instanceof TileNode) {
-        node.props = {
-          ...node.props,
-          ...tileProps
-        };
-      }
-    }
-
     function onMouseUp(e: MouseEvent) {
       if (e.button !== 0) {
         return;
@@ -342,7 +295,6 @@ export function Column(
     const tile = tiles[id];
     const parent = tile.parent as ColumnNode;
     const tileRef = tiles[id].ref!;
-
     function splitPercentY(): number {
       if (!ref.current) {
         console.error("column ref is invalid");
@@ -365,47 +317,42 @@ export function Column(
 
     function up() {
       const tileIndex = parent.children.indexOf(tile);
-
-      const splitTile = newTile();
+      const splitTile = recordTile();
       parent.children.splice(tileIndex, 0, splitTile);
       splitTile.parent = parent;
-
       handlePercents.splice(tileIndex, 0, splitPercentY());
-
       forceState();
     }
     function down() {
       const tileIndex = parent.children.indexOf(tile);
-
-      const splitTile = newTile();
+      const splitTile = recordTile();
       parent.children.splice(tileIndex + 1, 0, splitTile);
       splitTile.parent = parent;
-
       handlePercents.splice(tileIndex, 0, splitPercentY());
-
       forceState();
     }
     function left() {
       const tileIndex = parent.children.indexOf(tile);
-
-      const splitTile = newTile();
-      const newRow = new RowNode([splitTile, tile], splitPercentX());
-
+      const splitTile = recordTile();
+      const newRow = new RowNode({
+        children: [splitTile, tile],
+        initialSplit: splitPercentX(),
+        forceState: forceState
+      });
       parent.children[tileIndex] = newRow;
-
       forceState();
     }
     function right() {
       const tileIndex = parent.children.indexOf(tile);
-
-      const splitTile = newTile();
-      const newRow = new RowNode([tile, splitTile], splitPercentX());
-
+      const splitTile = recordTile();
+      const newRow = new RowNode({
+        children: [tile, splitTile],
+        initialSplit: splitPercentX(),
+        forceState: forceState
+      });
       parent.children[tileIndex] = newRow;
-
       forceState();
     }
-
     switch (direction) {
     case Direction.Up: up(); return;
     case Direction.Down: down(); return;
@@ -416,7 +363,7 @@ export function Column(
 
   return (
     <div ref={ref} className="flex grow flex-col" style={style}>
-      { buildTree(tileProps, tileTree, forceState, nodeArray, handlePercents, setCurrentHandle, ColumnHandle) }
+      { buildTree(children, handlePercents, setCurrentHandle, ColumnHandle) }
     </div>
   );
 }
@@ -507,7 +454,6 @@ export function Tile({
         ref={ref}
         onContextMenu={
           async () => {
-            clickedId = id as string;
             const direction: Direction | null = await showSplitMenu();
             if (direction === null) {
               return;

@@ -87,6 +87,21 @@ export function onSetBrowserView(
         channels.browserViewSplit, id, direction, position
       );
     });
+    browserView.webContents.on("zoom-changed", (_, zoomDirection) => {
+      const currentZoom = browserView.webContents.getZoomLevel();
+      function zoomIn() {
+        browserView.webContents.setZoomLevel(currentZoom + 0.1);
+      }
+      function zoomOut() {
+        browserView.webContents.setZoomLevel(currentZoom - 0.1);
+      }
+      (() => {
+        switch (zoomDirection) {
+        case "in": zoomIn(); return;
+        case "out": zoomOut(); return;
+        }
+      })();
+    });
     mainWindow.addBrowserView(browserView);
     browserViews[id] = new BrowserViewInstance(browserView);
     browserViews[id].rectangle = marginRectangle;
