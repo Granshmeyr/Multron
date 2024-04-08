@@ -2,6 +2,7 @@
 
 
 
+
 # MultronView
 
 > A multiboxed browser experience
@@ -27,7 +28,8 @@ Utilizes Electron's [BrowserView](https://www.electronjs.org/docs/latest/api/bro
 **Getting Started:**
 
 - `npm install`
-- `npm run dev` or `.\run-dev.ps1`
+- `npm run dev`
+	- `run-with-klogg.ps1` is a helper script which runs MultronView and opens log output for filtering with [Klogg](https://klogg.filimonov.dev/). Requires `klogg` in PATH.
 
 ---
 

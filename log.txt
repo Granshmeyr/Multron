@@ -1,0 +1,45 @@
+
+> electronwm@0.0.0 dev
+> electron-vite dev -w
+
+[36mvite v5.2.8 [32mbuilding SSR bundle for development...[36m[39m
+[36m
+watching for file changes...[39m
+[36m
+build started...[39m
+transforming...
+[32m✓[39m 86 modules transformed.
+rendering chunks...
+[2mout/main/[22m[36mmain.js  [39m[1m[2m146.87 kB[22m[1m[22m
+[36mbuilt in 1182ms.[39m
+[32m
+build the electron main process successfully[39m
+[90m
+-----
+[39m
+[36mvite v5.2.8 [32mbuilding SSR bundle for development...[36m[39m
+[36m
+watching for file changes...[39m
+[36m
+build started...[39m
+transforming...
+[32m✓[39m 1 modules transformed.
+rendering chunks...
+[2mout/preload/[22m[36mpreload.js  [39m[1m[2m0.65 kB[22m[1m[22m
+[36mbuilt in 21ms.[39m
+[32m
+build the electron preload files successfully[39m
+[90m
+-----
+[39m
+[32mdev server running for the electron renderer process at:
+[39m
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m5173[22m/[39m
+[2m  [32m➜[39m  [1mNetwork[22m[2m: use [22m[1m--host[22m[2m to expose[22m
+[32m
+start electron app...
+[39m
+
+{"level":30,"time":1712596520475,"test":"test","msg":"hello!"}
+{"level":30,"time":1712596523047,"msg":"hello from renderer!"}
+{"level":30,"time":1712596523047,"msg":"hello from renderer!"}

@@ -2,6 +2,7 @@ import { BrowserWindow, app, globalShortcut, ipcMain } from "electron";
 import path from "path";
 import * as channels from "../common/channels";
 import { browserViews, onCreateView, onLogError, onLogInfo, onSetViewRectangle, onSetViewUrl, onShowContextMenuAsync } from "../common/listeners";
+import { logger } from "../common/logger";
 
 export const editMargin: number = 20;
 export let mainWindow: BrowserWindow | null;
@@ -11,6 +12,8 @@ const editShortcut: string = "Control+e";
 let focused: boolean = false;
 
 function main(): void {
+  const test = logger.child({ test: "test"  });
+  test.info("hello!");
   ipcMain.on(channels.showContextMenuAsync, async (event) => {
     const result = await onShowContextMenuAsync();
     event.reply(channels.showContextMenuResponse, result);
@@ -81,7 +84,7 @@ function createMainWindow() {
     globalShortcut.unregister("Control+r");
   });
   mainWindow.loadURL(viteURL);
-  mainWindow.webContents.openDevTools();
+  //mainWindow.webContents.openDevTools();
   mainWindow.on("closed", () => mainWindow = null);
 }
 

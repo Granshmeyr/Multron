@@ -1,12 +1,11 @@
+import { BrowserViewConstructorOptions } from "electron";
 import { ReactElement, useEffect, useReducer, useRef, useState } from "react";
 import * as channels from "../../../common/channels.ts";
-import { buildTree } from "../../common/containerShared.tsx";
 import { ContextOption, Direction } from "../../../common/enums";
 import { ColumnHandleProps, ColumnProps, ContextParams, RowHandleProps, RowProps, TileProps, Vector2 } from "../../../common/interfaces.ts";
+import { buildTree } from "../../common/containerShared.tsx";
 import { BaseNode, ColumnNode, RowNode, TileNode, TileTree, recordTile, tiles } from "../../common/nodes.tsx";
-import { onResize, randomColor } from "../../common/util.ts";
-import { BrowserViewConstructorOptions } from "electron";
-import { logError, logInfo } from "../../common/util.ts";
+import { logError, logInfo, onResize, randomColor } from "../../common/util.ts";
 
 const colors: Record<string, string> = {};
 let listenerRegistered: boolean = false;
@@ -14,7 +13,7 @@ let clickedPosition: Vector2;
 let editModeEnabled: boolean = false;
 
 export function TileApp(): ReactElement {
-  logInfo("hello world!");
+  logInfo("hello from renderer!");
   const ref = useRef<HTMLDivElement>(null);
   const [tileTree] = useState<TileTree>(
     new TileTree(
