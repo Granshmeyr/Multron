@@ -1,11 +1,12 @@
 import { ReactElement, useEffect, useReducer, useRef, useState } from "react";
 import * as channels from "../../../common/channels.ts";
-import { buildTree } from "../../../common/containerShared.tsx";
+import { buildTree } from "../../common/containerShared.tsx";
 import { ContextOption, Direction } from "../../../common/enums";
 import { ColumnHandleProps, ColumnProps, ContextParams, RowHandleProps, RowProps, TileProps, Vector2 } from "../../../common/interfaces.ts";
-import { BaseNode, ColumnNode, RowNode, TileNode, TileTree, recordTile, tiles } from "../../../common/nodes.tsx";
-import { onResize, randomColor } from "./TileFunctions.ts";
+import { BaseNode, ColumnNode, RowNode, TileNode, TileTree, recordTile, tiles } from "../../common/nodes.tsx";
+import { onResize, randomColor } from "../../common/util.ts";
 import { BrowserViewConstructorOptions } from "electron";
+import { logError, logInfo } from "../../common/util.ts";
 
 const colors: Record<string, string> = {};
 let listenerRegistered: boolean = false;
@@ -13,6 +14,7 @@ let clickedPosition: Vector2;
 let editModeEnabled: boolean = false;
 
 export function TileApp(): ReactElement {
+  logInfo("hello world!");
   const ref = useRef<HTMLDivElement>(null);
   const [tileTree] = useState<TileTree>(
     new TileTree(
@@ -39,7 +41,7 @@ export function TileApp(): ReactElement {
       clickedPosition = position;
       function split() {
         if (tiles[id].ref === null) {
-          console.error("ref is null");
+          logError("ref is null");
           return;
         }
         tiles[id].split(id, params.direction as Direction);
@@ -71,7 +73,7 @@ export function TileApp(): ReactElement {
     function split() {
       function splitPercentY() {
         if (!ref.current) {
-          console.error("Ref is invalid");
+          logError("Ref is invalid");
           return;
         }
         const divHeight = ref.current.offsetHeight;
@@ -80,7 +82,7 @@ export function TileApp(): ReactElement {
       }
       function splitPercentX() {
         if (!ref.current) {
-          console.error("Ref is invalid");
+          logError("Ref is invalid");
           return;
         }
         const divWidth = ref.current.offsetWidth;
@@ -191,7 +193,7 @@ export function Row(
       const tileRef = tiles[id].ref as React.RefObject<HTMLDivElement>;
       function splitPercentY(): number {
         if (!tileRef.current) {
-          console.error("tile ref is invalid");
+          logError("tile ref is invalid");
           return 0;
         }
         const divHeight = tileRef.current.offsetHeight;
@@ -200,7 +202,7 @@ export function Row(
       }
       function splitPercentX(): number {
         if (!ref.current) {
-          console.error("row ref is invalid");
+          logError("row ref is invalid");
           return 0;
         }
         const divWidth = ref.current.offsetWidth;
@@ -318,17 +320,16 @@ export function Column(
     const tileRef = tiles[id].ref as React.RefObject<HTMLDivElement>;
     function splitPercentY(): number {
       if (!ref.current) {
-        console.error("column ref is invalid");
+        logError("column ref is invalid");
         return 0;
       }
       const divHeight = ref.current.offsetHeight;
       const mousePosition = clickedPosition.y - ref.current.getBoundingClientRect().top;
-      console.log("percent is ", (mousePosition / divHeight));
       return mousePosition / divHeight;
     }
     function splitPercentX(): number {
       if (!tileRef.current) {
-        console.error("tile ref is invalid");
+        logError("tile ref is invalid");
         return 0;
       }
       const divWidth = tileRef.current.offsetWidth;
@@ -429,7 +430,7 @@ export function Tile({
     const resizeObserver = new ResizeObserver(() => {
       const domRect = ref.current?.getBoundingClientRect();
       if (domRect === undefined) {
-        console.error("rect is undefined");
+        logError("rect is undefined");
         return;
       }
       const rectangle: Electron.Rectangle = {

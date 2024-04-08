@@ -1,9 +1,10 @@
 import { BrowserView, BrowserViewConstructorOptions, BrowserWindow, Menu } from "electron";
-import * as channels from "../common/channels.ts";
-import { ContextOption, Direction } from "../common/enums.ts";
-import { ContextParams, Vector2 } from "../common/interfaces.ts";
-import { BrowserViewInstance } from "../common/types.ts";
-import { cursorViewportPosition } from "../common/util.ts";
+import * as channels from "./channels.ts";
+import { ContextOption, Direction } from "./enums.ts";
+import { ContextParams, Vector2 } from "./interfaces.ts";
+import { BrowserViewInstance } from "./types.ts";
+import { cursorViewportPosition } from "./util.ts";
+import { logger } from "../common/logger.ts";
 
 export const browserViews: Record<string, BrowserViewInstance> = {};
 
@@ -118,4 +119,18 @@ export function onSetViewUrl(
   url: string
 ) {
   browserViews[id].url = url;
+}
+
+export function onLogInfo(
+  _event: Electron.IpcMainEvent,
+  message: string
+) {
+  logger.info(message);
+}
+
+export function onLogError(
+  _event: Electron.IpcMainEvent,
+  message: string
+) {
+  logger.error(message);
 }

@@ -1,9 +1,10 @@
 import { CSSProperties, ReactElement } from "react";
 import { v4 as uuidv4 } from "uuid";
-import { Column, Row, Tile } from "../renderer/src/components/TileApp";
-import { ColumnProps, ContextParams, RowProps, TileProps } from "./interfaces";
-import { ContextOption, Direction } from "./enums";
-import * as channels from "../common/channels";
+import { Column, Row, Tile } from "../src/components/TileApp";
+import { ColumnProps, ContextParams, RowProps, TileProps } from "../../common/interfaces";
+import { ContextOption, Direction } from "../../common/enums";
+import * as channels from "../../common/channels";
+import { logInfo } from "./util";
 
 export const tiles: Record<string, TileNode> = {};
 
@@ -55,8 +56,8 @@ export class TileNode extends BaseNode {
       resizeBehavior: resizeBehavior
     }: TileProps = {
       id: uuidv4(),
-      contextBehavior: () => { console.log("no splitbehavior"); },
-      resizeBehavior: () => { console.log("no resizebehavior"); }
+      contextBehavior: () => { logInfo("no splitbehavior"); },
+      resizeBehavior: () => { logInfo("no resizebehavior"); }
     },
     parent: ColumnNode | RowNode | null = null
   ) {

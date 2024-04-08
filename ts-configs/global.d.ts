@@ -5,7 +5,6 @@ declare global {
                 channel: string,
                 ...args: unknown[]
             ) => void;
-
             on: (
                 channel: string,
                 listener: (
@@ -13,7 +12,6 @@ declare global {
                     ...args: unknown[]
                 ) => void
             ) => void
-
             once: (
                 channel: string,
                 listener: (
@@ -21,7 +19,6 @@ declare global {
                     ...args: unknown[]
                 ) => void
             ) => Electron.IpcRenderer;
-
             removeListener: (
                 channel: string,
                 listener: (
@@ -29,10 +26,15 @@ declare global {
                     ...args: unknown[]
                 ) => void
             ) => void
-
             isListening: (
                 channel: string
             ) => boolean
+            logInfo: (
+                message: string
+            ) => void
+            logError: (
+                message: string
+            ) => void
         };
     }
 }

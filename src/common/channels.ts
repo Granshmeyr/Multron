@@ -5,3 +5,5 @@ export const setViewRectangle: string = "set-view-rectangle";
 export const setViewUrl: string = "set-view-url";
 export const toggleEditMode: string = "toggle-edit-mode";
 export const mainProcessContextMenu: string = "main-process-context-menu";
+export const logInfo: string = "log-info";
+export const logError: string = "log-error";

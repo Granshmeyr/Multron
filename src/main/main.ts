@@ -1,7 +1,7 @@
 import { BrowserWindow, app, globalShortcut, ipcMain } from "electron";
 import path from "path";
 import * as channels from "../common/channels";
-import { browserViews, onCreateView, onSetViewRectangle, onSetViewUrl, onShowContextMenuAsync } from "./listeners";
+import { browserViews, onCreateView, onLogError, onLogInfo, onSetViewRectangle, onSetViewUrl, onShowContextMenuAsync } from "../common/listeners";
 
 export const editMargin: number = 20;
 export let mainWindow: BrowserWindow | null;
@@ -23,6 +23,12 @@ function main(): void {
   });
   ipcMain.on(channels.setViewUrl, (event, id, url) => {
     onSetViewUrl(event, id, url);
+  });
+  ipcMain.on(channels.logInfo, (event, message) => {
+    onLogInfo(event, message);
+  });
+  ipcMain.on(channels.logError, (event, message) => {
+    onLogError(event, message);
   });
 
   onAppReady(createMainWindow);
@@ -55,9 +61,7 @@ function createMainWindow() {
     width: 1400,
     height: 700
   });
-
   mainWindow.setMenu(null);
-
   mainWindow.on("focus", () => {
     focused = true;
     globalShortcut.register("CommandOrControl+0", () => { return; });
@@ -67,7 +71,6 @@ function createMainWindow() {
     globalShortcut.register("CommandOrControl+_", () => { return; });
     globalShortcut.register("Control+r", () => { return; });
   });
-
   mainWindow.on("blur", () => {
     focused = false;
     globalShortcut.unregister("CommandOrControl+0");
@@ -77,7 +80,6 @@ function createMainWindow() {
     globalShortcut.unregister("CommandOrControl+_");
     globalShortcut.unregister("Control+r");
   });
-
   mainWindow.loadURL(viteURL);
   mainWindow.webContents.openDevTools();
   mainWindow.on("closed", () => mainWindow = null);
@@ -99,7 +101,6 @@ function onEdit() {
   if (!focused) {
     return;
   }
-
   if (editModeEnabled) {
     mainWindow?.webContents.send(channels.toggleEditMode, false);
     editModeEnabled = false;

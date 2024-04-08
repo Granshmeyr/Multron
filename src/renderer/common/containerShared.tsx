@@ -1,6 +1,6 @@
 import React, { ReactElement } from "react";
 import { v4 as uuidv4 } from "uuid";
-import { ColumnHandleProps, RowHandleProps } from "./interfaces";
+import { ColumnHandleProps, RowHandleProps } from "../../common/interfaces";
 import { BaseNode } from "./nodes";
 
 function calculateGrow(

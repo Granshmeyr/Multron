@@ -6,9 +6,8 @@ export function marginizeRectangle(
   margin: number
 ): Electron.Rectangle {
   if (!isRectangleValid(rectangle)) {
-    return { height: 100, width: 100, x: 0, y: 0 };
+    return { height: 100, width: 100, x: 10, y: 10 };
   }
-
   return {
     height: rectangle.height - (margin * 2),
     width: rectangle.width - (margin * 2),
@@ -16,7 +15,6 @@ export function marginizeRectangle(
     y: rectangle.y + margin
   };
 }
-
 export function isRectangleValid(rectangle: Electron.Rectangle): boolean {
   const numbers: number[] = [rectangle.height, rectangle.width, rectangle.x, rectangle.y];
   for (let i = 1; i < numbers.length; i++) {
@@ -27,7 +25,6 @@ export function isRectangleValid(rectangle: Electron.Rectangle): boolean {
   }
   return true;
 }
-
 export function cursorViewportPosition(browserWindow: BrowserWindow): Vector2 {
   const cursorPosition = screen.getCursorScreenPoint();
   const windowBounds = browserWindow.getContentBounds();

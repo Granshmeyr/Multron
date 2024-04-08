@@ -45,3 +45,4 @@ The BrowserViews are unresponsive in their geometry updates when resizing a lot 
 - Tailwind
 - Electron
 - [electron-vite](https://electron-vite.org/)
+- [pino](https://getpino.io/)
