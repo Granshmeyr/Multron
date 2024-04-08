@@ -5,15 +5,19 @@ import { ContextOption, Direction } from "../../../common/enums";
 import { ColumnHandleProps, ColumnProps, ContextParams, RowHandleProps, RowProps, TileProps, Vector2 } from "../../../common/interfaces.ts";
 import { buildTree } from "../../common/containerShared.tsx";
 import { BaseNode, ColumnNode, RowNode, TileNode, TileTree, recordTile, tiles } from "../../common/nodes.tsx";
-import { logError, logInfo, onResize, randomColor } from "../../common/util.ts";
+import { logError, onResize, randomColor } from "../../common/util.ts";
 
 const colors: Record<string, string> = {};
+const fileName: string = "TileApp.tsx";
 let listenerRegistered: boolean = false;
 let clickedPosition: Vector2;
 let editModeEnabled: boolean = false;
 
 export function TileApp(): ReactElement {
-  logInfo("hello from renderer!");
+  const logOptions = {
+    ts: fileName,
+    fn: TileApp.name
+  };
   const ref = useRef<HTMLDivElement>(null);
   const [tileTree] = useState<TileTree>(
     new TileTree(
@@ -40,7 +44,7 @@ export function TileApp(): ReactElement {
       clickedPosition = position;
       function split() {
         if (tiles[id].ref === null) {
-          logError("ref is null");
+          logError(logOptions, "ref is null");
           return;
         }
         tiles[id].split(id, params.direction as Direction);
@@ -72,7 +76,7 @@ export function TileApp(): ReactElement {
     function split() {
       function splitPercentY() {
         if (!ref.current) {
-          logError("Ref is invalid");
+          logError(logOptions, "ref is invalid");
           return;
         }
         const divHeight = ref.current.offsetHeight;
@@ -81,7 +85,7 @@ export function TileApp(): ReactElement {
       }
       function splitPercentX() {
         if (!ref.current) {
-          logError("Ref is invalid");
+          logError(logOptions, "ref is invalid");
           return;
         }
         const divWidth = ref.current.offsetWidth;
@@ -142,6 +146,10 @@ export function TileApp(): ReactElement {
 export function Row(
   { children, forceState, style, initialSplit }: RowProps
 ): ReactElement {
+  const logOptions = {
+    ts: fileName,
+    fn: Row.name
+  };
   const [handlePercents, setHandlePercents] = useState<number[]>(
     [initialSplit === undefined ? 0.5 : initialSplit]
   );
@@ -192,7 +200,7 @@ export function Row(
       const tileRef = tiles[id].ref as React.RefObject<HTMLDivElement>;
       function splitPercentY(): number {
         if (!tileRef.current) {
-          logError("tile ref is invalid");
+          logError(logOptions, "tile ref is invalid");
           return 0;
         }
         const divHeight = tileRef.current.offsetHeight;
@@ -201,7 +209,7 @@ export function Row(
       }
       function splitPercentX(): number {
         if (!ref.current) {
-          logError("row ref is invalid");
+          logError(logOptions, "row ref is invalid");
           return 0;
         }
         const divWidth = ref.current.offsetWidth;
@@ -270,6 +278,10 @@ export function Row(
 export function Column(
   { children, forceState, style, initialSplit }: ColumnProps
 ): ReactElement {
+  const logOptions = {
+    ts: fileName,
+    fn: Column.name
+  };
   const [handlePercents, setHandlePercents] = useState<number[]>(
     [initialSplit === undefined ? 0.5 : initialSplit]
   );
@@ -319,7 +331,7 @@ export function Column(
     const tileRef = tiles[id].ref as React.RefObject<HTMLDivElement>;
     function splitPercentY(): number {
       if (!ref.current) {
-        logError("column ref is invalid");
+        logError(logOptions, "column ref is invalid");
         return 0;
       }
       const divHeight = ref.current.offsetHeight;
@@ -328,7 +340,7 @@ export function Column(
     }
     function splitPercentX(): number {
       if (!tileRef.current) {
-        logError("tile ref is invalid");
+        logError(logOptions, "tile ref is invalid");
         return 0;
       }
       const divWidth = tileRef.current.offsetWidth;
@@ -406,8 +418,11 @@ export function Tile({
   const color = colors[id as string];
 
   useEffect(() => {
+    const logOptions = {
+      ts: fileName,
+      fn: Tile.name
+    };
     tiles[id as string].ref = ref;
-
     if (!browserViewCreated) {
       const options: BrowserViewConstructorOptions = {
         webPreferences: {
@@ -425,11 +440,10 @@ export function Tile({
       window.electronAPI.send(channels.setViewRectangle, id, rectangle);
       setBrowserViewCreated(true);
     }
-
     const resizeObserver = new ResizeObserver(() => {
       const domRect = ref.current?.getBoundingClientRect();
       if (domRect === undefined) {
-        logError("rect is undefined");
+        logError(logOptions, "rect is undefined");
         return;
       }
       const rectangle: Electron.Rectangle = {
@@ -443,15 +457,13 @@ export function Tile({
       }
       resizeBehavior?.(id as string, rectangle);
     });
-
     if (ref.current) {
       resizeObserver.observe(ref.current);
     }
-
     return () => {
       resizeObserver.disconnect();
     };
-  }, [browserViewCreated, resizeBehavior, id]);
+  }, [id, browserViewCreated, resizeBehavior]);
 
   async function showContextMenu(): Promise<ContextParams | null> {
     return new Promise<ContextParams | null>((resolve) => {

@@ -10,8 +10,8 @@ build started...[39m
 transforming...
 [32m✓[39m 86 modules transformed.
 rendering chunks...
-[2mout/main/[22m[36mmain.js  [39m[1m[2m146.87 kB[22m[1m[22m
-[36mbuilt in 1182ms.[39m
+[2mout/main/[22m[36mmain.js  [39m[1m[2m148.17 kB[22m[1m[22m
+[36mbuilt in 1367ms.[39m
 [32m
 build the electron main process successfully[39m
 [90m
@@ -26,7 +26,7 @@ transforming...
 [32m✓[39m 1 modules transformed.
 rendering chunks...
 [2mout/preload/[22m[36mpreload.js  [39m[1m[2m0.65 kB[22m[1m[22m
-[36mbuilt in 21ms.[39m
+[36mbuilt in 18ms.[39m
 [32m
 build the electron preload files successfully[39m
 [90m
@@ -40,6 +40,13 @@ build the electron preload files successfully[39m
 start electron app...
 [39m
 
-{"level":30,"time":1712596520475,"test":"test","msg":"hello!"}
-{"level":30,"time":1712596523047,"msg":"hello from renderer!"}
-{"level":30,"time":1712596523047,"msg":"hello from renderer!"}
+{"level":30,"time":1712620010986,"ts":"main.ts","fn":"main","msg":"Event received: create-view"}
+{"level":30,"time":1712620010987,"ts":"listeners.ts","fn":"onCreateView","msg":"Adding view: { height: 100, width: 100, x: 0, y: 10000 } with id 192d96f0-b8d5-4b07-b888-da95e9fd32b9"}
+{"level":30,"time":1712620010987,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
+{"level":30,"time":1712620010987,"ts":"listeners.ts","fn":"onSetViewRectangle","msg":"Setting rectangle: { height: 665, width: 1388, x: 0, y: 0 } to 192d96f0-b8d5-4b07-b888-da95e9fd32b9"}
+{"level":30,"time":1712620010987,"ts":"main.ts","fn":"main","msg":"Event received: create-view"}
+{"level":30,"time":1712620010988,"ts":"listeners.ts","fn":"onCreateView","msg":"Adding view: { height: 100, width: 100, x: 0, y: 10000 } with id 192d96f0-b8d5-4b07-b888-da95e9fd32b9"}
+{"level":30,"time":1712620010988,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
+{"level":30,"time":1712620010988,"ts":"listeners.ts","fn":"onSetViewRectangle","msg":"Setting rectangle: { height: 665, width: 1388, x: 0, y: 0 } to 192d96f0-b8d5-4b07-b888-da95e9fd32b9"}
+{"level":30,"time":1712620010988,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
+{"level":30,"time":1712620010988,"ts":"listeners.ts","fn":"onSetViewRectangle","msg":"Setting rectangle: { height: 665, width: 1388, x: 0, y: 0 } to 192d96f0-b8d5-4b07-b888-da95e9fd32b9"}

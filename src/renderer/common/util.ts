@@ -7,9 +7,9 @@ export function randomColor() {
 export function onResize(id: string, rectangle: Electron.Rectangle) {
   window.electronAPI.send(channels.setViewRectangle, id, rectangle);
 }
-export function logInfo(message: string) {
-  window.electronAPI.send(channels.logInfo, message);
+export function logInfo(options: unknown, message: string) {
+  window.electronAPI.send(channels.logInfo, options, message);
 }
-export function logError(message: string) {
-  window.electronAPI.send(channels.logError, message);
+export function logError(options: unknown, message: string) {
+  window.electronAPI.send(channels.logError, options, message);
 }

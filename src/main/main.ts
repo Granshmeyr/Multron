@@ -11,27 +11,38 @@ const viteURL: string = "http://localhost:5173";
 const editShortcut: string = "Control+e";
 let focused: boolean = false;
 
+const fileName: string = "main.ts";
+
 function main(): void {
-  const test = logger.child({ test: "test"  });
-  test.info("hello!");
+  const logOptions = {
+    ts: fileName,
+    fn: main.name
+  };
+
   ipcMain.on(channels.showContextMenuAsync, async (event) => {
+    logger.info(logOptions, `Event received:: ${channels.showContextMenuAsync}`);
     const result = await onShowContextMenuAsync();
     event.reply(channels.showContextMenuResponse, result);
   });
   ipcMain.on(channels.createView, (event, id, options) => {
+    logger.info(logOptions, `Event received: ${channels.createView}`);
     onCreateView(event, id, mainWindow as BrowserWindow, options);
   });
   ipcMain.on(channels.setViewRectangle, (event, id, rectangle) => {
+    logger.info(logOptions, `Event received: ${channels.setViewRectangle}`);
     onSetViewRectangle(event, id, rectangle);
   });
   ipcMain.on(channels.setViewUrl, (event, id, url) => {
+    logger.info(logOptions, `Event received: ${channels.setViewUrl}`);
     onSetViewUrl(event, id, url);
   });
-  ipcMain.on(channels.logInfo, (event, message) => {
-    onLogInfo(event, message);
+  ipcMain.on(channels.logInfo, (event, options, message) => {
+    logger.info(logOptions, `Event received: ${channels.logInfo}`);
+    onLogInfo(event, options, message);
   });
-  ipcMain.on(channels.logError, (event, message) => {
-    onLogError(event, message);
+  ipcMain.on(channels.logError, (event, options, message) => {
+    logger.info(logOptions, `Event received: ${channels.logError}`);
+    onLogError(event, options, message);
   });
 
   onAppReady(createMainWindow);
@@ -84,7 +95,7 @@ function createMainWindow() {
     globalShortcut.unregister("Control+r");
   });
   mainWindow.loadURL(viteURL);
-  //mainWindow.webContents.openDevTools();
+  mainWindow.webContents.openDevTools();
   mainWindow.on("closed", () => mainWindow = null);
 }
 
@@ -101,10 +112,16 @@ async function onAppReady(
 }
 
 function onEdit() {
+  const logOptions = {
+    ts: fileName,
+    fn: onEdit.name
+  };
+
   if (!focused) {
     return;
   }
   if (editModeEnabled) {
+    logger.info(logOptions, "Enabling edit mode");
     mainWindow?.webContents.send(channels.toggleEditMode, false);
     editModeEnabled = false;
     for (const id in browserViews) {
@@ -112,6 +129,7 @@ function onEdit() {
     }
   }
   else {
+    logger.info(logOptions, "Disabling edit mode");
     mainWindow?.webContents.send(channels.toggleEditMode, true);
     editModeEnabled = true;
     for (const id in browserViews) {

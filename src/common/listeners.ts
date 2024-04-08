@@ -102,6 +102,14 @@ export function onCreateView(
     case "out": zoomOut(); break;
     }
   });
+  const rect: Electron.Rectangle = view.getBounds();
+  logger.info(
+    {
+      ts: "listeners.ts",
+      fn: onCreateView.name
+    },
+    `Adding view: { height: ${rect.height}, width: ${rect.width}, x: ${rect.x}, y: ${rect.y} } with id ${id}`
+  );
   mainWindow.addBrowserView(view);
 }
 
@@ -110,7 +118,12 @@ export function onSetViewRectangle(
   id: string,
   rectangle: Electron.Rectangle
 ) {
-  browserViews[id].rectangle = rectangle;
+  const rect = rectangle;
+  logger.info({
+    ts: "listeners.ts",
+    fn: onSetViewRectangle.name
+  }, `Setting rectangle: { height: ${rect.height}, width: ${rect.width}, x: ${rect.x}, y: ${rect.y} } to ${id}`);
+  browserViews[id].rectangle = rect;
 }
 
 export function onSetViewUrl(
@@ -118,19 +131,25 @@ export function onSetViewUrl(
   id: string,
   url: string
 ) {
+  logger.info({
+    ts: "listeners.ts",
+    fn: onSetViewUrl.name
+  }, `Setting URL: ${url} to ${id}`);
   browserViews[id].url = url;
 }
 
 export function onLogInfo(
   _event: Electron.IpcMainEvent,
+  options: unknown,
   message: string
 ) {
-  logger.info(message);
+  logger.info(options, message);
 }
 
 export function onLogError(
   _event: Electron.IpcMainEvent,
+  options: unknown,
   message: string
 ) {
-  logger.error(message);
+  logger.error(options, message);
 }
