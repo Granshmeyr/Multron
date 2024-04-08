@@ -1,5 +1,5 @@
 import React from "react";
-import { Direction } from "./enums";
+import { ContextOption, Direction } from "./enums";
 import { BaseNode } from "./nodes";
 
 export interface TileProps {
@@ -7,7 +7,7 @@ export interface TileProps {
   style?: React.CSSProperties;
   id?: string;
   url?: URL;
-  splitBehavior: (id: string, direction: Direction) => void;
+  contextBehavior: (id: string, params: ContextParams) => void;
   resizeBehavior: (id: string, rectangle: Electron.Rectangle) => void;
 }
 export interface RowProps {
@@ -25,3 +25,8 @@ export interface ColumnProps {
 export interface ColumnHandleProps { onMouseDown: (e: React.DragEvent<HTMLDivElement>) => void; }
 export interface RowHandleProps { onMouseDown: (e: React.DragEvent<HTMLDivElement>) => void; }
 export interface Vector2 { x: number, y: number }
+export interface ContextParams {
+  option: ContextOption,
+  direction?: Direction,
+  url?: string
+}

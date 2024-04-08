@@ -1,7 +1,7 @@
-import { app, BrowserWindow, ipcMain, globalShortcut } from "electron";
+import { BrowserWindow, app, globalShortcut, ipcMain } from "electron";
 import path from "path";
-import { onShowSplitMenuAsync, onSetBrowserView, browserViews } from "./listeners";
 import * as channels from "../common/channels";
+import { browserViews, onCreateView, onSetViewRectangle, onSetViewUrl, onShowContextMenuAsync } from "./listeners";
 
 export const editMargin: number = 20;
 export let mainWindow: BrowserWindow | null;
@@ -11,13 +11,18 @@ const editShortcut: string = "Control+e";
 let focused: boolean = false;
 
 function main(): void {
-  ipcMain.on(channels.showSplitMenu, async (event) => {
-    const result = await onShowSplitMenuAsync();
-    event.reply(channels.showSplitMenuResponse, result);
+  ipcMain.on(channels.showContextMenuAsync, async (event) => {
+    const result = await onShowContextMenuAsync();
+    event.reply(channels.showContextMenuResponse, result);
   });
-
-  ipcMain.on(channels.setBrowserView, (event, id, rectangle) => {
-    onSetBrowserView(event, id, rectangle, mainWindow as BrowserWindow);
+  ipcMain.on(channels.createView, (event, id, options) => {
+    onCreateView(event, id, mainWindow as BrowserWindow, options);
+  });
+  ipcMain.on(channels.setViewRectangle, (event, id, rectangle) => {
+    onSetViewRectangle(event, id, rectangle);
+  });
+  ipcMain.on(channels.setViewUrl, (event, id, url) => {
+    onSetViewUrl(event, id, url);
   });
 
   onAppReady(createMainWindow);
@@ -25,18 +30,15 @@ function main(): void {
   app.on("ready", () => {
     globalShortcut.register(editShortcut, onEdit);
   });
-
   app.on("will-quit", () => {
     globalShortcut.unregister(editShortcut);
     globalShortcut.unregisterAll();
   });
-
   app.on("window-all-closed", () => {
     if (process.platform !== "darwin") {
       app.quit();
     }
   });
-
   app.on("activate", () => {
     if (mainWindow == null) {
       createMainWindow();
@@ -109,7 +111,7 @@ function onEdit() {
     mainWindow?.webContents.send(channels.toggleEditMode, true);
     editModeEnabled = true;
     for (const id in browserViews) {
-      browserViews[id].shrink(editMargin);
+      browserViews[id].shrink();
     }
   }
 }

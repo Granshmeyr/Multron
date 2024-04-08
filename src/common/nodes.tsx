@@ -1,8 +1,9 @@
 import { CSSProperties, ReactElement } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { Column, Row, Tile } from "../renderer/src/components/TileApp";
-import { Direction } from "./enums";
-import { ColumnProps, RowProps, TileProps } from "./interfaces";
+import { ColumnProps, ContextParams, RowProps, TileProps } from "./interfaces";
+import { ContextOption, Direction } from "./enums";
+import * as channels from "../common/channels";
 
 export const tiles: Record<string, TileNode> = {};
 
@@ -32,7 +33,6 @@ export abstract class ContainerNode extends BaseNode {
   abstract set initialSplit(value: number);
   abstract get style(): React.CSSProperties | undefined;
   abstract set style(value: React.CSSProperties);
-  abstract appendStyle(style: React.CSSProperties): void;
 }
 
 export class TileNode extends BaseNode {
@@ -42,7 +42,7 @@ export class TileNode extends BaseNode {
   private _style?: React.CSSProperties;
   private _id: string;
   private _url?: URL;
-  private _splitBehavior: (id: string, direction: Direction) => void;
+  private _contextBehavior: (id: string, params: ContextParams) => void;
   private _resizeBehavior: (id: string, rectangle: Electron.Rectangle) => void;
 
   constructor(
@@ -51,11 +51,11 @@ export class TileNode extends BaseNode {
       style: style,
       id: id = uuidv4(),
       url: url,
-      splitBehavior: splitBehavior,
+      contextBehavior: splitBehavior,
       resizeBehavior: resizeBehavior
     }: TileProps = {
       id: uuidv4(),
-      splitBehavior: () => { console.log("no splitbehavior"); },
+      contextBehavior: () => { console.log("no splitbehavior"); },
       resizeBehavior: () => { console.log("no resizebehavior"); }
     },
     parent: ColumnNode | RowNode | null = null
@@ -67,14 +67,14 @@ export class TileNode extends BaseNode {
       style: style,
       id: id,
       url: url,
-      splitBehavior: splitBehavior,
+      contextBehavior: splitBehavior,
       resizeBehavior: resizeBehavior,
     };
     this._className = className;
     this._style = style;
     this._id = id;
     this._url = url;
-    this._splitBehavior = splitBehavior;
+    this._contextBehavior = splitBehavior;
     this._resizeBehavior = resizeBehavior;
   }
 
@@ -84,7 +84,7 @@ export class TileNode extends BaseNode {
       style={this.style}
       id={this.id}
       url={this.url}
-      splitBehavior={this._splitBehavior}
+      contextBehavior={this._contextBehavior}
       resizeBehavior={this._resizeBehavior}>
     </Tile>;
   }
@@ -92,7 +92,6 @@ export class TileNode extends BaseNode {
   getProps(): TileProps { return this._props; }
   setProps(props: TileProps) { this._props = props; }
   appendProps(props: TileProps) { this._props = { ...this._props, ...props }; }
-
   get className(): string | undefined { return this._className; }
   set className(value: string) {
     this._className = value;
@@ -113,13 +112,16 @@ export class TileNode extends BaseNode {
   set url(value: URL) {
     this._url = value;
     this.setProps({ ...this._props, url: value });
+    window.electronAPI.send(channels.setViewUrl, this.id, value.toString());
   }
-  split(id: string, direction: Direction) { this._splitBehavior(id, direction); }
-  setSplitBehavior(value: (id: string, direction: Direction) => void) {
-    this._splitBehavior = value;
-    this.setProps({ ...this._props, splitBehavior: value });
+  split(id: string, direction: Direction) {
+    this._contextBehavior(id, { option: ContextOption.Split, direction: direction });
   }
-  resize(id: string, rectangle: Electron.Rectangle) { return this._resizeBehavior(id, rectangle); }
+  setContextBehavior(value: (id: string, params: ContextParams) => void) {
+    this._contextBehavior = value;
+    this.setProps({ ...this._props, contextBehavior: value });
+  }
+  resize(id: string, rectangle: Electron.Rectangle) { this._resizeBehavior(id, rectangle); }
   setResizeBehavior(value: (id: string, rectangle: Electron.Rectangle) => void) {
     this._resizeBehavior = value;
     this.setProps({ ...this._props, resizeBehavior: value });

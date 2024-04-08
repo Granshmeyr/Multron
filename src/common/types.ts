@@ -1,62 +1,87 @@
 import { BrowserView } from "electron";
-import { isRectangleValid, marginizeRectangle } from "./util";
+import { marginizeRectangle } from "./util";
+import { editMargin } from "../main/main";
 
 export class BrowserViewInstance {
   browserView: BrowserView;
-  currentMargin: number | null = null;
-  private _rectangle: Electron.Rectangle;
+  private _url: string | null = null;
+  private _rectangle: Electron.Rectangle= { height: 100, width: 100, x: 0, y: 0 };
+  private margin: number = editMargin;
+  private hidden: boolean = false;
+  private margined: boolean = false;
 
   constructor(browserView: BrowserView) {
     this.browserView = browserView;
-    this._rectangle = this.browserView.getBounds();
-  }
-
-  set rectangle(value: Electron.Rectangle) {
-    if (!isRectangleValid(value)) {
-      console.error("Rectangle contains non-integer.");
-      this._rectangle = { height: 100, width: 100, x: 0, y: 0 };
-    }
-    else {
-      this._rectangle = value;
-    }
-
-    this.browserView.setBounds(this.rectangle);
+    this.hide();
   }
 
   get rectangle(): Electron.Rectangle {
     return this._rectangle;
   }
+  set rectangle(value: Electron.Rectangle) {
+    this._rectangle = value;
+    if (this.hidden) {
+      return;
+    }
+    if (this.margined) {
+      this.browserView.setBounds(marginizeRectangle(value, this.margin));
+    }
+    else {
+      this.browserView.setBounds(value);
+    }
+  }
+  get url(): string | null { return this._url; }
+  set url(value: string) {
+    const unhide: boolean = this.url === null;
+    this._url = value;
+    this.browserView.webContents.loadURL(value);
+    if (unhide) {
+      this.unhide();
+    }
+  }
 
   hide() {
+    if (this.hidden) {
+      return;
+    }
     this.browserView.setBounds({
       ...this.rectangle,
       y: this.rectangle.y + 10000
     });
+    this.hidden = true;
   }
 
   unhide() {
-    this.browserView.setBounds(this.rectangle);
-  }
-
-  shrink(margin: number) {
-    if (!Number.isInteger(margin)) {
-      console.error("Margin must be an integer");
+    if (
+      !this.hidden ||
+      this.url === null
+    ) {
       return;
     }
-    const marginRectangle = marginizeRectangle(this._rectangle, margin);
-    this.browserView.setBounds(marginizeRectangle(marginRectangle, margin));
-    this.rectangle = marginRectangle;
-    this.currentMargin = margin;
+    this.browserView.setBounds(this.rectangle);
+    this.hidden = false;
+  }
+
+  shrink() {
+    if (
+      this.margined ||
+      this.margin === null ||
+      !Number.isInteger(this.margin)
+    ) {
+      return;
+    }
+    this.rectangle = marginizeRectangle(this.rectangle, this.margin as number);
+    this.margined = true;
   }
 
   unshrink() {
-    if (this.currentMargin === null) {
-      console.error("Rectangle is not marginized");
+    if (
+      !this.margined ||
+      this.margin === null
+    ) {
       return;
     }
-    const marginRectangle = marginizeRectangle(this._rectangle, -this.currentMargin);
-    this.browserView.setBounds(marginRectangle);
-    this.rectangle = marginRectangle;
-    this.currentMargin = null;
+    this.margined = false;
+    this.rectangle = marginizeRectangle(this.rectangle, -this.margin);
   }
 }

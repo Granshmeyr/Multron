@@ -1,15 +1,15 @@
-import { BrowserView, BrowserWindow, Menu } from "electron";
+import { BrowserView, BrowserViewConstructorOptions, BrowserWindow, Menu } from "electron";
 import * as channels from "../common/channels.ts";
-import { Direction } from "../common/enums.ts";
+import { ContextOption, Direction } from "../common/enums.ts";
+import { ContextParams, Vector2 } from "../common/interfaces.ts";
 import { BrowserViewInstance } from "../common/types.ts";
-import { cursorViewportPosition, marginizeRectangle } from "../common/util.ts";
-import { editMargin, editModeEnabled } from "./main.ts";
+import { cursorViewportPosition } from "../common/util.ts";
 
 export const browserViews: Record<string, BrowserViewInstance> = {};
 
-export async function onShowSplitMenuAsync(): Promise<Direction | null> {
-  return new Promise<Direction | null>((resolve) => {
-    let direction: Direction | null = null;
+export async function onShowContextMenuAsync(): Promise<ContextParams | null> {
+  return new Promise<ContextParams | null>((resolve) => {
+    let params: ContextParams | null = null;
     let setFinished: (value: boolean) => void;
 
     const finished: Promise<boolean> = new Promise<boolean>(
@@ -22,28 +22,42 @@ export async function onShowSplitMenuAsync(): Promise<Direction | null> {
       {
         label: "Split Up",
         click: () => {
-          direction = Direction.Up;
+          params = { option: ContextOption.Split, direction: Direction.Up };
           setFinished(true);
         }
       },
       {
         label: "Split Down",
         click: () => {
-          direction = Direction.Down;
+          params = { option: ContextOption.Split, direction: Direction.Down };
           setFinished(true);
         }
       },
       {
         label: "Split Left",
         click: () => {
-          direction = Direction.Left;
+          params = { option: ContextOption.Split, direction: Direction.Left };
           setFinished(true);
         }
       },
       {
         label: "Split Right",
         click: () => {
-          direction = Direction.Right;
+          params = { option: ContextOption.Split, direction: Direction.Right };
+          setFinished(true);
+        }
+      },
+      {
+        label: "Set URL",
+        click: () => {
+          params = { option: ContextOption.SetUrl, url: "https://www.google.com" };
+          setFinished(true);
+        }
+      },
+      {
+        label: "Delete",
+        click: () => {
+          params = { option: ContextOption.Delete };
           setFinished(true);
         }
       }
@@ -54,62 +68,54 @@ export async function onShowSplitMenuAsync(): Promise<Direction | null> {
     menu.once("menu-will-close", async () => {
       const timeout = new Promise<void>((resolve) => setTimeout(resolve));
       await Promise.race([finished, timeout]);
-      resolve(direction);
+      resolve(params);
     });
   });
 }
 
-export function onSetBrowserView(
+export function onCreateView(
   _event: Electron.IpcMainEvent,
   id: string,
-  rectangle: Electron.Rectangle,
   mainWindow: BrowserWindow,
-  margin: number = 0
+  options?: BrowserViewConstructorOptions
 ) {
-  if (editModeEnabled) {
-    margin = editMargin;
-  }
-
-  const marginRectangle = marginizeRectangle(rectangle, margin);
-
-  if (!(id in browserViews)) {
-    const browserView = new BrowserView({
-      webPreferences: {
-        enablePreferredSizeMode: true,
-        disableHtmlFullscreenWindowResize: true
-      }
-    });
-    browserView.webContents.loadURL("https://www.google.com");
-    browserView.webContents.on("context-menu", async () => {
-      const position = cursorViewportPosition(mainWindow);
-      const direction = await onShowSplitMenuAsync();
-      mainWindow.webContents.send(
-        channels.browserViewSplit, id, direction, position
-      );
-    });
-    browserView.webContents.on("zoom-changed", (_, zoomDirection) => {
-      const currentZoom = browserView.webContents.getZoomLevel();
-      function zoomIn() {
-        browserView.webContents.setZoomLevel(currentZoom + 0.1);
-      }
-      function zoomOut() {
-        browserView.webContents.setZoomLevel(currentZoom - 0.1);
-      }
-      (() => {
-        switch (zoomDirection) {
-        case "in": zoomIn(); return;
-        case "out": zoomOut(); return;
-        }
-      })();
-    });
-    mainWindow.addBrowserView(browserView);
-    browserViews[id] = new BrowserViewInstance(browserView);
-    browserViews[id].rectangle = marginRectangle;
-    if (editModeEnabled) {
-      browserViews[id].currentMargin = margin;
+  browserViews[id] = new BrowserViewInstance(new BrowserView(options));
+  const view = browserViews[id].browserView;
+  view.webContents.on("context-menu", async () => {
+    const position: Vector2 = cursorViewportPosition(mainWindow);
+    const params: ContextParams | null = await onShowContextMenuAsync();
+    mainWindow.webContents.send(
+      channels.mainProcessContextMenu, id, params, position
+    );
+  });
+  view.webContents.on("zoom-changed", (_, zoomDirection) => {
+    const currentZoom = view.webContents.getZoomLevel();
+    function zoomIn() {
+      view.webContents.setZoomLevel(currentZoom + 0.1);
     }
-    return;
-  }
+    function zoomOut() {
+      view.webContents.setZoomLevel(currentZoom - 0.1);
+    }
+    switch (zoomDirection) {
+    case "in": zoomIn(); break;
+    case "out": zoomOut(); break;
+    }
+  });
+  mainWindow.addBrowserView(view);
+}
 
-  browserViews[id].rectangle = marginRectangle;
+export function onSetViewRectangle(
+  _event: Electron.IpcMainEvent,
+  id: string,
+  rectangle: Electron.Rectangle
+) {
+  browserViews[id].rectangle = rectangle;
+}
+
+export function onSetViewUrl(
+  _event: Electron.IpcMainEvent,
+  id: string,
+  url: string
+) {
+  browserViews[id].url = url;
 }
