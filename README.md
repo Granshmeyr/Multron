@@ -29,7 +29,8 @@ Utilizes Electron's [BrowserView](https://www.electronjs.org/docs/latest/api/bro
 
 - `npm install`
 - `npm run dev`
-	- `run-with-klogg.ps1` is a helper script which runs MultronView and opens log output for filtering with [Klogg](https://klogg.filimonov.dev/). Requires `klogg` in PATH.
+	- `run-with-logviewplus.ps1` runs [LogViewPlus](https://www.logviewplus.com/) on the side and opens `log.txt` automatically. Requires `LogViewPlus.exe` in path.
+	- `LogViewPlusSettings.xml` is included in the project root with an included parser.
 
 ---
 
