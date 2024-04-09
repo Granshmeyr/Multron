@@ -5,10 +5,11 @@ import { ContextParams, Vector2 } from "./interfaces.ts";
 import { BrowserViewInstance } from "./types.ts";
 import { cursorViewportPosition } from "./util.ts";
 import { logger } from "../common/logger.ts";
+import * as prefixes from "../common/logPrefixes.ts";
 
 export const browserViews: Record<string, BrowserViewInstance> = {};
 
-export async function onShowContextMenuAsync(): Promise<ContextParams | null> {
+export function onShowContextMenu(): Promise<ContextParams | null> {
   return new Promise<ContextParams | null>((resolve) => {
     let params: ContextParams | null = null;
     let setFinished: (value: boolean) => void;
@@ -80,37 +81,36 @@ export function onCreateView(
   mainWindow: BrowserWindow,
   options?: BrowserViewConstructorOptions
 ) {
-  browserViews[id] = new BrowserViewInstance(new BrowserView(options));
-  const view = browserViews[id].browserView;
-  view.webContents.on("context-menu", async () => {
-    const position: Vector2 = cursorViewportPosition(mainWindow);
-    const params: ContextParams | null = await onShowContextMenuAsync();
-    mainWindow.webContents.send(
-      channels.mainProcessContextMenu, id, params, position
+  return new Promise<boolean>((resolve) => {
+    browserViews[id] = new BrowserViewInstance(new BrowserView(options));
+    const view = browserViews[id].browserView;
+    view.webContents.on("context-menu", async () => {
+      const position: Vector2 = cursorViewportPosition(mainWindow);
+      const params: ContextParams | null = await onShowContextMenu();
+      mainWindow.webContents.send(
+        channels.mainProcessContextMenu, id, params, position
+      );
+    });
+    view.webContents.on("zoom-changed", (_, zoomDirection) => {
+      const currentZoom = view.webContents.getZoomLevel();
+      function zoomIn() {
+        view.webContents.setZoomLevel(currentZoom + 0.1);
+      }
+      function zoomOut() {
+        view.webContents.setZoomLevel(currentZoom - 0.1);
+      }
+      switch (zoomDirection) {
+      case "in": zoomIn(); break;
+      case "out": zoomOut(); break;
+      }
+    });
+    const rect: Electron.Rectangle = view.getBounds();
+    logger.info({ ts: "listeners.ts", fn: onCreateView.name },
+      `${prefixes.addingView}: { height: ${rect.height}, width: ${rect.width}, x: ${rect.x}, y: ${rect.y} } under key ${id}`
     );
+    mainWindow.addBrowserView(view);
+    resolve(true);
   });
-  view.webContents.on("zoom-changed", (_, zoomDirection) => {
-    const currentZoom = view.webContents.getZoomLevel();
-    function zoomIn() {
-      view.webContents.setZoomLevel(currentZoom + 0.1);
-    }
-    function zoomOut() {
-      view.webContents.setZoomLevel(currentZoom - 0.1);
-    }
-    switch (zoomDirection) {
-    case "in": zoomIn(); break;
-    case "out": zoomOut(); break;
-    }
-  });
-  const rect: Electron.Rectangle = view.getBounds();
-  logger.info(
-    {
-      ts: "listeners.ts",
-      fn: onCreateView.name
-    },
-    `Adding view: { height: ${rect.height}, width: ${rect.width}, x: ${rect.x}, y: ${rect.y} } with id ${id}`
-  );
-  mainWindow.addBrowserView(view);
 }
 
 export function onSetViewRectangle(
@@ -119,10 +119,9 @@ export function onSetViewRectangle(
   rectangle: Electron.Rectangle
 ) {
   const rect = rectangle;
-  logger.info({
-    ts: "listeners.ts",
-    fn: onSetViewRectangle.name
-  }, `Setting rectangle: { height: ${rect.height}, width: ${rect.width}, x: ${rect.x}, y: ${rect.y} } to ${id}`);
+  logger.info({ ts: "listeners.ts", fn: onSetViewRectangle.name },
+    `${prefixes.setting}: rectangle "{ height: ${rect.height}, width: ${rect.width}, x: ${rect.x}, y: ${rect.y} }" browserViews[${id}]`
+  );
   browserViews[id].rectangle = rect;
 }
 
@@ -131,10 +130,9 @@ export function onSetViewUrl(
   id: string,
   url: string
 ) {
-  logger.info({
-    ts: "listeners.ts",
-    fn: onSetViewUrl.name
-  }, `Setting URL: ${url} to ${id}`);
+  logger.info({ ts: "listeners.ts", fn: onSetViewUrl.name },
+    `${prefixes.setting}: url "${url}" to browserViews[${id}]`
+  );
   browserViews[id].url = url;
 }
 

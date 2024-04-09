@@ -1,0 +1,12 @@
+export const invalidValue: string = "Invalid value";
+export const toggling: string = "Toggling";
+export const eventReceived: string = "Event received";
+export const setting: string = "Setting";
+export const addingView: string = "Adding view";
+export const creatingView: string = "Creating view";
+export const viewNotCreated: string = "View not created";
+export const displaying: string = "Displaying";
+export const userSelected: string = "User selected";
+export const listeningOn: string = "Listening on";
+export const listeningOnce: string = "Listening once";
+export const sendingEvent: string = "Sending event";
