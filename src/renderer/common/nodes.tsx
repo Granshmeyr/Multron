@@ -1,12 +1,14 @@
 import { CSSProperties, ReactElement } from "react";
 import { v4 as uuidv4 } from "uuid";
-import { Column, Row, Tile } from "../src/components/TileApp";
-import { ColumnProps, ContextParams, RowProps, TileProps } from "../../common/interfaces";
+import * as ch from "../../common/channels";
 import { ContextOption, Direction } from "../../common/enums";
-import * as channels from "../../common/channels";
-import { logInfo } from "./util";
+import { ColumnProps, ContextParams, RowProps, TileProps } from "../../common/interfaces";
+import { Column, Row, Tile } from "../src/components/TileApp";
+import * as log from "../common/loggerUtil";
+import * as pre from "../../common/logPrefixes";
 
 export const tiles: Record<string, TileNode> = {};
+const fileName: string = "nodes.tsx";
 
 export class TileTree {
   root: BaseNode;
@@ -56,8 +58,13 @@ export class TileNode extends BaseNode {
       resizeBehavior: resizeBehavior
     }: TileProps = {
       id: uuidv4(),
-      contextBehavior: () => { logInfo("no splitbehavior"); },
-      resizeBehavior: () => { logInfo("no resizebehavior"); }
+      contextBehavior: () => {
+        log.info({
+          ts: fileName, fn: `${TileNode.name}.constructor`
+        }, `${pre.missing}: contextBehavior param`); },
+      resizeBehavior: () => { log.info({
+        ts: fileName, fn: `${TileNode.name}.constructor`
+      }, `${pre.missing}: resizeBehavior param`); }
     },
     parent: ColumnNode | RowNode | null = null
   ) {
@@ -113,7 +120,7 @@ export class TileNode extends BaseNode {
   set url(value: URL) {
     this._url = value;
     this.setProps({ ...this._props, url: value });
-    window.electronAPI.send(channels.setViewUrl, this.id, value.toString());
+    window.electronAPI.send(ch.setViewUrl, this.id, value.toString());
   }
   split(id: string, direction: Direction) {
     this._contextBehavior(id, { option: ContextOption.Split, direction: direction });

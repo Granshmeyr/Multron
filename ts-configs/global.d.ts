@@ -35,6 +35,10 @@ declare global {
             logError: (
                 message: string
             ) => void
+            invoke: (
+                channel: string,
+                ...args: unknown[]
+            ) => Promise<unknown>
         };
     }
 }

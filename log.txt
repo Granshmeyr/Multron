@@ -10,8 +10,8 @@ build started...[39m
 transforming...
 [32m✓[39m 87 modules transformed.
 rendering chunks...
-[2mout/main/[22m[36mmain.js  [39m[1m[2m148.30 kB[22m[1m[22m
-[36mbuilt in 1220ms.[39m
+[2mout/main/[22m[36mmain.js  [39m[1m[2m148.33 kB[22m[1m[22m
+[36mbuilt in 377ms.[39m
 [32m
 build the electron main process successfully[39m
 [90m
@@ -25,8 +25,8 @@ build started...[39m
 transforming...
 [32m✓[39m 1 modules transformed.
 rendering chunks...
-[2mout/preload/[22m[36mpreload.js  [39m[1m[2m0.65 kB[22m[1m[22m
-[36mbuilt in 21ms.[39m
+[2mout/preload/[22m[36mpreload.js  [39m[1m[2m0.75 kB[22m[1m[22m
+[36mbuilt in 20ms.[39m
 [32m
 build the electron preload files successfully[39m
 [90m
@@ -40,544 +40,145 @@ build the electron preload files successfully[39m
 start electron app...
 [39m
 
-{"level":30,"time":1712676096621,"ts":"TileApp.tsx","fn":"TileApp","msg":"Listening on: toggle-edit-mode"}
-{"level":30,"time":1712676096621,"ts":"TileApp.tsx","fn":"TileApp","msg":"Listening on: main-process-context-menu"}
-{"level":30,"time":1712676096622,"ts":"TileApp.tsx","fn":"Tile","msg":"View not created: id \"2ad7468c-6d5b-4464-86aa-b3f9ee42c423\""}
-{"level":30,"time":1712676096622,"ts":"TileApp.tsx","fn":"Tile","msg":"Creating view: id \"2ad7468c-6d5b-4464-86aa-b3f9ee42c423\""}
-{"level":30,"time":1712676096622,"ts":"util.ts","fn":"tryForSuccess","msg":"Sending event: create-view"}
-{"level":30,"time":1712676096622,"ts":"main.ts","fn":"main","msg":"Event received: create-view"}
-{"level":30,"time":1712676096623,"ts":"listeners.ts","fn":"onCreateView","msg":"Adding view: { height: 100, width: 100, x: 0, y: 10000 } under key 2ad7468c-6d5b-4464-86aa-b3f9ee42c423"}
-{"level":30,"time":1712676096623,"ts":"util.ts","fn":"tryForSuccess","msg":"Listening once: create-view"}
-{"level":30,"time":1712676096623,"ts":"TileApp.tsx","fn":"Tile","msg":"View not created: id \"2ad7468c-6d5b-4464-86aa-b3f9ee42c423\""}
-{"level":30,"time":1712676096623,"ts":"TileApp.tsx","fn":"Tile","msg":"Creating view: id \"2ad7468c-6d5b-4464-86aa-b3f9ee42c423\""}
-{"level":30,"time":1712676096623,"ts":"util.ts","fn":"tryForSuccess","msg":"Sending event: create-view"}
-{"level":30,"time":1712676096623,"ts":"main.ts","fn":"main","msg":"Event received: create-view"}
-{"level":30,"time":1712676096624,"ts":"listeners.ts","fn":"onCreateView","msg":"Adding view: { height: 100, width: 100, x: 0, y: 10000 } under key 2ad7468c-6d5b-4464-86aa-b3f9ee42c423"}
-{"level":30,"time":1712676096624,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676096627,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676100603,"ts":"TileApp.tsx","fn":"Tile","msg":"Displaying: Context Menu"}
-{"level":30,"time":1712676100603,"ts":"TileApp.tsx","fn":"Tile","msg":"Sending event: show-context-menu"}
-{"level":30,"time":1712676100604,"ts":"main.ts","fn":"main","msg":"Event received: show-context-menu"}
-{"level":30,"time":1712676101729,"ts":"TileApp.tsx","fn":"Tile","msg":"User selected: Split"}
-{"level":30,"time":1712676101731,"ts":"TileApp.tsx","fn":"Tile","msg":"View not created: id \"294f37dc-aa51-4971-a304-23ef433b734f\""}
-{"level":30,"time":1712676101731,"ts":"TileApp.tsx","fn":"Tile","msg":"Creating view: id \"294f37dc-aa51-4971-a304-23ef433b734f\""}
-{"level":30,"time":1712676101731,"ts":"util.ts","fn":"tryForSuccess","msg":"Sending event: create-view"}
-{"level":30,"time":1712676101731,"ts":"main.ts","fn":"main","msg":"Event received: create-view"}
-{"level":30,"time":1712676101732,"ts":"listeners.ts","fn":"onCreateView","msg":"Adding view: { height: 100, width: 100, x: 0, y: 10000 } under key 294f37dc-aa51-4971-a304-23ef433b734f"}
-{"level":30,"time":1712676101732,"ts":"util.ts","fn":"tryForSuccess","msg":"Listening once: create-view"}
-{"level":30,"time":1712676101732,"ts":"TileApp.tsx","fn":"Tile","msg":"View not created: id \"2ad7468c-6d5b-4464-86aa-b3f9ee42c423\""}
-{"level":30,"time":1712676101732,"ts":"TileApp.tsx","fn":"Tile","msg":"Creating view: id \"2ad7468c-6d5b-4464-86aa-b3f9ee42c423\""}
-{"level":30,"time":1712676101732,"ts":"util.ts","fn":"tryForSuccess","msg":"Sending event: create-view"}
-{"level":30,"time":1712676101732,"ts":"main.ts","fn":"main","msg":"Event received: create-view"}
-{"level":30,"time":1712676101733,"ts":"listeners.ts","fn":"onCreateView","msg":"Adding view: { height: 100, width: 100, x: 0, y: 10000 } under key 2ad7468c-6d5b-4464-86aa-b3f9ee42c423"}
-{"level":30,"time":1712676101733,"ts":"TileApp.tsx","fn":"Tile","msg":"View not created: id \"294f37dc-aa51-4971-a304-23ef433b734f\""}
-{"level":30,"time":1712676101733,"ts":"TileApp.tsx","fn":"Tile","msg":"Creating view: id \"294f37dc-aa51-4971-a304-23ef433b734f\""}
-{"level":30,"time":1712676101733,"ts":"util.ts","fn":"tryForSuccess","msg":"Sending event: create-view"}
-{"level":30,"time":1712676101733,"ts":"main.ts","fn":"main","msg":"Event received: create-view"}
-{"level":30,"time":1712676101733,"ts":"listeners.ts","fn":"onCreateView","msg":"Adding view: { height: 100, width: 100, x: 0, y: 10000 } under key 294f37dc-aa51-4971-a304-23ef433b734f"}
-{"level":30,"time":1712676101734,"ts":"TileApp.tsx","fn":"Tile","msg":"View not created: id \"2ad7468c-6d5b-4464-86aa-b3f9ee42c423\""}
-{"level":30,"time":1712676101734,"ts":"TileApp.tsx","fn":"Tile","msg":"Creating view: id \"2ad7468c-6d5b-4464-86aa-b3f9ee42c423\""}
-{"level":30,"time":1712676101734,"ts":"util.ts","fn":"tryForSuccess","msg":"Sending event: create-view"}
-{"level":30,"time":1712676101734,"ts":"main.ts","fn":"main","msg":"Event received: create-view"}
-{"level":30,"time":1712676101734,"ts":"listeners.ts","fn":"onCreateView","msg":"Adding view: { height: 100, width: 100, x: 0, y: 10000 } under key 2ad7468c-6d5b-4464-86aa-b3f9ee42c423"}
-{"level":30,"time":1712676101734,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676101740,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676102933,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676102940,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676102947,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676102954,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676102962,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676102968,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676102975,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676102982,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676102989,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676102996,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676103003,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676103010,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676103017,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676103023,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676103031,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676103038,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676103044,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676103052,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676103058,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676103065,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676103073,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676103080,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676103086,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676103093,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676103100,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676103107,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676103115,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676103121,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676103128,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676103135,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676103142,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676103149,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676103165,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676103170,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676103177,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676103183,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676103191,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676103197,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676103204,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676103211,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676103218,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676103224,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676103232,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676103239,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676103246,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676103252,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676103260,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676103266,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676103273,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676103280,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676103287,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676103295,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676103301,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676103308,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676103315,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676103322,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676103329,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676103336,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104001,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104003,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104010,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104017,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104023,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104031,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104037,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104044,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104051,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104058,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104065,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104072,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104079,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104086,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104093,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104100,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104107,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104114,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104121,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104128,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104134,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104143,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104149,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104156,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104163,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104169,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104176,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104183,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104190,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104197,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104204,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104211,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104218,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104225,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104231,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104239,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104245,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104252,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104260,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104266,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104274,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104281,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104287,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104294,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104301,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104308,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104315,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104322,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104329,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104336,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104343,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104349,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104357,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104364,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104371,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104378,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104385,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104392,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104398,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104406,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104412,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104419,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104426,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104433,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104440,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104447,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104453,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104460,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104468,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104474,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104482,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104489,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104495,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104502,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104509,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104516,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104530,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104545,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104558,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104565,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104579,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104586,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104593,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104599,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104607,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104620,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104627,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104653,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104662,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104676,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104796,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104808,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104815,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104822,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104829,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104836,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104843,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104850,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104856,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104863,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104870,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104877,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104884,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104891,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104905,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104912,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104919,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104926,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104933,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104940,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104948,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104954,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104961,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104968,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104975,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104981,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104988,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676104995,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105002,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105010,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105017,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105023,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105037,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105044,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105051,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105058,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105072,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105079,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105086,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105093,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105099,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105106,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105113,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105120,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105127,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105135,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105141,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105148,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105155,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105162,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105169,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105176,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105183,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105190,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105197,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105204,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105211,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105218,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105225,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105231,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105238,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105246,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105252,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105259,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105267,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105273,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105280,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105301,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105517,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105524,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105530,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105537,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105544,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105551,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105558,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105565,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105572,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105579,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105586,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105601,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105606,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105613,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105620,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105627,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105634,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105641,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105648,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105655,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105662,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105669,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105676,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105683,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105690,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105697,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105704,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105711,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105717,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105724,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105732,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105739,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105746,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105753,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105760,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105767,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105773,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105780,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105787,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105802,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105808,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105815,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105822,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105829,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105836,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105844,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105850,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105856,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105864,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105871,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105877,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105884,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105892,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105899,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105905,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105912,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105919,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105926,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105933,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105940,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105947,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105954,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105961,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105968,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105975,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105982,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105989,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676105995,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676106002,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676106010,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676106016,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676106023,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676106030,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676106038,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676106044,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676106051,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676106059,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676106065,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676106072,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676106079,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676106086,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676106093,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676106100,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676106106,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676106113,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676106120,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676106127,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676106134,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676106141,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676106148,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676106155,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676106162,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676106169,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676106176,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676106183,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676106190,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676106197,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676106204,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676106211,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676106218,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676106231,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676107825,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676107829,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676107835,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676107842,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676107850,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676107857,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676107864,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676107870,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676107878,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676107885,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676107891,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676107898,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676107905,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676107912,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676107919,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676107926,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676107933,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676107940,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676107947,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676107954,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676107961,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676107968,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676107975,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676107981,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676107989,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676107995,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676108002,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676108009,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676108016,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676108023,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676108030,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676108037,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676108044,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676108051,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676108058,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676108065,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676108072,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676108079,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676108086,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676108093,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676108099,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676108107,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676108113,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676108121,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676108128,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676108134,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676108141,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676108148,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676108155,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676108162,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676108169,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676108176,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676108183,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676108190,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676108197,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676108204,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676108211,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676108217,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676108231,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676108941,"ts":"TileApp.tsx","fn":"Tile","msg":"Displaying: Context Menu"}
-{"level":30,"time":1712676108941,"ts":"TileApp.tsx","fn":"Tile","msg":"Sending event: show-context-menu"}
-{"level":30,"time":1712676108941,"ts":"main.ts","fn":"main","msg":"Event received: show-context-menu"}
-{"level":30,"time":1712676110524,"ts":"TileApp.tsx","fn":"Tile","msg":"User selected: Nothing (null)"}
-{"level":30,"time":1712676110664,"ts":"TileApp.tsx","fn":"Tile","msg":"Displaying: Context Menu"}
-{"level":30,"time":1712676110664,"ts":"TileApp.tsx","fn":"Tile","msg":"Sending event: show-context-menu"}
-{"level":30,"time":1712676110664,"ts":"main.ts","fn":"main","msg":"Event received: show-context-menu"}
-{"level":30,"time":1712676112553,"ts":"TileApp.tsx","fn":"Tile","msg":"User selected: Split"}
-{"level":30,"time":1712676112554,"ts":"TileApp.tsx","fn":"Tile","msg":"View not created: id \"294f37dc-aa51-4971-a304-23ef433b734f\""}
-{"level":30,"time":1712676112554,"ts":"TileApp.tsx","fn":"Tile","msg":"Creating view: id \"294f37dc-aa51-4971-a304-23ef433b734f\""}
-{"level":30,"time":1712676112554,"ts":"util.ts","fn":"tryForSuccess","msg":"Sending event: create-view"}
-{"level":30,"time":1712676112554,"ts":"main.ts","fn":"main","msg":"Event received: create-view"}
-{"level":30,"time":1712676112555,"ts":"listeners.ts","fn":"onCreateView","msg":"Adding view: { height: 100, width: 100, x: 0, y: 10000 } under key 294f37dc-aa51-4971-a304-23ef433b734f"}
-{"level":30,"time":1712676112555,"ts":"util.ts","fn":"tryForSuccess","msg":"Listening once: create-view"}
-{"level":30,"time":1712676112555,"ts":"TileApp.tsx","fn":"Tile","msg":"View not created: id \"2ad7468c-6d5b-4464-86aa-b3f9ee42c423\""}
-{"level":30,"time":1712676112555,"ts":"TileApp.tsx","fn":"Tile","msg":"Creating view: id \"2ad7468c-6d5b-4464-86aa-b3f9ee42c423\""}
-{"level":30,"time":1712676112555,"ts":"util.ts","fn":"tryForSuccess","msg":"Sending event: create-view"}
-{"level":30,"time":1712676112555,"ts":"main.ts","fn":"main","msg":"Event received: create-view"}
-{"level":30,"time":1712676112555,"ts":"listeners.ts","fn":"onCreateView","msg":"Adding view: { height: 100, width: 100, x: 0, y: 10000 } under key 2ad7468c-6d5b-4464-86aa-b3f9ee42c423"}
-{"level":30,"time":1712676112556,"ts":"TileApp.tsx","fn":"Tile","msg":"View not created: id \"2ad7468c-6d5b-4464-86aa-b3f9ee42c423\""}
-{"level":30,"time":1712676112556,"ts":"TileApp.tsx","fn":"Tile","msg":"Creating view: id \"2ad7468c-6d5b-4464-86aa-b3f9ee42c423\""}
-{"level":30,"time":1712676112556,"ts":"util.ts","fn":"tryForSuccess","msg":"Sending event: create-view"}
-{"level":30,"time":1712676112556,"ts":"main.ts","fn":"main","msg":"Event received: create-view"}
-{"level":30,"time":1712676112556,"ts":"listeners.ts","fn":"onCreateView","msg":"Adding view: { height: 100, width: 100, x: 0, y: 10000 } under key 2ad7468c-6d5b-4464-86aa-b3f9ee42c423"}
-{"level":30,"time":1712676112556,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676114276,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676114276,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676114729,"ts":"TileApp.tsx","fn":"Tile","msg":"Displaying: Context Menu"}
-{"level":30,"time":1712676114729,"ts":"TileApp.tsx","fn":"Tile","msg":"Sending event: show-context-menu"}
-{"level":30,"time":1712676114729,"ts":"main.ts","fn":"main","msg":"Event received: show-context-menu"}
-{"level":30,"time":1712676115992,"ts":"TileApp.tsx","fn":"Tile","msg":"User selected: Split"}
-{"level":30,"time":1712676115993,"ts":"TileApp.tsx","fn":"Tile","msg":"View not created: id \"3a97aeaf-9457-40d4-940b-97bbccc53735\""}
-{"level":30,"time":1712676115993,"ts":"TileApp.tsx","fn":"Tile","msg":"Creating view: id \"3a97aeaf-9457-40d4-940b-97bbccc53735\""}
-{"level":30,"time":1712676115993,"ts":"util.ts","fn":"tryForSuccess","msg":"Sending event: create-view"}
-{"level":30,"time":1712676115993,"ts":"main.ts","fn":"main","msg":"Event received: create-view"}
-{"level":30,"time":1712676115994,"ts":"listeners.ts","fn":"onCreateView","msg":"Adding view: { height: 100, width: 100, x: 0, y: 10000 } under key 3a97aeaf-9457-40d4-940b-97bbccc53735"}
-{"level":30,"time":1712676115994,"ts":"util.ts","fn":"tryForSuccess","msg":"Listening once: create-view"}
-{"level":30,"time":1712676115994,"ts":"TileApp.tsx","fn":"Tile","msg":"View not created: id \"2ad7468c-6d5b-4464-86aa-b3f9ee42c423\""}
-{"level":30,"time":1712676115994,"ts":"TileApp.tsx","fn":"Tile","msg":"Creating view: id \"2ad7468c-6d5b-4464-86aa-b3f9ee42c423\""}
-{"level":30,"time":1712676115994,"ts":"util.ts","fn":"tryForSuccess","msg":"Sending event: create-view"}
-{"level":30,"time":1712676115994,"ts":"main.ts","fn":"main","msg":"Event received: create-view"}
-{"level":30,"time":1712676115994,"ts":"listeners.ts","fn":"onCreateView","msg":"Adding view: { height: 100, width: 100, x: 0, y: 10000 } under key 2ad7468c-6d5b-4464-86aa-b3f9ee42c423"}
-{"level":30,"time":1712676115995,"ts":"TileApp.tsx","fn":"Tile","msg":"View not created: id \"2ad7468c-6d5b-4464-86aa-b3f9ee42c423\""}
-{"level":30,"time":1712676115995,"ts":"TileApp.tsx","fn":"Tile","msg":"Creating view: id \"2ad7468c-6d5b-4464-86aa-b3f9ee42c423\""}
-{"level":30,"time":1712676115995,"ts":"util.ts","fn":"tryForSuccess","msg":"Sending event: create-view"}
-{"level":30,"time":1712676115995,"ts":"main.ts","fn":"main","msg":"Event received: create-view"}
-{"level":30,"time":1712676115996,"ts":"listeners.ts","fn":"onCreateView","msg":"Adding view: { height: 100, width: 100, x: 0, y: 10000 } under key 2ad7468c-6d5b-4464-86aa-b3f9ee42c423"}
-{"level":30,"time":1712676115996,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676115996,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676115996,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676116669,"ts":"TileApp.tsx","fn":"Tile","msg":"Displaying: Context Menu"}
-{"level":30,"time":1712676116669,"ts":"TileApp.tsx","fn":"Tile","msg":"Sending event: show-context-menu"}
-{"level":30,"time":1712676116669,"ts":"main.ts","fn":"main","msg":"Event received: show-context-menu"}
-{"level":30,"time":1712676117543,"ts":"TileApp.tsx","fn":"Tile","msg":"User selected: Split"}
-{"level":30,"time":1712676117544,"ts":"TileApp.tsx","fn":"Tile","msg":"View not created: id \"3a97aeaf-9457-40d4-940b-97bbccc53735\""}
-{"level":30,"time":1712676117544,"ts":"TileApp.tsx","fn":"Tile","msg":"Creating view: id \"3a97aeaf-9457-40d4-940b-97bbccc53735\""}
-{"level":30,"time":1712676117544,"ts":"util.ts","fn":"tryForSuccess","msg":"Sending event: create-view"}
-{"level":30,"time":1712676117544,"ts":"main.ts","fn":"main","msg":"Event received: create-view"}
-{"level":30,"time":1712676117545,"ts":"listeners.ts","fn":"onCreateView","msg":"Adding view: { height: 100, width: 100, x: 0, y: 10000 } under key 3a97aeaf-9457-40d4-940b-97bbccc53735"}
-{"level":30,"time":1712676117545,"ts":"util.ts","fn":"tryForSuccess","msg":"Listening once: create-view"}
-{"level":30,"time":1712676117545,"ts":"TileApp.tsx","fn":"Tile","msg":"View not created: id \"2ad7468c-6d5b-4464-86aa-b3f9ee42c423\""}
-{"level":30,"time":1712676117545,"ts":"TileApp.tsx","fn":"Tile","msg":"Creating view: id \"2ad7468c-6d5b-4464-86aa-b3f9ee42c423\""}
-{"level":30,"time":1712676117545,"ts":"util.ts","fn":"tryForSuccess","msg":"Sending event: create-view"}
-{"level":30,"time":1712676117545,"ts":"main.ts","fn":"main","msg":"Event received: create-view"}
-{"level":30,"time":1712676117546,"ts":"listeners.ts","fn":"onCreateView","msg":"Adding view: { height: 100, width: 100, x: 0, y: 10000 } under key 2ad7468c-6d5b-4464-86aa-b3f9ee42c423"}
-{"level":30,"time":1712676117546,"ts":"TileApp.tsx","fn":"Tile","msg":"View not created: id \"2ad7468c-6d5b-4464-86aa-b3f9ee42c423\""}
-{"level":30,"time":1712676117546,"ts":"TileApp.tsx","fn":"Tile","msg":"Creating view: id \"2ad7468c-6d5b-4464-86aa-b3f9ee42c423\""}
-{"level":30,"time":1712676117546,"ts":"util.ts","fn":"tryForSuccess","msg":"Sending event: create-view"}
-{"level":30,"time":1712676117546,"ts":"main.ts","fn":"main","msg":"Event received: create-view"}
-{"level":30,"time":1712676117546,"ts":"listeners.ts","fn":"onCreateView","msg":"Adding view: { height: 100, width: 100, x: 0, y: 10000 } under key 2ad7468c-6d5b-4464-86aa-b3f9ee42c423"}
-{"level":30,"time":1712676117547,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676118759,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676118760,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676119111,"ts":"TileApp.tsx","fn":"Tile","msg":"Displaying: Context Menu"}
-{"level":30,"time":1712676119111,"ts":"TileApp.tsx","fn":"Tile","msg":"Sending event: show-context-menu"}
-{"level":30,"time":1712676119111,"ts":"main.ts","fn":"main","msg":"Event received: show-context-menu"}
-{"level":30,"time":1712676119717,"ts":"TileApp.tsx","fn":"Tile","msg":"User selected: Split"}
-{"level":30,"time":1712676119717,"ts":"TileApp.tsx","fn":"Tile","msg":"View not created: id \"3a97aeaf-9457-40d4-940b-97bbccc53735\""}
-{"level":30,"time":1712676119717,"ts":"TileApp.tsx","fn":"Tile","msg":"Creating view: id \"3a97aeaf-9457-40d4-940b-97bbccc53735\""}
-{"level":30,"time":1712676119718,"ts":"util.ts","fn":"tryForSuccess","msg":"Sending event: create-view"}
-{"level":30,"time":1712676119718,"ts":"main.ts","fn":"main","msg":"Event received: create-view"}
-{"level":30,"time":1712676119719,"ts":"listeners.ts","fn":"onCreateView","msg":"Adding view: { height: 100, width: 100, x: 0, y: 10000 } under key 3a97aeaf-9457-40d4-940b-97bbccc53735"}
-{"level":30,"time":1712676119719,"ts":"util.ts","fn":"tryForSuccess","msg":"Listening once: create-view"}
-{"level":30,"time":1712676119719,"ts":"TileApp.tsx","fn":"Tile","msg":"View not created: id \"2ad7468c-6d5b-4464-86aa-b3f9ee42c423\""}
-{"level":30,"time":1712676119719,"ts":"TileApp.tsx","fn":"Tile","msg":"Creating view: id \"2ad7468c-6d5b-4464-86aa-b3f9ee42c423\""}
-{"level":30,"time":1712676119719,"ts":"util.ts","fn":"tryForSuccess","msg":"Sending event: create-view"}
-{"level":30,"time":1712676119719,"ts":"main.ts","fn":"main","msg":"Event received: create-view"}
-{"level":30,"time":1712676119720,"ts":"listeners.ts","fn":"onCreateView","msg":"Adding view: { height: 100, width: 100, x: 0, y: 10000 } under key 2ad7468c-6d5b-4464-86aa-b3f9ee42c423"}
-{"level":30,"time":1712676119720,"ts":"TileApp.tsx","fn":"Tile","msg":"View not created: id \"2ad7468c-6d5b-4464-86aa-b3f9ee42c423\""}
-{"level":30,"time":1712676119720,"ts":"TileApp.tsx","fn":"Tile","msg":"Creating view: id \"2ad7468c-6d5b-4464-86aa-b3f9ee42c423\""}
-{"level":30,"time":1712676119720,"ts":"util.ts","fn":"tryForSuccess","msg":"Sending event: create-view"}
-{"level":30,"time":1712676119720,"ts":"main.ts","fn":"main","msg":"Event received: create-view"}
-{"level":30,"time":1712676119720,"ts":"listeners.ts","fn":"onCreateView","msg":"Adding view: { height: 100, width: 100, x: 0, y: 10000 } under key 2ad7468c-6d5b-4464-86aa-b3f9ee42c423"}
-{"level":30,"time":1712676119721,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676120608,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676121694,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676121694,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676122524,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676122525,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676123583,"ts":"TileApp.tsx","fn":"Tile","msg":"Displaying: Context Menu"}
-{"level":30,"time":1712676123583,"ts":"TileApp.tsx","fn":"Tile","msg":"Sending event: show-context-menu"}
-{"level":30,"time":1712676123583,"ts":"main.ts","fn":"main","msg":"Event received: show-context-menu"}
-{"level":30,"time":1712676124215,"ts":"TileApp.tsx","fn":"Tile","msg":"User selected: Split"}
-{"level":30,"time":1712676124215,"ts":"TileApp.tsx","fn":"Tile","msg":"View not created: id \"3a97aeaf-9457-40d4-940b-97bbccc53735\""}
-{"level":30,"time":1712676124215,"ts":"TileApp.tsx","fn":"Tile","msg":"Creating view: id \"3a97aeaf-9457-40d4-940b-97bbccc53735\""}
-{"level":30,"time":1712676124215,"ts":"util.ts","fn":"tryForSuccess","msg":"Sending event: create-view"}
-{"level":30,"time":1712676124215,"ts":"main.ts","fn":"main","msg":"Event received: create-view"}
-{"level":30,"time":1712676124216,"ts":"listeners.ts","fn":"onCreateView","msg":"Adding view: { height: 100, width: 100, x: 0, y: 10000 } under key 3a97aeaf-9457-40d4-940b-97bbccc53735"}
-{"level":30,"time":1712676124217,"ts":"util.ts","fn":"tryForSuccess","msg":"Listening once: create-view"}
-{"level":30,"time":1712676124217,"ts":"TileApp.tsx","fn":"Tile","msg":"View not created: id \"2ad7468c-6d5b-4464-86aa-b3f9ee42c423\""}
-{"level":30,"time":1712676124217,"ts":"TileApp.tsx","fn":"Tile","msg":"Creating view: id \"2ad7468c-6d5b-4464-86aa-b3f9ee42c423\""}
-{"level":30,"time":1712676124217,"ts":"util.ts","fn":"tryForSuccess","msg":"Sending event: create-view"}
-{"level":30,"time":1712676124217,"ts":"main.ts","fn":"main","msg":"Event received: create-view"}
-{"level":30,"time":1712676124217,"ts":"listeners.ts","fn":"onCreateView","msg":"Adding view: { height: 100, width: 100, x: 0, y: 10000 } under key 2ad7468c-6d5b-4464-86aa-b3f9ee42c423"}
-{"level":30,"time":1712676124218,"ts":"TileApp.tsx","fn":"Tile","msg":"View not created: id \"2ad7468c-6d5b-4464-86aa-b3f9ee42c423\""}
-{"level":30,"time":1712676124218,"ts":"TileApp.tsx","fn":"Tile","msg":"Creating view: id \"2ad7468c-6d5b-4464-86aa-b3f9ee42c423\""}
-{"level":30,"time":1712676124218,"ts":"util.ts","fn":"tryForSuccess","msg":"Sending event: create-view"}
-{"level":30,"time":1712676124218,"ts":"main.ts","fn":"main","msg":"Event received: create-view"}
-{"level":30,"time":1712676124218,"ts":"listeners.ts","fn":"onCreateView","msg":"Adding view: { height: 100, width: 100, x: 0, y: 10000 } under key 2ad7468c-6d5b-4464-86aa-b3f9ee42c423"}
-{"level":30,"time":1712676124219,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676125549,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676126041,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1712676126041,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
+{"level":30,"time":1712695081945,"ts":"main.ts","fn":"main","msg":"Handling on: show-context-menu"}
+{"level":30,"time":1712695081945,"ts":"main.ts","fn":"main","msg":"Handling on: create-view"}
+{"level":30,"time":1712695081945,"ts":"main.ts","fn":"main","msg":"Listening on: set-view-rectangle"}
+{"level":30,"time":1712695081945,"ts":"main.ts","fn":"main","msg":"Listening on: set-view-url"}
+{"level":30,"time":1712695081945,"ts":"main.ts","fn":"main","msg":"Listening on: log-info"}
+{"level":30,"time":1712695081945,"ts":"main.ts","fn":"main","msg":"Listening on: log-error"}
+{"level":30,"time":1712695081945,"ts":"main.ts","fn":"main","msg":"Handling on: does-view-exist"}
+{"level":30,"time":1712695084545,"ts":"TileApp.tsx","fn":"TileApp","msg":"Listening on: toggle-edit-mode"}
+{"level":30,"time":1712695084545,"ts":"TileApp.tsx","fn":"TileApp","msg":"Listening on: main-process-context-menu"}
+{"level":30,"time":1712695084546,"ts":"TileApp.tsx","fn":"Tile","msg":"Invoking event: does-view-exist"}
+{"level":30,"time":1712695084546,"ts":"main.ts","fn":"main","msg":"Event received: does-view-exist"}
+{"level":30,"time":1712695084546,"ts":"TileApp.tsx","fn":"Tile","msg":"Invoking event: does-view-exist"}
+{"level":30,"time":1712695084546,"ts":"main.ts","fn":"main","msg":"Event received: does-view-exist"}
+{"level":30,"time":1712695084547,"ts":"TileApp.tsx","fn":"Tile","msg":"View not created: id \"fc5c90ba-bccc-44aa-80e6-a6a4087342e7\""}
+{"level":30,"time":1712695084547,"ts":"TileApp.tsx","fn":"Tile","msg":"Creating view: id \"fc5c90ba-bccc-44aa-80e6-a6a4087342e7\""}
+{"level":30,"time":1712695084547,"ts":"main.ts","fn":"main","msg":"Event received: create-view"}
+{"level":30,"time":1712695084548,"ts":"listeners.ts","fn":"onCreateViewAsync","msg":"Adding view: { height: 100, width: 100, x: 0, y: 10000 } under key fc5c90ba-bccc-44aa-80e6-a6a4087342e7"}
+{"level":30,"time":1712695084548,"ts":"TileApp.tsx","fn":"Tile","msg":"View not created: id \"fc5c90ba-bccc-44aa-80e6-a6a4087342e7\""}
+{"level":30,"time":1712695084548,"ts":"TileApp.tsx","fn":"Tile","msg":"Creating view: id \"fc5c90ba-bccc-44aa-80e6-a6a4087342e7\""}
+{"level":30,"time":1712695084548,"ts":"main.ts","fn":"main","msg":"Event received: create-view"}
+{"level":30,"time":1712695084549,"ts":"listeners.ts","fn":"onCreateViewAsync","msg":"Adding view: { height: 100, width: 100, x: 0, y: 10000 } under key fc5c90ba-bccc-44aa-80e6-a6a4087342e7"}
+{"level":30,"time":1712695086884,"ts":"TileApp.tsx","fn":"Tile","msg":"Displaying: Context Menu"}
+{"level":30,"time":1712695086884,"ts":"main.ts","fn":"main","msg":"Event received: show-context-menu"}
+{"level":30,"time":1712695087585,"ts":"TileApp.tsx","fn":"Tile","msg":"User selected: Split"}
+{"level":30,"time":1712695087587,"ts":"TileApp.tsx","fn":"Tile","msg":"Invoking event: does-view-exist"}
+{"level":30,"time":1712695087587,"ts":"main.ts","fn":"main","msg":"Event received: does-view-exist"}
+{"level":30,"time":1712695087587,"ts":"TileApp.tsx","fn":"Tile","msg":"Invoking event: does-view-exist"}
+{"level":30,"time":1712695087587,"ts":"main.ts","fn":"main","msg":"Event received: does-view-exist"}
+{"level":30,"time":1712695087587,"ts":"TileApp.tsx","fn":"Tile","msg":"Invoking event: does-view-exist"}
+{"level":30,"time":1712695087587,"ts":"main.ts","fn":"main","msg":"Event received: does-view-exist"}
+{"level":30,"time":1712695087587,"ts":"TileApp.tsx","fn":"Tile","msg":"Invoking event: does-view-exist"}
+{"level":30,"time":1712695087588,"ts":"main.ts","fn":"main","msg":"Event received: does-view-exist"}
+{"level":30,"time":1712695087588,"ts":"TileApp.tsx","fn":"Tile","msg":"View not created: id \"44c3ad3f-69b2-442d-9790-6a66d994a985\""}
+{"level":30,"time":1712695087588,"ts":"TileApp.tsx","fn":"Tile","msg":"Creating view: id \"44c3ad3f-69b2-442d-9790-6a66d994a985\""}
+{"level":30,"time":1712695087588,"ts":"main.ts","fn":"main","msg":"Event received: create-view"}
+{"level":30,"time":1712695087589,"ts":"listeners.ts","fn":"onCreateViewAsync","msg":"Adding view: { height: 100, width: 100, x: 0, y: 10000 } under key 44c3ad3f-69b2-442d-9790-6a66d994a985"}
+{"level":30,"time":1712695087589,"ts":"TileApp.tsx","fn":"Tile","msg":"View not created: id \"44c3ad3f-69b2-442d-9790-6a66d994a985\""}
+{"level":30,"time":1712695087589,"ts":"TileApp.tsx","fn":"Tile","msg":"Creating view: id \"44c3ad3f-69b2-442d-9790-6a66d994a985\""}
+{"level":30,"time":1712695087589,"ts":"main.ts","fn":"main","msg":"Event received: create-view"}
+{"level":30,"time":1712695087590,"ts":"listeners.ts","fn":"onCreateViewAsync","msg":"Adding view: { height: 100, width: 100, x: 0, y: 10000 } under key 44c3ad3f-69b2-442d-9790-6a66d994a985"}
+{"level":30,"time":1712695087925,"ts":"TileApp.tsx","fn":"Tile","msg":"Displaying: Context Menu"}
+{"level":30,"time":1712695087925,"ts":"main.ts","fn":"main","msg":"Event received: show-context-menu"}
+{"level":30,"time":1712695088481,"ts":"TileApp.tsx","fn":"Tile","msg":"User selected: Split"}
+{"level":30,"time":1712695088481,"ts":"TileApp.tsx","fn":"Tile","msg":"Invoking event: does-view-exist"}
+{"level":30,"time":1712695088481,"ts":"main.ts","fn":"main","msg":"Event received: does-view-exist"}
+{"level":30,"time":1712695088481,"ts":"TileApp.tsx","fn":"Tile","msg":"Invoking event: does-view-exist"}
+{"level":30,"time":1712695088481,"ts":"main.ts","fn":"main","msg":"Event received: does-view-exist"}
+{"level":30,"time":1712695088482,"ts":"TileApp.tsx","fn":"Tile","msg":"View not created: id \"17230b5b-0d54-4e62-a0aa-788e672c2fff\""}
+{"level":30,"time":1712695088482,"ts":"TileApp.tsx","fn":"Tile","msg":"Creating view: id \"17230b5b-0d54-4e62-a0aa-788e672c2fff\""}
+{"level":30,"time":1712695088482,"ts":"main.ts","fn":"main","msg":"Event received: create-view"}
+{"level":30,"time":1712695088482,"ts":"listeners.ts","fn":"onCreateViewAsync","msg":"Adding view: { height: 100, width: 100, x: 0, y: 10000 } under key 17230b5b-0d54-4e62-a0aa-788e672c2fff"}
+{"level":30,"time":1712695088483,"ts":"TileApp.tsx","fn":"Tile","msg":"View not created: id \"17230b5b-0d54-4e62-a0aa-788e672c2fff\""}
+{"level":30,"time":1712695088483,"ts":"TileApp.tsx","fn":"Tile","msg":"Creating view: id \"17230b5b-0d54-4e62-a0aa-788e672c2fff\""}
+{"level":30,"time":1712695088483,"ts":"main.ts","fn":"main","msg":"Event received: create-view"}
+{"level":30,"time":1712695088483,"ts":"listeners.ts","fn":"onCreateViewAsync","msg":"Adding view: { height: 100, width: 100, x: 0, y: 10000 } under key 17230b5b-0d54-4e62-a0aa-788e672c2fff"}
+{"level":30,"time":1712695088831,"ts":"TileApp.tsx","fn":"Tile","msg":"Displaying: Context Menu"}
+{"level":30,"time":1712695088831,"ts":"main.ts","fn":"main","msg":"Event received: show-context-menu"}
+{"level":30,"time":1712695089246,"ts":"TileApp.tsx","fn":"Tile","msg":"User selected: Split"}
+{"level":30,"time":1712695089247,"ts":"TileApp.tsx","fn":"Tile","msg":"Invoking event: does-view-exist"}
+{"level":30,"time":1712695089247,"ts":"main.ts","fn":"main","msg":"Event received: does-view-exist"}
+{"level":30,"time":1712695089247,"ts":"TileApp.tsx","fn":"Tile","msg":"Invoking event: does-view-exist"}
+{"level":30,"time":1712695089247,"ts":"main.ts","fn":"main","msg":"Event received: does-view-exist"}
+{"level":30,"time":1712695089247,"ts":"TileApp.tsx","fn":"Tile","msg":"Invoking event: does-view-exist"}
+{"level":30,"time":1712695089247,"ts":"main.ts","fn":"main","msg":"Event received: does-view-exist"}
+{"level":30,"time":1712695089247,"ts":"TileApp.tsx","fn":"Tile","msg":"Invoking event: does-view-exist"}
+{"level":30,"time":1712695089247,"ts":"main.ts","fn":"main","msg":"Event received: does-view-exist"}
+{"level":30,"time":1712695089248,"ts":"TileApp.tsx","fn":"Tile","msg":"View not created: id \"008b8db0-e40c-4e33-a679-d8b42aaacc5d\""}
+{"level":30,"time":1712695089248,"ts":"TileApp.tsx","fn":"Tile","msg":"Creating view: id \"008b8db0-e40c-4e33-a679-d8b42aaacc5d\""}
+{"level":30,"time":1712695089248,"ts":"main.ts","fn":"main","msg":"Event received: create-view"}
+{"level":30,"time":1712695089249,"ts":"listeners.ts","fn":"onCreateViewAsync","msg":"Adding view: { height: 100, width: 100, x: 0, y: 10000 } under key 008b8db0-e40c-4e33-a679-d8b42aaacc5d"}
+{"level":30,"time":1712695089543,"ts":"TileApp.tsx","fn":"Tile","msg":"Displaying: Context Menu"}
+{"level":30,"time":1712695089543,"ts":"main.ts","fn":"main","msg":"Event received: show-context-menu"}
+{"level":30,"time":1712695090016,"ts":"TileApp.tsx","fn":"Tile","msg":"User selected: SetUrl"}
+{"level":30,"time":1712695090016,"ts":"main.ts","fn":"main","msg":"Event received: set-view-url"}
+{"level":30,"time":1712695090017,"ts":"listeners.ts","fn":"onSetViewUrl","msg":"Setting: url \"https://www.google.com/\" to browserViews[44c3ad3f-69b2-442d-9790-6a66d994a985]"}
+{"level":30,"time":1712695091769,"ts":"TileApp.tsx","fn":"Tile","msg":"Displaying: Context Menu"}
+{"level":30,"time":1712695091769,"ts":"main.ts","fn":"main","msg":"Event received: show-context-menu"}
+{"level":30,"time":1712695092444,"ts":"TileApp.tsx","fn":"Tile","msg":"User selected: SetUrl"}
+{"level":30,"time":1712695092445,"ts":"main.ts","fn":"main","msg":"Event received: set-view-url"}
+{"level":30,"time":1712695092445,"ts":"listeners.ts","fn":"onSetViewUrl","msg":"Setting: url \"https://www.google.com/\" to browserViews[fc5c90ba-bccc-44aa-80e6-a6a4087342e7]"}
+{"level":30,"time":1712695096614,"ts":"main.ts","fn":"onEdit","msg":"Toggling: Edit Mode off"}
+{"level":30,"time":1712695096617,"ts":"TileApp.tsx","fn":"TileApp","msg":"Event received: toggle-edit-mode"}
+{"level":30,"time":1712695097177,"ts":"main.ts","fn":"onEdit","msg":"Toggling: Edit Mode on"}
+{"level":30,"time":1712695097180,"ts":"TileApp.tsx","fn":"TileApp","msg":"Event received: toggle-edit-mode"}
+{"level":30,"time":1712695097596,"ts":"main.ts","fn":"onEdit","msg":"Toggling: Edit Mode off"}
+{"level":30,"time":1712695097600,"ts":"TileApp.tsx","fn":"TileApp","msg":"Event received: toggle-edit-mode"}
+{"level":30,"time":1712695099061,"ts":"main.ts","fn":"onEdit","msg":"Toggling: Edit Mode on"}
+{"level":30,"time":1712695099066,"ts":"TileApp.tsx","fn":"TileApp","msg":"Event received: toggle-edit-mode"}
+{"level":30,"time":1712695099313,"ts":"main.ts","fn":"onEdit","msg":"Toggling: Edit Mode off"}
+{"level":30,"time":1712695099317,"ts":"TileApp.tsx","fn":"TileApp","msg":"Event received: toggle-edit-mode"}
+{"level":30,"time":1712695106088,"ts":"TileApp.tsx","fn":"Tile","msg":"Displaying: Context Menu"}
+{"level":30,"time":1712695106088,"ts":"main.ts","fn":"main","msg":"Event received: show-context-menu"}
+{"level":30,"time":1712695106549,"ts":"TileApp.tsx","fn":"Tile","msg":"User selected: Split"}
+{"level":30,"time":1712695106550,"ts":"TileApp.tsx","fn":"Tile","msg":"Invoking event: does-view-exist"}
+{"level":30,"time":1712695106551,"ts":"main.ts","fn":"main","msg":"Event received: does-view-exist"}
+{"level":30,"time":1712695106551,"ts":"TileApp.tsx","fn":"Tile","msg":"Invoking event: does-view-exist"}
+{"level":30,"time":1712695106551,"ts":"main.ts","fn":"main","msg":"Event received: does-view-exist"}
+{"level":30,"time":1712695106551,"ts":"TileApp.tsx","fn":"Tile","msg":"Invoking event: does-view-exist"}
+{"level":30,"time":1712695106551,"ts":"main.ts","fn":"main","msg":"Event received: does-view-exist"}
+{"level":30,"time":1712695106551,"ts":"TileApp.tsx","fn":"Tile","msg":"Invoking event: does-view-exist"}
+{"level":30,"time":1712695106551,"ts":"main.ts","fn":"main","msg":"Event received: does-view-exist"}
+{"level":30,"time":1712695106551,"ts":"TileApp.tsx","fn":"Tile","msg":"View not created: id \"05ecd3ae-a08b-40dc-9d00-6e5d9f7b280c\""}
+{"level":30,"time":1712695106551,"ts":"TileApp.tsx","fn":"Tile","msg":"Creating view: id \"05ecd3ae-a08b-40dc-9d00-6e5d9f7b280c\""}
+{"level":30,"time":1712695106551,"ts":"main.ts","fn":"main","msg":"Event received: create-view"}
+{"level":30,"time":1712695106552,"ts":"listeners.ts","fn":"onCreateViewAsync","msg":"Adding view: { height: 100, width: 100, x: 0, y: 10000 } under key 05ecd3ae-a08b-40dc-9d00-6e5d9f7b280c"}
+{"level":30,"time":1712695110119,"ts":"main.ts","fn":"onEdit","msg":"Toggling: Edit Mode on"}
+{"level":30,"time":1712695110122,"ts":"TileApp.tsx","fn":"TileApp","msg":"Event received: toggle-edit-mode"}
+{"level":30,"time":1712695110378,"ts":"main.ts","fn":"onEdit","msg":"Toggling: Edit Mode off"}
+{"level":30,"time":1712695110384,"ts":"TileApp.tsx","fn":"TileApp","msg":"Event received: toggle-edit-mode"}
+{"level":30,"time":1712695110584,"ts":"main.ts","fn":"onEdit","msg":"Toggling: Edit Mode on"}
+{"level":30,"time":1712695110590,"ts":"TileApp.tsx","fn":"TileApp","msg":"Event received: toggle-edit-mode"}
+{"level":30,"time":1712695110746,"ts":"main.ts","fn":"onEdit","msg":"Toggling: Edit Mode off"}
+{"level":30,"time":1712695110754,"ts":"TileApp.tsx","fn":"TileApp","msg":"Event received: toggle-edit-mode"}
+{"level":30,"time":1712695110890,"ts":"main.ts","fn":"onEdit","msg":"Toggling: Edit Mode on"}
+{"level":30,"time":1712695110893,"ts":"TileApp.tsx","fn":"TileApp","msg":"Event received: toggle-edit-mode"}
+{"level":30,"time":1712695111141,"ts":"main.ts","fn":"onEdit","msg":"Toggling: Edit Mode off"}
+{"level":30,"time":1712695111146,"ts":"TileApp.tsx","fn":"TileApp","msg":"Event received: toggle-edit-mode"}
+{"level":30,"time":1712695111588,"ts":"main.ts","fn":"onEdit","msg":"Toggling: Edit Mode on"}
+{"level":30,"time":1712695111599,"ts":"TileApp.tsx","fn":"TileApp","msg":"Event received: toggle-edit-mode"}
+{"level":30,"time":1712695111803,"ts":"main.ts","fn":"onEdit","msg":"Toggling: Edit Mode off"}
+{"level":30,"time":1712695111805,"ts":"TileApp.tsx","fn":"TileApp","msg":"Event received: toggle-edit-mode"}
+{"level":30,"time":1712695112273,"ts":"TileApp.tsx","fn":"Tile","msg":"Displaying: Context Menu"}
+{"level":30,"time":1712695112273,"ts":"main.ts","fn":"main","msg":"Event received: show-context-menu"}
+{"level":30,"time":1712695112855,"ts":"TileApp.tsx","fn":"Tile","msg":"User selected: SetUrl"}
+{"level":30,"time":1712695112855,"ts":"main.ts","fn":"main","msg":"Event received: set-view-url"}
+{"level":30,"time":1712695112855,"ts":"listeners.ts","fn":"onSetViewUrl","msg":"Setting: url \"https://www.google.com/\" to browserViews[05ecd3ae-a08b-40dc-9d00-6e5d9f7b280c]"}
+{"level":30,"time":1712695114146,"ts":"main.ts","fn":"onEdit","msg":"Toggling: Edit Mode on"}
+{"level":30,"time":1712695114151,"ts":"TileApp.tsx","fn":"TileApp","msg":"Event received: toggle-edit-mode"}
+{"level":30,"time":1712695114390,"ts":"main.ts","fn":"onEdit","msg":"Toggling: Edit Mode off"}
+{"level":30,"time":1712695114394,"ts":"TileApp.tsx","fn":"TileApp","msg":"Event received: toggle-edit-mode"}
+{"level":30,"time":1712695118707,"ts":"main.ts","fn":"onEdit","msg":"Toggling: Edit Mode on"}
+{"level":30,"time":1712695118717,"ts":"TileApp.tsx","fn":"TileApp","msg":"Event received: toggle-edit-mode"}
+{"level":30,"time":1712695119141,"ts":"main.ts","fn":"onEdit","msg":"Toggling: Edit Mode off"}
+{"level":30,"time":1712695119145,"ts":"TileApp.tsx","fn":"TileApp","msg":"Event received: toggle-edit-mode"}
+{"level":30,"time":1712695119554,"ts":"main.ts","fn":"onEdit","msg":"Toggling: Edit Mode on"}
+{"level":30,"time":1712695119560,"ts":"TileApp.tsx","fn":"TileApp","msg":"Event received: toggle-edit-mode"}
+{"level":30,"time":1712695119910,"ts":"main.ts","fn":"onEdit","msg":"Toggling: Edit Mode off"}
+{"level":30,"time":1712695119916,"ts":"TileApp.tsx","fn":"TileApp","msg":"Event received: toggle-edit-mode"}
+{"level":30,"time":1712695120502,"ts":"main.ts","fn":"onEdit","msg":"Toggling: Edit Mode on"}
+{"level":30,"time":1712695120510,"ts":"TileApp.tsx","fn":"TileApp","msg":"Event received: toggle-edit-mode"}
+{"level":30,"time":1712695121059,"ts":"main.ts","fn":"onEdit","msg":"Toggling: Edit Mode off"}
+{"level":30,"time":1712695121066,"ts":"TileApp.tsx","fn":"TileApp","msg":"Event received: toggle-edit-mode"}

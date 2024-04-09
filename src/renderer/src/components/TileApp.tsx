@@ -1,12 +1,13 @@
 import { BrowserViewConstructorOptions } from "electron";
 import { ReactElement, useEffect, useReducer, useRef, useState } from "react";
-import * as channels from "../../../common/channels.ts";
+import * as ch from "../../../common/channels.ts";
 import { ContextOption, Direction } from "../../../common/enums";
 import { ColumnHandleProps, ColumnProps, ContextParams, RowHandleProps, RowProps, TileProps, Vector2 } from "../../../common/interfaces.ts";
+import * as pre from "../../../common/logPrefixes.ts";
 import { buildTree } from "../../common/containerShared.tsx";
+import * as log from "../../common/loggerUtil.ts";
 import { BaseNode, ColumnNode, RowNode, TileNode, TileTree, recordTile, tiles } from "../../common/nodes.tsx";
-import { listeners, logError, logInfo, onResize, randomColor, tryForSuccess } from "../../common/util.ts";
-import * as prefixes from "../../../common/logPrefixes.ts";
+import { onResize, randomColor } from "../../common/util.ts";
 
 const colors: Record<string, string> = {};
 const fileName: string = "TileApp.tsx";
@@ -30,25 +31,25 @@ export function TileApp(): ReactElement {
   const [root, setRoot] = useState<BaseNode>(tileTree.root);
   const [, forceState] = useReducer(x => x + 1, 0);
 
-  if (!window.electronAPI.isListening(channels.toggleEditMode)) {
-    logInfo(logOptions, `${prefixes.listeningOn}: ${channels.toggleEditMode}`);
-    window.electronAPI.on(channels.toggleEditMode, (_, ...args: unknown[]) => {
-      logInfo(logOptions, `${prefixes.eventReceived}: ${channels.toggleEditMode}`);
+  if (!window.electronAPI.isListening(ch.toggleEditMode)) {
+    log.info(logOptions, `${pre.listeningOn}: ${ch.toggleEditMode}`);
+    window.electronAPI.on(ch.toggleEditMode, (_, ...args: unknown[]) => {
+      log.info(logOptions, `${pre.eventReceived}: ${ch.toggleEditMode}`);
       editModeEnabled = args[0] as boolean;
     });
   }
 
-  if (!window.electronAPI.isListening(channels.mainProcessContextMenu)) {
-    logInfo(logOptions, `${prefixes.listeningOn}: ${channels.mainProcessContextMenu}`);
-    window.electronAPI.on(channels.mainProcessContextMenu, (_, ...args: unknown[]) => {
-      logInfo(logOptions, `${prefixes.eventReceived}: ${channels.mainProcessContextMenu}`);
+  if (!window.electronAPI.isListening(ch.mainProcessContextMenu)) {
+    log.info(logOptions, `${pre.listeningOn}: ${ch.mainProcessContextMenu}`);
+    window.electronAPI.on(ch.mainProcessContextMenu, (_, ...args: unknown[]) => {
+      log.info(logOptions, `${pre.eventReceived}: ${ch.mainProcessContextMenu}`);
       const id: string = args[0] as string;
       const params: ContextParams = args[1] as ContextParams;
       const position: Vector2 = args[2] as Vector2;
       clickedPosition = position;
       function split() {
         if (tiles[id].ref === null) {
-          logError(logOptions, `${prefixes.invalidValue}: TileNode.ref is null`);
+          log.error(logOptions, `${pre.invalidValue}: TileNode.ref is null`);
           return;
         }
         tiles[id].split(id, params.direction as Direction);
@@ -80,7 +81,7 @@ export function TileApp(): ReactElement {
     function split() {
       function splitPercentY() {
         if (!ref.current) {
-          logError(logOptions, `${prefixes.invalidValue}: TileNode.ref is null`);
+          log.error(logOptions, `${pre.invalidValue}: TileNode.ref is null`);
           return;
         }
         const divHeight = ref.current.offsetHeight;
@@ -89,7 +90,7 @@ export function TileApp(): ReactElement {
       }
       function splitPercentX() {
         if (!ref.current) {
-          logError(logOptions, `${prefixes.invalidValue}: TileNode.ref is null`);
+          log.error(logOptions, `${pre.invalidValue}: TileNode.ref is null`);
           return;
         }
         const divWidth = ref.current.offsetWidth;
@@ -204,7 +205,7 @@ export function Row(
       const tileRef = tiles[id].ref as React.RefObject<HTMLDivElement>;
       function splitPercentY(): number {
         if (tileRef.current === null) {
-          logError(logOptions, `${prefixes.invalidValue}: TileNode.ref.current is null`);
+          log.error(logOptions, `${pre.invalidValue}: TileNode.ref.current is null`);
           return 0;
         }
         const divHeight = tileRef.current.offsetHeight;
@@ -213,7 +214,7 @@ export function Row(
       }
       function splitPercentX(): number {
         if (ref.current === null) {
-          logError(logOptions, `${prefixes.invalidValue}: Row ref is null`);
+          log.error(logOptions, `${pre.invalidValue}: Row ref is null`);
           return 0;
         }
         const divWidth = ref.current.offsetWidth;
@@ -335,7 +336,7 @@ export function Column(
     const tileRef = tiles[id].ref as React.RefObject<HTMLDivElement>;
     function splitPercentY(): number {
       if (ref.current === null) {
-        logError(logOptions, `${prefixes.invalidValue}: Column ref is null`);
+        log.error(logOptions, `${pre.invalidValue}: Column ref is null`);
         return 0;
       }
       const divHeight = ref.current.offsetHeight;
@@ -344,7 +345,7 @@ export function Column(
     }
     function splitPercentX(): number {
       if (tileRef.current === null) {
-        logError(logOptions, `${prefixes.invalidValue}: TileNode.ref.current is null`);
+        log.error(logOptions, `${pre.invalidValue}: TileNode.ref.current is null`);
         return 0;
       }
       const divWidth = tileRef.current.offsetWidth;
@@ -415,7 +416,6 @@ export function Tile({
   const logOptions = { ts: fileName, fn: Tile.name };
   const defaultClass: string = "flex-grow";
   const ref = useRef<HTMLDivElement>(null);
-  const [browserViewCreated, setBrowserViewCreated] = useState<boolean>(false);
 
   if (!(id as string in colors)) {
     colors[id as string] = randomColor();
@@ -423,36 +423,42 @@ export function Tile({
   const color = colors[id as string];
 
   useEffect(() => {
-    const logOptions = {
-      ts: fileName,
-      fn: Tile.name
-    };
-    tiles[id as string].ref = ref;
-    if (!browserViewCreated) {
-      logInfo(logOptions, `${prefixes.viewNotCreated}: id "${id}"`);
-      (async () => {
-        logInfo(logOptions, `${prefixes.creatingView}: id "${id}"`);
-        const options: BrowserViewConstructorOptions = {
-          webPreferences: {
-            disableHtmlFullscreenWindowResize: true,
-            enablePreferredSizeMode: true
-          }
-        };
-        const rectangle: Electron.Rectangle = {
-          x: ref.current?.offsetLeft ?? 10,
-          y: ref.current?.offsetTop ?? 10,
-          width: ref.current?.offsetWidth ?? 100,
-          height: ref.current?.offsetHeight ?? 100
-        };
-        await tryForSuccess(channels.createView, id, options);
-        window.electronAPI.send(channels.setViewRectangle, id, rectangle);
-        setBrowserViewCreated(true);
-      })();
+    const logOptions = { ts: fileName, fn: `${Tile.name}.${useEffect.name}` };
+    let browserViewCreated: boolean | null = null;
+    async function createBrowserView() {
+      const logOptions = {
+        ts: fileName,
+        fn: Tile.name
+      };
+      tiles[id as string].ref = ref;
+      log.info(logOptions, `${pre.invokingEvent}: ${ch.doesViewExist}`);
+      browserViewCreated = await window.electronAPI.invoke(ch.doesViewExist, id) as boolean;
+      if (browserViewCreated !== null && !browserViewCreated) {
+        log.info(logOptions, `${pre.viewNotCreated}: id "${id}"`);
+        (async () => {
+          log.info(logOptions, `${pre.creatingView}: id "${id}"`);
+          const options: BrowserViewConstructorOptions = {
+            webPreferences: {
+              disableHtmlFullscreenWindowResize: true,
+              enablePreferredSizeMode: true
+            }
+          };
+          const rectangle: Electron.Rectangle = {
+            x: ref.current?.offsetLeft ?? 10,
+            y: ref.current?.offsetTop ?? 10,
+            width: ref.current?.offsetWidth ?? 100,
+            height: ref.current?.offsetHeight ?? 100
+          };
+          await window.electronAPI.invoke(ch.createView, id, options);
+          window.electronAPI.send(ch.setViewRectangle, id, rectangle);
+        })();
+      }
     }
+    createBrowserView();
     const resizeObserver = new ResizeObserver(() => {
       const domRect = ref.current?.getBoundingClientRect();
       if (domRect === undefined) {
-        logError(logOptions, `${prefixes.invalidValue}: Tile DOMRect is undefined`);
+        log.error(logOptions, `${pre.invalidValue}: Tile DOMRect is undefined`);
         return;
       }
       const rectangle: Electron.Rectangle = {
@@ -472,23 +478,7 @@ export function Tile({
     return () => {
       resizeObserver.disconnect();
     };
-  }, [id, browserViewCreated, resizeBehavior]);
-
-  function showContextMenu(): Promise<ContextParams | null> {
-    return new Promise<ContextParams | null>((resolve) => {
-      const name: string = `${Tile.name}.${showContextMenu.name}`;
-      function listener(_event: Electron.IpcRendererEvent, ...args: unknown[]): void {
-        listeners.delete(name);
-        resolve(args[0] as (ContextParams | null));
-      }
-      logInfo(logOptions, `${prefixes.sendingEvent}: ${channels.showContextMenu}`);
-      window.electronAPI.send(channels.showContextMenu);
-      if (!listeners.has(name)) {
-        window.electronAPI.once(channels.showContextMenuResponse, listener);
-        listeners.add(name);
-      }
-    });
-  }
+  }, [id, resizeBehavior]);
 
   return (
     <div
@@ -503,10 +493,10 @@ export function Tile({
       ref={ref}
       onContextMenu={
         async () => {
-          logInfo(logOptions, `${prefixes.displaying}: Context Menu`);
-          const params: ContextParams | null = await showContextMenu();
+          log.info(logOptions, `${pre.displaying}: Context Menu`);
+          const params = await window.electronAPI.invoke(ch.showContextMenu) as ContextParams | null;
           if (params === null) {
-            logInfo(logOptions, `${prefixes.userSelected}: Nothing (null)`);
+            log.info(logOptions, `${pre.userSelected}: Nothing (null)`);
             return;
           }
           const option: string = (() => {
@@ -516,7 +506,7 @@ export function Tile({
             case ContextOption.SetUrl: return "SetUrl";
             }
           })();
-          logInfo(logOptions, `${prefixes.userSelected}: ${option}`);
+          log.info(logOptions, `${pre.userSelected}: ${option}`);
           contextBehavior?.(id as string, params);
         }
       }

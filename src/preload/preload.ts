@@ -27,6 +27,12 @@ contextBridge.exposeInMainWorld("electronAPI", {
     listeners.delete(channel);
     ipcRenderer.removeListener(channel, listener);
   },
+  invoke: (
+    channel: string,
+    ...args: any[]
+  ): Promise<any> => {
+    return ipcRenderer.invoke(channel, ...args);
+  },
   isListening: (
     channel: string
   ): boolean => {

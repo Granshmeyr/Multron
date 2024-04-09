@@ -1,9 +1,9 @@
 import { BrowserWindow, app, globalShortcut, ipcMain } from "electron";
 import path from "path";
-import * as channels from "../common/channels";
-import { browserViews, onCreateView, onLogError, onLogInfo, onSetViewRectangle, onSetViewUrl, onShowContextMenu } from "../common/listeners";
-import { logger } from "../common/logger";
-import * as prefixes from "../common/logPrefixes";
+import * as ch from "../common/channels";
+import { browserViews, onCreateViewAsync, onDoesViewExist, onLogError, onLogInfo, onSetViewRectangle, onSetViewUrl, onShowContextMenuAsync } from "../common/listeners";
+import * as pre from "../common/logPrefixes";
+import { log } from "../common/logger";
 
 export const editMargin: number = 20;
 export let mainWindow: BrowserWindow | null;
@@ -16,31 +16,40 @@ const fileName: string = "main.ts";
 
 function main(): void {
   const logOptions = { ts: fileName, fn: main.name };
-  ipcMain.on(channels.showContextMenu, async (event) => {
-    logger.info(logOptions, `${prefixes.eventReceived}: ${channels.showContextMenu}`);
-    const result = await onShowContextMenu();
-    event.reply(channels.showContextMenuResponse, result);
+  log.info(logOptions, `${pre.handlingOn}: ${ch.showContextMenu}`);
+  ipcMain.handle(ch.showContextMenu, async () => {
+    log.info(logOptions, `${pre.eventReceived}: ${ch.showContextMenu}`);
+    return onShowContextMenuAsync();
   });
-  ipcMain.on(channels.createView, async (event, id, options) => {
-    logger.info(logOptions, `${prefixes.eventReceived}: ${channels.createView}`);
-    const result = await onCreateView(event, id, mainWindow as BrowserWindow, options);
-    event.reply(channels.createViewResponse, result);
+  log.info(logOptions, `${pre.handlingOn}: ${ch.createView}`);
+  ipcMain.handle(ch.createView, async (event, id, options) => {
+    log.info(logOptions, `${pre.eventReceived}: ${ch.createView}`);
+    return onCreateViewAsync(event, id, mainWindow as BrowserWindow, options);
   });
-  ipcMain.on(channels.setViewRectangle, (event, id, rectangle) => {
-    logger.info(logOptions, `${prefixes.eventReceived}: ${channels.setViewRectangle}`);
+  log.info(logOptions, `${pre.listeningOn}: ${ch.setViewRectangle}`);
+  ipcMain.on(ch.setViewRectangle, (event, id, rectangle) => {
+    //logger.info(logOptions, `${prefixes.eventReceived}: ${channels.setViewRectangle}`);
     onSetViewRectangle(event, id, rectangle);
   });
-  ipcMain.on(channels.setViewUrl, (event, id, url) => {
-    logger.info(logOptions, `${prefixes.eventReceived}: ${channels.setViewUrl}`);
+  log.info(logOptions, `${pre.listeningOn}: ${ch.setViewUrl}`);
+  ipcMain.on(ch.setViewUrl, (event, id, url) => {
+    log.info(logOptions, `${pre.eventReceived}: ${ch.setViewUrl}`);
     onSetViewUrl(event, id, url);
   });
-  ipcMain.on(channels.logInfo, (event, options, message) => {
+  log.info(logOptions, `${pre.listeningOn}: ${ch.logInfo}`);
+  ipcMain.on(ch.logInfo, (event, options, message) => {
     //logger.info(logOptions, `${prefixes.eventReceived}: ${channels.logInfo}`);
     onLogInfo(event, options, message);
   });
-  ipcMain.on(channels.logError, (event, options, message) => {
+  log.info(logOptions, `${pre.listeningOn}: ${ch.logError}`);
+  ipcMain.on(ch.logError, (event, options, message) => {
     //logger.info(logOptions, `${prefixes.eventReceived}: ${channels.logError}`);
     onLogError(event, options, message);
+  });
+  log.info(logOptions, `${pre.handlingOn}: ${ch.doesViewExist}`);
+  ipcMain.handle(ch.doesViewExist, async (event, key) => {
+    log.info(logOptions, `${pre.eventReceived}: ${ch.doesViewExist}`);
+    return onDoesViewExist(event, key);
   });
 
   onAppReady(createMainWindow);
@@ -115,16 +124,16 @@ function onEdit() {
     return;
   }
   if (editModeEnabled) {
-    logger.info(logOptions, `${prefixes.toggling}: Edit Mode on`);
-    mainWindow?.webContents.send(channels.toggleEditMode, false);
+    log.info(logOptions, `${pre.toggling}: Edit Mode on`);
+    mainWindow?.webContents.send(ch.toggleEditMode, false);
     editModeEnabled = false;
     for (const id in browserViews) {
       browserViews[id].unshrink();
     }
   }
   else {
-    logger.info(logOptions, `${prefixes.toggling}: Edit Mode off`);
-    mainWindow?.webContents.send(channels.toggleEditMode, true);
+    log.info(logOptions, `${pre.toggling}: Edit Mode off`);
+    mainWindow?.webContents.send(ch.toggleEditMode, true);
     editModeEnabled = true;
     for (const id in browserViews) {
       browserViews[id].shrink();

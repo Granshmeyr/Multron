@@ -1,94 +1,64 @@
 import { BrowserView, BrowserViewConstructorOptions, BrowserWindow, Menu } from "electron";
-import * as channels from "./channels.ts";
+import * as ch from "./channels.ts";
 import { ContextOption, Direction } from "./enums.ts";
 import { ContextParams, Vector2 } from "./interfaces.ts";
 import { BrowserViewInstance } from "./types.ts";
 import { cursorViewportPosition } from "./util.ts";
-import { logger } from "../common/logger.ts";
-import * as prefixes from "../common/logPrefixes.ts";
+import { log } from "../common/logger.ts";
+import * as pre from "../common/logPrefixes.ts";
 
 export const browserViews: Record<string, BrowserViewInstance> = {};
+const fileName: string = "listeners.ts";
 
-export function onShowContextMenu(): Promise<ContextParams | null> {
+export async function onShowContextMenuAsync(): Promise<ContextParams | null> {
   return new Promise<ContextParams | null>((resolve) => {
     let params: ContextParams | null = null;
-    let setFinished: (value: boolean) => void;
-
-    const finished: Promise<boolean> = new Promise<boolean>(
-      (resolve) => {
-        setFinished = resolve;
-      }
-    );
-
     const options: Electron.MenuItemConstructorOptions[] = [
       {
         label: "Split Up",
-        click: () => {
-          params = { option: ContextOption.Split, direction: Direction.Up };
-          setFinished(true);
-        }
+        click: () => { params = { option: ContextOption.Split, direction: Direction.Up }; }
       },
       {
         label: "Split Down",
-        click: () => {
-          params = { option: ContextOption.Split, direction: Direction.Down };
-          setFinished(true);
-        }
+        click: () => { params = { option: ContextOption.Split, direction: Direction.Down }; }
       },
       {
         label: "Split Left",
-        click: () => {
-          params = { option: ContextOption.Split, direction: Direction.Left };
-          setFinished(true);
-        }
+        click: () => { params = { option: ContextOption.Split, direction: Direction.Left }; }
       },
       {
         label: "Split Right",
-        click: () => {
-          params = { option: ContextOption.Split, direction: Direction.Right };
-          setFinished(true);
-        }
+        click: () => { params = { option: ContextOption.Split, direction: Direction.Right }; }
       },
       {
         label: "Set URL",
-        click: () => {
-          params = { option: ContextOption.SetUrl, url: "https://www.google.com" };
-          setFinished(true);
-        }
+        click: () => { params = { option: ContextOption.SetUrl, url: "https://www.google.com" }; }
       },
       {
         label: "Delete",
-        click: () => {
-          params = { option: ContextOption.Delete };
-          setFinished(true);
-        }
+        click: () => { params = { option: ContextOption.Delete }; }
       }
     ];
-
     const menu: Electron.Menu = Menu.buildFromTemplate(options);
-    menu.popup();
-    menu.once("menu-will-close", async () => {
-      const timeout = new Promise<void>((resolve) => setTimeout(resolve));
-      await Promise.race([finished, timeout]);
-      resolve(params);
+    menu.popup({
+      callback: () => { resolve(params); }
     });
   });
 }
-
-export function onCreateView(
-  _event: Electron.IpcMainEvent,
+export async function onCreateViewAsync(
+  _event: Electron.IpcMainInvokeEvent,
   id: string,
   mainWindow: BrowserWindow,
   options?: BrowserViewConstructorOptions
-) {
+): Promise<boolean> {
   return new Promise<boolean>((resolve) => {
     browserViews[id] = new BrowserViewInstance(new BrowserView(options));
     const view = browserViews[id].browserView;
     view.webContents.on("context-menu", async () => {
       const position: Vector2 = cursorViewportPosition(mainWindow);
-      const params: ContextParams | null = await onShowContextMenu();
+      const params: ContextParams | null = await onShowContextMenuAsync();
       mainWindow.webContents.send(
-        channels.mainProcessContextMenu, id, params, position
+        ch.mainProcessContextMenu, id, params, position
       );
     });
     view.webContents.on("zoom-changed", (_, zoomDirection) => {
@@ -105,49 +75,54 @@ export function onCreateView(
       }
     });
     const rect: Electron.Rectangle = view.getBounds();
-    logger.info({ ts: "listeners.ts", fn: onCreateView.name },
-      `${prefixes.addingView}: { height: ${rect.height}, width: ${rect.width}, x: ${rect.x}, y: ${rect.y} } under key ${id}`
+    log.info({ ts: fileName, fn: onCreateViewAsync.name },
+      `${pre.addingView}: { height: ${rect.height}, width: ${rect.width}, x: ${rect.x}, y: ${rect.y} } under key ${id}`
     );
     mainWindow.addBrowserView(view);
     resolve(true);
   });
 }
-
 export function onSetViewRectangle(
   _event: Electron.IpcMainEvent,
   id: string,
   rectangle: Electron.Rectangle
 ) {
   const rect = rectangle;
-  logger.info({ ts: "listeners.ts", fn: onSetViewRectangle.name },
-    `${prefixes.setting}: rectangle "{ height: ${rect.height}, width: ${rect.width}, x: ${rect.x}, y: ${rect.y} }" browserViews[${id}]`
-  );
+  //log.info({ ts: fileName, fn: onSetViewRectangle.name },
+  //  `${prefixes.setting}: rectangle "{ height: ${rect.height}, width: ${rect.width}, x: ${rect.x}, y: ${rect.y} }" browserViews[${id}]`
+  //);
   browserViews[id].rectangle = rect;
 }
-
 export function onSetViewUrl(
   _event: Electron.IpcMainEvent,
   id: string,
   url: string
 ) {
-  logger.info({ ts: "listeners.ts", fn: onSetViewUrl.name },
-    `${prefixes.setting}: url "${url}" to browserViews[${id}]`
+  log.info({ ts: fileName, fn: onSetViewUrl.name },
+    `${pre.setting}: url "${url}" to browserViews[${id}]`
   );
   browserViews[id].url = url;
 }
-
 export function onLogInfo(
   _event: Electron.IpcMainEvent,
   options: unknown,
   message: string
 ) {
-  logger.info(options, message);
+  log.info(options, message);
 }
-
 export function onLogError(
   _event: Electron.IpcMainEvent,
   options: unknown,
   message: string
 ) {
-  logger.error(options, message);
+  log.error(options, message);
+}
+export function onDoesViewExist(
+  _event: Electron.IpcMainInvokeEvent,
+  key: string
+): boolean {
+  if (key in browserViews) {
+    return true;
+  }
+  return false;
 }
