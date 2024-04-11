@@ -416,6 +416,12 @@ export function Tile({
   const logOptions = { ts: fileName, fn: Tile.name };
   const defaultClass: string = "flex-grow";
   const ref = useRef<HTMLDivElement>(null);
+  const [rectangle, setRectangle] = useState<Electron.Rectangle>({
+    height: 100,
+    width: 100,
+    x: 0,
+    y: 0
+  });
 
   if (!(id as string in colors)) {
     colors[id as string] = randomColor();
@@ -423,62 +429,36 @@ export function Tile({
   const color = colors[id as string];
 
   useEffect(() => {
-    const logOptions = { ts: fileName, fn: `${Tile.name}.${useEffect.name}` };
-    let browserViewCreated: boolean | null = null;
-    async function createBrowserView() {
-      const logOptions = {
-        ts: fileName,
-        fn: Tile.name
-      };
-      tiles[id as string].ref = ref;
-      log.info(logOptions, `${pre.invokingEvent}: ${ch.doesViewExist}`);
-      browserViewCreated = await window.electronAPI.invoke(ch.doesViewExist, id) as boolean;
-      if (browserViewCreated !== null && !browserViewCreated) {
-        log.info(logOptions, `${pre.viewNotCreated}: id "${id}"`);
-        (async () => {
-          log.info(logOptions, `${pre.creatingView}: id "${id}"`);
-          const options: BrowserViewConstructorOptions = {
-            webPreferences: {
-              disableHtmlFullscreenWindowResize: true,
-              enablePreferredSizeMode: true
-            }
-          };
-          const rectangle: Electron.Rectangle = {
-            x: ref.current?.offsetLeft ?? 10,
-            y: ref.current?.offsetTop ?? 10,
-            width: ref.current?.offsetWidth ?? 100,
-            height: ref.current?.offsetHeight ?? 100
-          };
-          await window.electronAPI.invoke(ch.createView, id, options);
-          window.electronAPI.send(ch.setViewRectangle, id, rectangle);
-        })();
+    tiles[id as string].ref = ref;
+    const resizeObserver = new ResizeObserver(() => {
+      setRectangle({
+        height: ref.current?.offsetHeight ?? 100,
+        width: ref.current?.offsetWidth ?? 100,
+        x: ref.current?.offsetLeft ?? 0,
+        y: ref.current?.offsetTop ?? 0
+      });
+    });
+    async function async() {
+      if (!await window.electronAPI.invoke(ch.doesViewExist, id) as boolean) {
+        await window.electronAPI.invoke(ch.createViewAsync, id, {
+          webPreferences: {
+            disableHtmlFullscreenWindowResize: true,
+            enablePreferredSizeMode: true
+          }
+        });
+      }
+      else {
+        resizeBehavior(id as string, rectangle);
       }
     }
-    createBrowserView();
-    const resizeObserver = new ResizeObserver(() => {
-      const domRect = ref.current?.getBoundingClientRect();
-      if (domRect === undefined) {
-        log.error(logOptions, `${pre.invalidValue}: Tile DOMRect is undefined`);
-        return;
-      }
-      const rectangle: Electron.Rectangle = {
-        height: Math.round(domRect.height),
-        width: Math.round(domRect.width),
-        x: Math.round(domRect.x),
-        y: Math.round(domRect.y)
-      };
-      if (!browserViewCreated) {
-        return;
-      }
-      resizeBehavior?.(id as string, rectangle);
-    });
+    async();
     if (ref.current) {
       resizeObserver.observe(ref.current);
     }
     return () => {
       resizeObserver.disconnect();
     };
-  }, [id, resizeBehavior]);
+  }, [id, rectangle, resizeBehavior]);
 
   return (
     <div
@@ -493,10 +473,10 @@ export function Tile({
       ref={ref}
       onContextMenu={
         async () => {
-          log.info(logOptions, `${pre.displaying}: Context Menu`);
-          const params = await window.electronAPI.invoke(ch.showContextMenu) as ContextParams | null;
+          log.info(logOptions, `${pre.invokingEvent}: ${ch.showContextMenuAsync}`);
+          const params = await window.electronAPI.invoke(ch.showContextMenuAsync) as ContextParams | null;
           if (params === null) {
-            log.info(logOptions, `${pre.userSelected}: Nothing (null)`);
+            log.info(logOptions, `${pre.userInteraction}: selected Nothing (null)`);
             return;
           }
           const option: string = (() => {
@@ -506,7 +486,7 @@ export function Tile({
             case ContextOption.SetUrl: return "SetUrl";
             }
           })();
-          log.info(logOptions, `${pre.userSelected}: ${option}`);
+          log.info(logOptions, `${pre.userInteraction}: selected ${option}`);
           contextBehavior?.(id as string, params);
         }
       }

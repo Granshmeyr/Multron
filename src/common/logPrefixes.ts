@@ -1,6 +1,4 @@
 export const addingView: string = "Adding view";
-export const creatingView: string = "Creating view";
-export const displaying: string = "Displaying";
 export const eventReceived: string = "Event received";
 export const handlingOn: string = "Handling on";
 export const invalidValue: string = "Invalid value";
@@ -11,5 +9,8 @@ export const missing: string = "Missing";
 export const sendingEvent: string = "Sending event";
 export const setting: string = "Setting";
 export const toggling: string = "Toggling";
-export const userSelected: string = "User selected";
-export const viewNotCreated: string = "View not created";
+export const success: string = "Success";
+export const failure: string = "Failure";
+export const running: string = "Running";
+export const userInteraction: string = "User interaction";
+export const status: string = "Status";

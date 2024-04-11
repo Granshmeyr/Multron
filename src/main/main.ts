@@ -16,19 +16,19 @@ const fileName: string = "main.ts";
 
 function main(): void {
   const logOptions = { ts: fileName, fn: main.name };
-  log.info(logOptions, `${pre.handlingOn}: ${ch.showContextMenu}`);
-  ipcMain.handle(ch.showContextMenu, async () => {
-    log.info(logOptions, `${pre.eventReceived}: ${ch.showContextMenu}`);
+  log.info(logOptions, `${pre.handlingOn}: ${ch.showContextMenuAsync}`);
+  ipcMain.handle(ch.showContextMenuAsync, async () => {
+    log.info(logOptions, `${pre.eventReceived}: ${ch.showContextMenuAsync}`);
     return onShowContextMenuAsync();
   });
-  log.info(logOptions, `${pre.handlingOn}: ${ch.createView}`);
-  ipcMain.handle(ch.createView, async (event, id, options) => {
-    log.info(logOptions, `${pre.eventReceived}: ${ch.createView}`);
+  log.info(logOptions, `${pre.handlingOn}: ${ch.createViewAsync}`);
+  ipcMain.handle(ch.createViewAsync, async (event, id, options) => {
+    log.info(logOptions, `${pre.eventReceived}: ${ch.createViewAsync}`);
     return onCreateViewAsync(event, id, mainWindow as BrowserWindow, options);
   });
   log.info(logOptions, `${pre.listeningOn}: ${ch.setViewRectangle}`);
   ipcMain.on(ch.setViewRectangle, (event, id, rectangle) => {
-    //logger.info(logOptions, `${prefixes.eventReceived}: ${channels.setViewRectangle}`);
+    log.info(logOptions, `${pre.eventReceived}: ${ch.setViewRectangle}`);
     onSetViewRectangle(event, id, rectangle);
   });
   log.info(logOptions, `${pre.listeningOn}: ${ch.setViewUrl}`);
@@ -38,12 +38,12 @@ function main(): void {
   });
   log.info(logOptions, `${pre.listeningOn}: ${ch.logInfo}`);
   ipcMain.on(ch.logInfo, (event, options, message) => {
-    //logger.info(logOptions, `${prefixes.eventReceived}: ${channels.logInfo}`);
+    log.info(logOptions, `${pre.eventReceived}: ${ch.logInfo}`);
     onLogInfo(event, options, message);
   });
   log.info(logOptions, `${pre.listeningOn}: ${ch.logError}`);
   ipcMain.on(ch.logError, (event, options, message) => {
-    //logger.info(logOptions, `${prefixes.eventReceived}: ${channels.logError}`);
+    log.info(logOptions, `${pre.eventReceived}: ${ch.logError}`);
     onLogError(event, options, message);
   });
   log.info(logOptions, `${pre.handlingOn}: ${ch.doesViewExist}`);

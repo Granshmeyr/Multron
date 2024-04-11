@@ -1,6 +1,10 @@
 import { BrowserView } from "electron";
 import { marginizeRectangle } from "./util";
 import { editMargin } from "../main/main";
+import { log } from "../common/logger";
+import * as pre from "../common/logPrefixes";
+
+const fileName: string = "types.ts";
 
 export class BrowserViewInstance {
   browserView: BrowserView;
@@ -32,10 +36,18 @@ export class BrowserViewInstance {
   }
   get url(): string | null { return this._url; }
   set url(value: string) {
+    const logOptions = { ts: fileName, fn: `${BrowserViewInstance.name}.url(set)` };
+    const rect = this.rectangle;
     const unhide: boolean = this.url === null;
     this._url = value;
     this.browserView.webContents.loadURL(value);
     if (unhide) {
+      log.info(
+        logOptions,
+        `${pre.running}: this.${this.unhide.name} ` +
+        "for view with rect " +
+        `"{ height: ${rect.height}, width: ${rect.width},` +
+        `x: ${ rect.x }, y: ${ rect.y } }"`);
       this.unhide();
     }
   }

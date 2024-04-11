@@ -118,8 +118,10 @@ export class TileNode extends BaseNode {
   }
   get url(): URL | undefined { return this._url; }
   set url(value: URL) {
+    const logOptions = { ts: fileName, fn: `${TileNode.name}.url(set)` };
     this._url = value;
     this.setProps({ ...this._props, url: value });
+    log.info(logOptions, `${pre.sendingEvent}: ${ch.setViewUrl} for id "${this.id}"`);
     window.electronAPI.send(ch.setViewUrl, this.id, value.toString());
   }
   split(id: string, direction: Direction) {

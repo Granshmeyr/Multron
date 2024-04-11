@@ -2,6 +2,10 @@ import React, { ReactElement } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { ColumnHandleProps, RowHandleProps } from "../../common/interfaces";
 import { BaseNode } from "./nodes";
+import * as log from "../common/loggerUtil";
+import * as pre from "../../common/logPrefixes";
+
+const fileName: string = "containerShared.tsx";
 
 function calculateGrow(
   index: number,
@@ -41,6 +45,7 @@ export function buildTree(
   setCurrentHandle: (value: React.SetStateAction<number | null>) => void,
   Handle: React.ComponentType<RowHandleProps> | React.ComponentType<ColumnHandleProps>
 ): ReactElement[] {
+  const logOptions = { ts: fileName, fn: buildTree.name };
   const elementArray: ReactElement[] = [];
   const arrayLength: number = nodeArray.length;
   for (let index = 0; index < arrayLength; index++) {
@@ -61,6 +66,7 @@ export function buildTree(
               if (e.button !== 0) {
                 return;
               }
+              log.info(logOptions, `${pre.userInteraction}: Dragging handle index "${index}"`);
               setCurrentHandle(index);
             }
           }

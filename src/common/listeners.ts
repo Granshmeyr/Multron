@@ -51,6 +51,7 @@ export async function onCreateViewAsync(
   mainWindow: BrowserWindow,
   options?: BrowserViewConstructorOptions
 ): Promise<boolean> {
+  const logOptions = { ts: fileName, fn: onCreateViewAsync.name };
   return new Promise<boolean>((resolve) => {
     browserViews[id] = new BrowserViewInstance(new BrowserView(options));
     const view = browserViews[id].browserView;
@@ -80,6 +81,10 @@ export async function onCreateViewAsync(
     );
     mainWindow.addBrowserView(view);
     resolve(true);
+
+    for (const id in browserViews) {
+      log.info(logOptions, `${pre.status}: browserViews has id "${id}"`);
+    }
   });
 }
 export function onSetViewRectangle(
@@ -88,9 +93,9 @@ export function onSetViewRectangle(
   rectangle: Electron.Rectangle
 ) {
   const rect = rectangle;
-  //log.info({ ts: fileName, fn: onSetViewRectangle.name },
-  //  `${prefixes.setting}: rectangle "{ height: ${rect.height}, width: ${rect.width}, x: ${rect.x}, y: ${rect.y} }" browserViews[${id}]`
-  //);
+  log.info({ ts: fileName, fn: onSetViewRectangle.name },
+    `${pre.setting}: rectangle "{ height: ${rect.height}, width: ${rect.width}, x: ${rect.x}, y: ${rect.y} }" to browserViews[${id}]`
+  );
   browserViews[id].rectangle = rect;
 }
 export function onSetViewUrl(
@@ -121,8 +126,11 @@ export function onDoesViewExist(
   _event: Electron.IpcMainInvokeEvent,
   key: string
 ): boolean {
+  const logOptions = { ts: fileName, fn: onDoesViewExist.name };
   if (key in browserViews) {
+    log.info(logOptions, `${pre.success}: key "${key}" does exist`);
     return true;
   }
+  log.info(logOptions, `${pre.failure}: key "${key}" does not exist`);
   return false;
 }

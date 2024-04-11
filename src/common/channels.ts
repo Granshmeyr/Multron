@@ -1,5 +1,5 @@
-export const showContextMenu: string = "show-context-menu";
-export const createView: string = "create-view";
+export const showContextMenuAsync: string = "show-context-menu-async";
+export const createViewAsync: string = "create-view-async";
 export const setViewRectangle: string = "set-view-rectangle";
 export const setViewUrl: string = "set-view-url";
 export const toggleEditMode: string = "toggle-edit-mode";
