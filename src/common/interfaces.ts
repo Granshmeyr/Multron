@@ -12,15 +12,17 @@ export interface TileProps {
 }
 export interface RowProps {
   children: BaseNode[];
-  forceState: React.DispatchWithoutAction;
-  initialSplit?: number
+  refreshRoot: React.DispatchWithoutAction;
+  handlePercents: number[];
   style?: React.CSSProperties;
+  id?: string;
 }
 export interface ColumnProps {
   children: BaseNode[];
-  forceState: React.DispatchWithoutAction;
-  initialSplit?: number
+  refreshRoot: React.DispatchWithoutAction;
+  handlePercents: number[];
   style?: React.CSSProperties;
+  id?: string;
 }
 export interface ColumnHandleProps { onMouseDown: (e: React.DragEvent<HTMLDivElement>) => void; }
 export interface RowHandleProps { onMouseDown: (e: React.DragEvent<HTMLDivElement>) => void; }

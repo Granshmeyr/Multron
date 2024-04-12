@@ -7,7 +7,7 @@
 
 > A multiboxed browser experience
 
-Utilizes Electron's [BrowserView](https://www.electronjs.org/docs/latest/api/browser-view) to render multiple Chromium instances within the same window.
+Utilizes Electron's [BrowserView](https://www.electronjs.org/docs/latest/api/browser-view) to render multiple Chromium windows within the same window.
 
 ---
 

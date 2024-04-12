@@ -9,18 +9,18 @@ const fileName: string = "containerShared.tsx";
 
 function calculateGrow(
   index: number,
-  childCount: number,
+  nodeArrayLength: number,
   handlePercents: number[]
 ): number {
   let grow: number;
-  if (index >= childCount) {
+  if (index >= nodeArrayLength) {
     console.error("Invalid index");
     grow = -1;
   }
   else if (index === 0) {
     grow = handlePercents[0];
   }
-  else if (index === childCount - 1) {
+  else if (index === nodeArrayLength - 1) {
     grow = 1 - handlePercents[index - 1];
   }
   else {
@@ -30,12 +30,16 @@ function calculateGrow(
 }
 
 function createElement(
-  handlesIndex: number,
-  handlesLength: number,
+  index: number,
+  nodeArrayLength: number,
   baseNode: BaseNode,
-  handlesArray: number[],
+  handlePercents: number[],
 ): ReactElement {
-  baseNode.appendStyle({ flexGrow: calculateGrow(handlesIndex, handlesLength, handlesArray) });
+  const logOptions = { ts: fileName, fn: createElement.name };
+  const flexGrow: number = calculateGrow(index, nodeArrayLength, handlePercents);
+  console.log(`calculateGrow({${index}}, {${nodeArrayLength}}, {${handlePercents}}) = ${flexGrow}`);
+  log.info(logOptions, `${pre.running}: ${createElement.name} with flexGrow ${flexGrow}`);
+  baseNode.appendStyle({ flexGrow: flexGrow });
   return baseNode.toElement();
 }
 
@@ -51,7 +55,7 @@ export function buildTree(
   for (let index = 0; index < arrayLength; index++) {
     const element = createElement(
       index,
-      nodeArray.length,
+      arrayLength,
       nodeArray[index],
       handlePercents,
     );

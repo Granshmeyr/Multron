@@ -1,4 +1,3 @@
-import { BrowserViewConstructorOptions } from "electron";
 import { ReactElement, useEffect, useReducer, useRef, useState } from "react";
 import * as ch from "../../../common/channels.ts";
 import { ContextOption, Direction } from "../../../common/enums";
@@ -6,7 +5,7 @@ import { ColumnHandleProps, ColumnProps, ContextParams, RowHandleProps, RowProps
 import * as pre from "../../../common/logPrefixes.ts";
 import { buildTree } from "../../common/containerShared.tsx";
 import * as log from "../../common/loggerUtil.ts";
-import { BaseNode, ColumnNode, RowNode, TileNode, TileTree, recordTile, tiles } from "../../common/nodes.tsx";
+import { BaseNode, ColumnNode, RowNode, TileNode, TileTree, containers, recordColumn, recordRow, recordTile, tiles } from "../../common/nodes.tsx";
 import { onResize, randomColor } from "../../common/util.ts";
 
 const colors: Record<string, string> = {};
@@ -29,7 +28,7 @@ export function TileApp(): ReactElement {
     )
   );
   const [root, setRoot] = useState<BaseNode>(tileTree.root);
-  const [, forceState] = useReducer(x => x + 1, 0);
+  const [, refreshRoot] = useReducer(x => x + 1, 0);
 
   if (!window.electronAPI.isListening(ch.toggleEditMode)) {
     log.info(logOptions, `${pre.listeningOn}: ${ch.toggleEditMode}`);
@@ -79,50 +78,50 @@ export function TileApp(): ReactElement {
   function onContext(id: string, params: ContextParams) {
     const tile = tiles[id];
     function split() {
-      function splitPercentY() {
+      function splitPercentY(): number {
         if (!ref.current) {
           log.error(logOptions, `${pre.invalidValue}: TileNode.ref is null`);
-          return;
+          return 0.1;
         }
         const divHeight = ref.current.offsetHeight;
         const mousePosition = clickedPosition.y - ref.current.getBoundingClientRect().top;
         return mousePosition / divHeight;
       }
-      function splitPercentX() {
+      function splitPercentX(): number {
         if (!ref.current) {
           log.error(logOptions, `${pre.invalidValue}: TileNode.ref is null`);
-          return;
+          return 0.1;
         }
         const divWidth = ref.current.offsetWidth;
         const mousePosition = clickedPosition.x - ref.current.getBoundingClientRect().left;
         return mousePosition / divWidth;
       }
       function up() {
-        setRoot(new ColumnNode({
+        setRoot(recordColumn({
           children: [recordTile(), tile],
-          initialSplit: splitPercentY(),
-          forceState: forceState
+          handlePercents: [splitPercentY()],
+          refreshRoot: refreshRoot
         }));
       }
       function down() {
-        setRoot(new ColumnNode({
+        setRoot(recordColumn({
           children: [tile, recordTile()],
-          initialSplit: splitPercentY(),
-          forceState: forceState
+          handlePercents: [splitPercentY()],
+          refreshRoot: refreshRoot
         }));
       }
       function left() {
-        setRoot(new RowNode({
+        setRoot(recordRow({
           children: [recordTile(), tile],
-          initialSplit: splitPercentX(),
-          forceState: forceState
+          handlePercents: [splitPercentX()],
+          refreshRoot: refreshRoot
         }));
       }
       function right() {
-        setRoot(new RowNode({
+        setRoot(recordRow({
           children: [tile, recordTile()],
-          initialSplit: splitPercentX(),
-          forceState: forceState
+          handlePercents: [splitPercentX()],
+          refreshRoot: refreshRoot
         }));
       }
       switch (params.direction) {
@@ -149,15 +148,9 @@ export function TileApp(): ReactElement {
 }
 
 export function Row(
-  { children, forceState, style, initialSplit }: RowProps
+  { children, refreshRoot, handlePercents, style, id }: RowProps
 ): ReactElement {
-  const logOptions = {
-    ts: fileName,
-    fn: Row.name
-  };
-  const [handlePercents, setHandlePercents] = useState<number[]>(
-    [initialSplit === undefined ? 0.5 : initialSplit]
-  );
+  const logOptions = { ts: fileName, fn: Row.name };
   const [currentHandle, setCurrentHandle] = useState<number | null>(null);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -181,7 +174,8 @@ export function Row(
         const mousePosition = e.clientX - ref.current.getBoundingClientRect().left;
         const newPercents = [...handlePercents];
         newPercents[currentHandle] = mousePosition / divWidth;
-        setHandlePercents(newPercents);
+        containers[id as string].handlePercents = newPercents;
+        refreshRoot();
       }
     }
     function onContextMenu(e: MouseEvent) {
@@ -198,15 +192,15 @@ export function Row(
     };
   });
 
-  function onContext(id: string, params: ContextParams) {
-    const tile = tiles[id];
+  function onContext(tileId: string, params: ContextParams) {
+    const tile = tiles[tileId];
     function split() {
       const parent = tile.parent as RowNode;
-      const tileRef = tiles[id].ref as React.RefObject<HTMLDivElement>;
+      const tileRef = tiles[tileId].ref as React.RefObject<HTMLDivElement>;
       function splitPercentY(): number {
         if (tileRef.current === null) {
           log.error(logOptions, `${pre.invalidValue}: TileNode.ref.current is null`);
-          return 0;
+          return 0.1;
         }
         const divHeight = tileRef.current.offsetHeight;
         const mousePosition = clickedPosition.y - tileRef.current.getBoundingClientRect().top;
@@ -215,7 +209,7 @@ export function Row(
       function splitPercentX(): number {
         if (ref.current === null) {
           log.error(logOptions, `${pre.invalidValue}: Row ref is null`);
-          return 0;
+          return 0.1;
         }
         const divWidth = ref.current.offsetWidth;
         const mousePosition = clickedPosition.x - ref.current.getBoundingClientRect().left;
@@ -224,36 +218,40 @@ export function Row(
       function up() {
         const tileIndex = parent.children.indexOf(tile);
         const splitTile = recordTile();
-        const newColumn = new ColumnNode({
+        const column = recordColumn({
           children: [splitTile, tile],
-          initialSplit: splitPercentY(),
-          forceState: forceState
+          handlePercents: [splitPercentY()],
+          refreshRoot: refreshRoot
         });
-        parent.children[tileIndex] = newColumn;
+        parent.children[tileIndex] = column;
       }
       function down() {
         const tileIndex = parent.children.indexOf(tile);
         const splitTile = recordTile();
-        const newColumn = new ColumnNode({
+        const column = recordColumn({
           children: [tile, splitTile],
-          initialSplit: splitPercentY(),
-          forceState: forceState
+          handlePercents: [splitPercentY()],
+          refreshRoot: refreshRoot
         });
-        parent.children[tileIndex] = newColumn;
+        parent.children[tileIndex] = column;
       }
       function left() {
         const tileIndex = parent.children.indexOf(tile);
         const splitTile = recordTile();
         parent.children.splice(tileIndex, 0, splitTile);
         splitTile.parent = parent;
-        handlePercents.splice(tileIndex, 0, splitPercentX());
+        const newPercents = [...handlePercents];
+        newPercents.splice(tileIndex, 0, splitPercentX());
+        containers[id as string].handlePercents = newPercents;
       }
       function right() {
         const tileIndex = parent.children.indexOf(tile);
         const splitTile = recordTile();
         parent.children.splice(tileIndex + 1, 0, splitTile);
         splitTile.parent = parent;
-        handlePercents.splice(tileIndex, 0, splitPercentX());
+        const newPercents = [...handlePercents];
+        newPercents.splice(tileIndex, 0, splitPercentX());
+        containers[id as string].handlePercents = newPercents;
       }
       switch (params.direction) {
       case Direction.Up: up(); break;
@@ -261,10 +259,10 @@ export function Row(
       case Direction.Left: left(); break;
       case Direction.Right: right(); break;
       }
-      forceState();
+      refreshRoot();
     }
     function setUrl() {
-      tiles[id].url = new URL(params.url as string);
+      tiles[tileId].url = new URL(params.url as string);
     }
     switch (params.option) {
     case ContextOption.Split: split(); break;
@@ -281,15 +279,9 @@ export function Row(
 }
 
 export function Column(
-  { children, forceState, style, initialSplit }: ColumnProps
+  { children, refreshRoot, handlePercents, style, id }: ColumnProps
 ): ReactElement {
-  const logOptions = {
-    ts: fileName,
-    fn: Column.name
-  };
-  const [handlePercents, setHandlePercents] = useState<number[]>(
-    [initialSplit === undefined ? 0.5 : initialSplit]
-  );
+  const logOptions = { ts: fileName, fn: Column.name };
   const [currentHandle, setCurrentHandle] = useState<number | null>(null);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -313,7 +305,8 @@ export function Column(
         const mousePosition = e.clientY - ref.current.getBoundingClientRect().top;
         const newPercents = [...handlePercents];
         newPercents[currentHandle] = mousePosition / divHeight;
-        setHandlePercents(newPercents);
+        containers[id as string].handlePercents = newPercents;
+        refreshRoot();
       }
     }
     function onContextMenu(e: MouseEvent) {
@@ -330,72 +323,83 @@ export function Column(
     };
   });
 
-  function onContext(id: string, params: ContextParams) {
-    const tile = tiles[id];
-    const parent = tile.parent as ColumnNode;
-    const tileRef = tiles[id].ref as React.RefObject<HTMLDivElement>;
-    function splitPercentY(): number {
-      if (ref.current === null) {
-        log.error(logOptions, `${pre.invalidValue}: Column ref is null`);
-        return 0;
+  function onContext(tileId: string, params: ContextParams) {
+    const tile = tiles[tileId];
+    function split() {
+      const parent = tile.parent as ColumnNode;
+      const tileRef = tiles[tileId].ref as React.RefObject<HTMLDivElement>;
+      function splitPercentY(): number {
+        if (ref.current === null) {
+          log.error(logOptions, `${pre.invalidValue}: Column ref is null`);
+          return 0;
+        }
+        const divHeight = ref.current.offsetHeight;
+        const mousePosition = clickedPosition.y - ref.current.getBoundingClientRect().top;
+        return mousePosition / divHeight;
       }
-      const divHeight = ref.current.offsetHeight;
-      const mousePosition = clickedPosition.y - ref.current.getBoundingClientRect().top;
-      return mousePosition / divHeight;
-    }
-    function splitPercentX(): number {
-      if (tileRef.current === null) {
-        log.error(logOptions, `${pre.invalidValue}: TileNode.ref.current is null`);
-        return 0;
+      function splitPercentX(): number {
+        if (tileRef.current === null) {
+          log.error(logOptions, `${pre.invalidValue}: TileNode.ref.current is null`);
+          return 0;
+        }
+        const divWidth = tileRef.current.offsetWidth;
+        const mousePosition = clickedPosition.x - tileRef.current.getBoundingClientRect().left;
+        return mousePosition / divWidth;
       }
-      const divWidth = tileRef.current.offsetWidth;
-      const mousePosition = clickedPosition.x - tileRef.current.getBoundingClientRect().left;
-      return mousePosition / divWidth;
-    }
 
-    function up() {
-      const tileIndex = parent.children.indexOf(tile);
-      const splitTile = recordTile();
-      parent.children.splice(tileIndex, 0, splitTile);
-      splitTile.parent = parent;
-      handlePercents.splice(tileIndex, 0, splitPercentY());
-      forceState();
+      function up() {
+        const tileIndex = parent.children.indexOf(tile);
+        const splitTile = recordTile();
+        parent.children.splice(tileIndex, 0, splitTile);
+        splitTile.parent = parent;
+        const newPercents = [...handlePercents];
+        newPercents.splice(tileIndex, 0, splitPercentY());
+        containers[id as string].handlePercents = newPercents;
+      }
+      function down() {
+        const tileIndex = parent.children.indexOf(tile);
+        const splitTile = recordTile();
+        parent.children.splice(tileIndex + 1, 0, splitTile);
+        splitTile.parent = parent;
+        const newPercents = [...handlePercents];
+        newPercents.splice(tileIndex, 0, splitPercentY());
+        containers[id as string].handlePercents = newPercents;
+      }
+      function left() {
+        const tileIndex = parent.children.indexOf(tile);
+        const splitTile = recordTile();
+        const newRow = recordRow({
+          children: [splitTile, tile],
+          handlePercents: [splitPercentX()],
+          refreshRoot: refreshRoot
+        });
+        parent.children[tileIndex] = newRow;
+      }
+      function right() {
+        const tileIndex = parent.children.indexOf(tile);
+        const splitTile = recordTile();
+        const newRow = recordRow({
+          children: [tile, splitTile],
+          handlePercents: [splitPercentX()],
+          refreshRoot: refreshRoot
+        });
+        parent.children[tileIndex] = newRow;
+      }
+      switch (params.direction) {
+      case Direction.Up: up(); break;
+      case Direction.Down: down(); break;
+      case Direction.Left: left(); break;
+      case Direction.Right: right(); break;
+      }
+      refreshRoot();
     }
-    function down() {
-      const tileIndex = parent.children.indexOf(tile);
-      const splitTile = recordTile();
-      parent.children.splice(tileIndex + 1, 0, splitTile);
-      splitTile.parent = parent;
-      handlePercents.splice(tileIndex, 0, splitPercentY());
-      forceState();
+    function setUrl() {
+      tiles[tileId].url = new URL(params.url as string);
     }
-    function left() {
-      const tileIndex = parent.children.indexOf(tile);
-      const splitTile = recordTile();
-      const newRow = new RowNode({
-        children: [splitTile, tile],
-        initialSplit: splitPercentX(),
-        forceState: forceState
-      });
-      parent.children[tileIndex] = newRow;
-      forceState();
-    }
-    function right() {
-      const tileIndex = parent.children.indexOf(tile);
-      const splitTile = recordTile();
-      const newRow = new RowNode({
-        children: [tile, splitTile],
-        initialSplit: splitPercentX(),
-        forceState: forceState
-      });
-      parent.children[tileIndex] = newRow;
-      forceState();
-    }
-    switch (direction) {
-    case Direction.Up: up(); break;
-    case Direction.Down: down(); break;
-    case Direction.Left: left(); break;
-    case Direction.Right: right(); break;
+    switch (params.option) {
+    case ContextOption.Split: split(); break;
+    case ContextOption.Delete: break;
+    case ContextOption.SetUrl: setUrl(); break;
     }
   }
 
@@ -416,7 +420,7 @@ export function Tile({
   const logOptions = { ts: fileName, fn: Tile.name };
   const defaultClass: string = "flex-grow";
   const ref = useRef<HTMLDivElement>(null);
-  const [rectangle, setRectangle] = useState<Electron.Rectangle>({
+  const rectangle = useRef<Electron.Rectangle>({
     height: 100,
     width: 100,
     x: 0,
@@ -429,36 +433,41 @@ export function Tile({
   const color = colors[id as string];
 
   useEffect(() => {
+    const _logOptions = { ts: fileName, fn: `${Tile.name}/${useEffect.name}` };
     tiles[id as string].ref = ref;
-    const resizeObserver = new ResizeObserver(() => {
-      setRectangle({
-        height: ref.current?.offsetHeight ?? 100,
-        width: ref.current?.offsetWidth ?? 100,
-        x: ref.current?.offsetLeft ?? 0,
-        y: ref.current?.offsetTop ?? 0
-      });
-    });
-    async function async() {
+    async function createViewOrResizeAsync() {
+      log.info(_logOptions, `${pre.invokingEvent}: ${ch.doesViewExist} for id "${id}"`);
       if (!await window.electronAPI.invoke(ch.doesViewExist, id) as boolean) {
+        log.info(_logOptions, `${pre.invokingEvent}: ${ch.createViewAsync} for id "${id}"`);
         await window.electronAPI.invoke(ch.createViewAsync, id, {
           webPreferences: {
             disableHtmlFullscreenWindowResize: true,
             enablePreferredSizeMode: true
           }
         });
+        resizeBehavior(id as string, rectangle.current);
       }
       else {
-        resizeBehavior(id as string, rectangle);
+        resizeBehavior(id as string, rectangle.current);
       }
     }
-    async();
+    const resizeObserver = new ResizeObserver(async () => {
+      rectangle.current = {
+        height: ref.current?.offsetHeight ?? 100,
+        width: ref.current?.offsetWidth ?? 100,
+        x: ref.current?.offsetLeft ?? 0,
+        y: ref.current?.offsetTop ?? 0
+      };
+      createViewOrResizeAsync();
+    });
+    createViewOrResizeAsync();
     if (ref.current) {
       resizeObserver.observe(ref.current);
     }
     return () => {
       resizeObserver.disconnect();
     };
-  }, [id, rectangle, resizeBehavior]);
+  }, [id, resizeBehavior]);
 
   return (
     <div

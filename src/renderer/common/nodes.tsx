@@ -8,6 +8,7 @@ import * as log from "../common/loggerUtil";
 import * as pre from "../../common/logPrefixes";
 
 export const tiles: Record<string, TileNode> = {};
+export const containers: Record<string, ContainerNode> = {};
 const fileName: string = "nodes.tsx";
 
 export class TileTree {
@@ -32,8 +33,8 @@ export abstract class ContainerNode extends BaseNode {
   abstract set children(value: BaseNode[]);
   abstract get forceState(): React.DispatchWithoutAction;
   abstract set forceState(value: React.DispatchWithoutAction);
-  abstract get initialSplit(): number | undefined;
-  abstract set initialSplit(value: number);
+  abstract get handlePercents(): number[];
+  abstract set handlePercents(value: number[]);
   abstract get style(): React.CSSProperties | undefined;
   abstract set style(value: React.CSSProperties);
 }
@@ -110,7 +111,7 @@ export class TileNode extends BaseNode {
     this._style = value;
     this.setProps({ ...this._props, style: value });
   }
-  appendStyle(style: React.CSSProperties) { this._style = { ...this._style, ...style }; }
+  appendStyle(style: React.CSSProperties) { this.style = { ...this.style, ...style }; }
   get id(): string { return this._id; }
   set id(value: string) {
     this._id = value;
@@ -142,13 +143,15 @@ export class ColumnNode extends ContainerNode {
   private _props: ColumnProps;
   private _children: BaseNode[];
   private _forceState: React.DispatchWithoutAction;
-  private _initialSplit?: number;
+  private _id: string;
+  private _handlePercents: number[];
   private _style?: React.CSSProperties;
 
   constructor({
     children: children,
-    forceState: forceState,
-    initialSplit: initialSplit,
+    refreshRoot: forceState,
+    id: id = uuidv4(),
+    handlePercents: handlePercents,
     style: style
   }: ColumnProps) {
     super();
@@ -157,22 +160,25 @@ export class ColumnNode extends ContainerNode {
     }
     this._props = {
       children: children,
-      forceState: forceState,
-      initialSplit: initialSplit,
-      style: style
+      refreshRoot: forceState,
+      handlePercents: handlePercents,
+      style: style,
+      id: id
     };
     this._children = children;
     this._forceState = forceState;
-    this._initialSplit = initialSplit;
+    this._handlePercents = handlePercents;
     this._style = style;
+    this._id = id;
   }
 
   toElement(): ReactElement {
     return <Column
       children={this.children}
-      forceState={this.forceState}
-      initialSplit={this.initialSplit}
+      refreshRoot={this.forceState}
+      handlePercents={this.handlePercents}
       style={this.style}
+      id={this.id}
     ></Column>;
   }
 
@@ -186,32 +192,39 @@ export class ColumnNode extends ContainerNode {
   get forceState(): React.DispatchWithoutAction { return this._forceState; }
   set forceState(value: React.DispatchWithoutAction) {
     this._forceState = value;
-    this.setProps({ ...this._props, forceState: value });
+    this.setProps({ ...this._props, refreshRoot: value });
   }
-  get initialSplit(): number | undefined { return this._initialSplit; }
-  set initialSplit(value: number) {
-    this._initialSplit = value;
-    this.setProps({ ...this._props, initialSplit: value });
+  get handlePercents(): number[] { return this._handlePercents; }
+  set handlePercents(value: number[]) {
+    this._handlePercents = value;
+    this.setProps({ ...this._props, handlePercents: value });
   }
   get style(): React.CSSProperties | undefined { return this._style; }
   set style(value: React.CSSProperties) {
     this._style = value;
     this.setProps({ ...this._props, style: value });
   }
-  appendStyle(style: CSSProperties): void { this._style = { ...this._style, ...style }; }
+  appendStyle(style: CSSProperties): void { this.style = { ...this.style, ...style }; }
+  get id(): string { return this._id; }
+  set id(value: string) {
+    this._id = value;
+    this.setProps({ ...this._props, id: value });
+  }
 }
 
 export class RowNode extends ContainerNode {
   private _props: RowProps;
   private _children: BaseNode[];
   private _forceState: React.DispatchWithoutAction;
-  private _initialSplit?: number;
+  private _id: string;
+  private _handlePercents: number[];
   private _style?: React.CSSProperties;
 
   constructor({
     children: children,
-    forceState: forceState,
-    initialSplit: initialSplit,
+    refreshRoot: forceState,
+    id: id = uuidv4(),
+    handlePercents: handlePercents,
     style: style
   }: RowProps) {
     super();
@@ -220,22 +233,25 @@ export class RowNode extends ContainerNode {
     }
     this._props = {
       children: children,
-      forceState: forceState,
-      initialSplit: initialSplit,
-      style: style
+      refreshRoot: forceState,
+      handlePercents: handlePercents,
+      style: style,
+      id: id
     };
     this._children = children;
     this._forceState = forceState;
-    this._initialSplit = initialSplit;
+    this._handlePercents = handlePercents;
     this._style = style;
+    this._id = id;
   }
 
   toElement(): ReactElement {
     return <Row
       children={this.children}
-      forceState={this.forceState}
-      initialSplit={this.initialSplit}
+      refreshRoot={this.forceState}
+      handlePercents={this.handlePercents}
       style={this.style}
+      id={this.id}
     ></Row>;
   }
 
@@ -249,19 +265,24 @@ export class RowNode extends ContainerNode {
   get forceState(): React.DispatchWithoutAction { return this._forceState; }
   set forceState(value: React.DispatchWithoutAction) {
     this._forceState = value;
-    this.setProps({ ...this._props, forceState: value });
+    this.setProps({ ...this._props, refreshRoot: value });
   }
-  get initialSplit(): number | undefined { return this._initialSplit; }
-  set initialSplit(value: number) {
-    this._initialSplit = value;
-    this.setProps({ ...this._props, initialSplit: value });
+  get handlePercents(): number[] { return this._handlePercents; }
+  set handlePercents(value: number[]) {
+    this._handlePercents = value;
+    this.setProps({ ...this._props, handlePercents: value });
   }
   get style(): React.CSSProperties | undefined { return this._style; }
   set style(value: React.CSSProperties) {
     this._style = value;
     this.setProps({ ...this._props, style: value });
   }
-  appendStyle(style: CSSProperties): void { this._style = { ...this._style, ...style }; }
+  appendStyle(style: CSSProperties): void { this.style = { ...this.style, ...style }; }
+  get id(): string { return this._id; }
+  set id(value: string) {
+    this._id = value;
+    this.setProps({ ...this._props, id: value });
+  }
 }
 
 export function recordTile(tileProps?: TileProps): TileNode {
@@ -272,6 +293,18 @@ export function recordTile(tileProps?: TileProps): TileNode {
   else {
     tileNode = new TileNode();
   }
-  tiles[tileNode.id as unknown as number] = tileNode;
+  tiles[tileNode.id] = tileNode;
   return tileNode;
+}
+
+export function recordRow(rowProps: RowProps): RowNode {
+  const rowNode: RowNode = new RowNode(rowProps);
+  containers[rowNode.id] = rowNode;
+  return rowNode;
+}
+
+export function recordColumn(columnProps: ColumnProps): ColumnNode {
+  const columnNode: ColumnNode = new ColumnNode(columnProps);
+  containers[columnNode.id] = columnNode;
+  return columnNode;
 }
