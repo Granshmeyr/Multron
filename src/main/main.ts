@@ -5,7 +5,6 @@ import { browserViews, onCreateViewAsync, onDoesViewExist, onLogError, onLogInfo
 import * as pre from "../common/logPrefixes";
 import { log } from "../common/logger";
 
-export const editMargin: number = 20;
 export let mainWindow: BrowserWindow | null;
 export let editModeEnabled: boolean = false;
 const viteURL: string = "http://localhost:5173";
@@ -128,7 +127,7 @@ function onEdit() {
     mainWindow?.webContents.send(ch.toggleEditMode, false);
     editModeEnabled = false;
     for (const id in browserViews) {
-      browserViews[id].unshrink();
+      browserViews[id].updateRectangle();
     }
   }
   else {
@@ -136,7 +135,7 @@ function onEdit() {
     mainWindow?.webContents.send(ch.toggleEditMode, true);
     editModeEnabled = true;
     for (const id in browserViews) {
-      browserViews[id].shrink();
+      browserViews[id].updateRectangle();
     }
   }
 }

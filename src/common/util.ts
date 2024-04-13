@@ -34,3 +34,7 @@ export function cursorViewportPosition(browserWindow: BrowserWindow): Vector2 {
 
   return {x: relativeX, y: relativeY};
 }
+export function rectangleToString(rectangle: Electron.Rectangle): string {
+  return `{ height: ${rectangle.height}, width: ${rectangle.width},` +
+  `x: ${rectangle.x}, y: ${rectangle.y} }`;
+}

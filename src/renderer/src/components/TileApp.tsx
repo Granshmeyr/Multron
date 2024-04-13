@@ -312,7 +312,6 @@ export function Column(
     function onContextMenu(e: MouseEvent) {
       clickedPosition = { x: e.clientX, y: e.clientY };
     }
-
     document.addEventListener("contextmenu", onContextMenu);
     document.addEventListener("mouseup", onMouseUp);
     document.addEventListener("mousemove", onMouseMove);

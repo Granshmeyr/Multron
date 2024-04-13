@@ -3,6 +3,7 @@
 
 
 
+
 # MultronView
 
 > A multiboxed browser experience
@@ -16,7 +17,8 @@ Utilizes Electron's [BrowserView](https://www.electronjs.org/docs/latest/api/bro
  - [ ] Dynamic layout editor w/ splitting, resizing 
 	 - [x] Create, split, and resize views
 	 - [ ] View deletion
- - [ ] Set URL per BrowserView
+ - [x] Set URL per BrowserView
+	 - [ ] Menu for user-input
  - [x] Set zoom per BrowserView
  - [ ] Support per-view user sessions
  - [ ] Save layout of tiles / URLs
