@@ -193,8 +193,8 @@ export function Row(
   });
 
   function onContext(tileId: string, params: ContextParams) {
-    const tile = tiles[tileId];
     function split() {
+      const tile = tiles[tileId];
       const parent = tile.parent as RowNode;
       const tileRef = tiles[tileId].ref as React.RefObject<HTMLDivElement>;
       function splitPercentY(): number {
@@ -264,9 +264,20 @@ export function Row(
     function setUrl() {
       tiles[tileId].url = new URL(params.url as string);
     }
+    function deleteTile() {
+      const parent = tiles[tileId].parent as RowNode;
+      for (let i = 0; i < parent.children.length; i++) {
+        const node = parent.children[i];
+        if (node instanceof TileNode && node.id === tileId) {
+          parent.children.splice(i, 1);
+          refreshRoot();
+          break;
+        }
+      }
+    }
     switch (params.option) {
     case ContextOption.Split: split(); break;
-    case ContextOption.Delete: break;
+    case ContextOption.Delete: deleteTile(); break;
     case ContextOption.SetUrl: setUrl(); break;
     }
   }
