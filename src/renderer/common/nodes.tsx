@@ -37,6 +37,8 @@ export abstract class ContainerNode extends BaseNode {
   abstract set handlePercents(value: number[]);
   abstract get style(): React.CSSProperties | undefined;
   abstract set style(value: React.CSSProperties);
+  abstract get id(): string;
+  abstract set id(value: string);
 }
 
 export class TileNode extends BaseNode {

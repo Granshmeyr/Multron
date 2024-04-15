@@ -10,8 +10,8 @@ build started...[39m
 transforming...
 [32m✓[39m 87 modules transformed.
 rendering chunks...
-[2mout/main/[22m[36mmain.js  [39m[1m[2m151.34 kB[22m[1m[22m
-[36mbuilt in 1301ms.[39m
+[2mout/main/[22m[36mmain.js  [39m[1m[2m152.04 kB[22m[1m[22m
+[36mbuilt in 1158ms.[39m
 [32m
 build the electron main process successfully[39m
 [90m
@@ -26,7 +26,7 @@ transforming...
 [32m✓[39m 1 modules transformed.
 rendering chunks...
 [2mout/preload/[22m[36mpreload.js  [39m[1m[2m0.75 kB[22m[1m[22m
-[36mbuilt in 23ms.[39m
+[36mbuilt in 21ms.[39m
 [32m
 build the electron preload files successfully[39m
 [90m
@@ -40,59 +40,3 @@ build the electron preload files successfully[39m
 start electron app...
 [39m
 
-{"level":30,"time":1713006847876,"ts":"main.ts","fn":"main","msg":"Handling on: show-context-menu-async"}
-{"level":30,"time":1713006847877,"ts":"main.ts","fn":"main","msg":"Handling on: create-view-async"}
-{"level":30,"time":1713006847877,"ts":"main.ts","fn":"main","msg":"Listening on: set-view-rectangle"}
-{"level":30,"time":1713006847877,"ts":"main.ts","fn":"main","msg":"Listening on: set-view-url"}
-{"level":30,"time":1713006847877,"ts":"main.ts","fn":"main","msg":"Listening on: log-info"}
-{"level":30,"time":1713006847877,"ts":"main.ts","fn":"main","msg":"Listening on: log-error"}
-{"level":30,"time":1713006847877,"ts":"main.ts","fn":"main","msg":"Handling on: does-view-exist"}
-{"level":30,"time":1713006850459,"ts":"main.ts","fn":"main","msg":"Event received: log-info"}
-{"level":30,"time":1713006850459,"ts":"TileApp.tsx","fn":"TileApp","msg":"Listening on: toggle-edit-mode"}
-{"level":30,"time":1713006850459,"ts":"main.ts","fn":"main","msg":"Event received: log-info"}
-{"level":30,"time":1713006850459,"ts":"TileApp.tsx","fn":"TileApp","msg":"Listening on: main-process-context-menu"}
-{"level":30,"time":1713006850460,"ts":"main.ts","fn":"main","msg":"Event received: log-info"}
-{"level":30,"time":1713006850460,"ts":"TileApp.tsx","fn":"Tile/useEffect","msg":"Invoking event: does-view-exist for id \"5ea9cc8e-0b36-496b-92b4-00a06913646f\""}
-{"level":30,"time":1713006850460,"ts":"main.ts","fn":"main","msg":"Event received: does-view-exist"}
-{"level":30,"time":1713006850460,"ts":"listeners.ts","fn":"onDoesViewExist","msg":"Failure: key \"5ea9cc8e-0b36-496b-92b4-00a06913646f\" does not exist"}
-{"level":30,"time":1713006850460,"ts":"main.ts","fn":"main","msg":"Event received: log-info"}
-{"level":30,"time":1713006850460,"ts":"TileApp.tsx","fn":"Tile/useEffect","msg":"Invoking event: does-view-exist for id \"5ea9cc8e-0b36-496b-92b4-00a06913646f\""}
-{"level":30,"time":1713006850460,"ts":"main.ts","fn":"main","msg":"Event received: does-view-exist"}
-{"level":30,"time":1713006850460,"ts":"listeners.ts","fn":"onDoesViewExist","msg":"Failure: key \"5ea9cc8e-0b36-496b-92b4-00a06913646f\" does not exist"}
-{"level":30,"time":1713006850461,"ts":"main.ts","fn":"main","msg":"Event received: log-info"}
-{"level":30,"time":1713006850461,"ts":"TileApp.tsx","fn":"Tile/useEffect","msg":"Invoking event: does-view-exist for id \"5ea9cc8e-0b36-496b-92b4-00a06913646f\""}
-{"level":30,"time":1713006850461,"ts":"main.ts","fn":"main","msg":"Event received: does-view-exist"}
-{"level":30,"time":1713006850461,"ts":"listeners.ts","fn":"onDoesViewExist","msg":"Failure: key \"5ea9cc8e-0b36-496b-92b4-00a06913646f\" does not exist"}
-{"level":30,"time":1713006850462,"ts":"main.ts","fn":"main","msg":"Event received: log-info"}
-{"level":30,"time":1713006850462,"ts":"TileApp.tsx","fn":"Tile/useEffect","msg":"Invoking event: create-view-async for id \"5ea9cc8e-0b36-496b-92b4-00a06913646f\""}
-{"level":30,"time":1713006850462,"ts":"main.ts","fn":"main","msg":"Event received: create-view-async"}
-{"level":30,"time":1713006850463,"ts":"types.ts","fn":"BrowserViewInstance.hide","msg":"Toggling: hide for view with rectangle \"{ height: 0, width: 0, x: 0, y: 0 }\""}
-{"level":30,"time":1713006850463,"ts":"types.ts","fn":"BrowserViewInstance.updateRectangle","msg":"Setting: rectangle \"{ height: -40, width: -40,x: 20, y: 20 }\"with hiddenDistance"}
-{"level":30,"time":1713006850463,"ts":"listeners.ts","fn":"onCreateViewAsync","msg":"Adding view: { height: 0, width: 0, x: 0, y: 10000 } under key 5ea9cc8e-0b36-496b-92b4-00a06913646f"}
-{"level":30,"time":1713006850463,"ts":"listeners.ts","fn":"onCreateViewAsync","msg":"Status: browserViews has id \"5ea9cc8e-0b36-496b-92b4-00a06913646f\""}
-{"level":30,"time":1713006850463,"ts":"main.ts","fn":"main","msg":"Event received: log-info"}
-{"level":30,"time":1713006850463,"ts":"TileApp.tsx","fn":"Tile/useEffect","msg":"Invoking event: create-view-async for id \"5ea9cc8e-0b36-496b-92b4-00a06913646f\""}
-{"level":30,"time":1713006850463,"ts":"main.ts","fn":"main","msg":"Event received: create-view-async"}
-{"level":30,"time":1713006850464,"ts":"types.ts","fn":"BrowserViewInstance.hide","msg":"Toggling: hide for view with rectangle \"{ height: 0, width: 0, x: 0, y: 0 }\""}
-{"level":30,"time":1713006850464,"ts":"types.ts","fn":"BrowserViewInstance.updateRectangle","msg":"Setting: rectangle \"{ height: -40, width: -40,x: 20, y: 20 }\"with hiddenDistance"}
-{"level":30,"time":1713006850464,"ts":"listeners.ts","fn":"onCreateViewAsync","msg":"Adding view: { height: 0, width: 0, x: 0, y: 10000 } under key 5ea9cc8e-0b36-496b-92b4-00a06913646f"}
-{"level":30,"time":1713006850464,"ts":"listeners.ts","fn":"onCreateViewAsync","msg":"Status: browserViews has id \"5ea9cc8e-0b36-496b-92b4-00a06913646f\""}
-{"level":30,"time":1713006850464,"ts":"main.ts","fn":"main","msg":"Event received: log-info"}
-{"level":30,"time":1713006850464,"ts":"TileApp.tsx","fn":"Tile/useEffect","msg":"Invoking event: create-view-async for id \"5ea9cc8e-0b36-496b-92b4-00a06913646f\""}
-{"level":30,"time":1713006850464,"ts":"main.ts","fn":"main","msg":"Event received: create-view-async"}
-{"level":30,"time":1713006850465,"ts":"types.ts","fn":"BrowserViewInstance.hide","msg":"Toggling: hide for view with rectangle \"{ height: 0, width: 0, x: 0, y: 0 }\""}
-{"level":30,"time":1713006850465,"ts":"types.ts","fn":"BrowserViewInstance.updateRectangle","msg":"Setting: rectangle \"{ height: -40, width: -40,x: 20, y: 20 }\"with hiddenDistance"}
-{"level":30,"time":1713006850465,"ts":"listeners.ts","fn":"onCreateViewAsync","msg":"Adding view: { height: 0, width: 0, x: 0, y: 10000 } under key 5ea9cc8e-0b36-496b-92b4-00a06913646f"}
-{"level":30,"time":1713006850465,"ts":"listeners.ts","fn":"onCreateViewAsync","msg":"Status: browserViews has id \"5ea9cc8e-0b36-496b-92b4-00a06913646f\""}
-{"level":30,"time":1713006850465,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1713006850465,"ts":"listeners.ts","fn":"onSetViewRectangle","msg":"Setting: rectangle \"{ height: 665, width: 1388, x: 0, y: 0 }\" to browserViews[5ea9cc8e-0b36-496b-92b4-00a06913646f]"}
-{"level":30,"time":1713006850465,"ts":"types.ts","fn":"BrowserViewInstance.rectangle(set)","msg":"Running: this.updateRectangle from rectangle(set)"}
-{"level":30,"time":1713006850465,"ts":"types.ts","fn":"BrowserViewInstance.updateRectangle","msg":"Setting: rectangle \"{ height: 625, width: 1348,x: 20, y: 20 }\"with hiddenDistance"}
-{"level":30,"time":1713006850466,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1713006850466,"ts":"listeners.ts","fn":"onSetViewRectangle","msg":"Setting: rectangle \"{ height: 665, width: 1388, x: 0, y: 0 }\" to browserViews[5ea9cc8e-0b36-496b-92b4-00a06913646f]"}
-{"level":30,"time":1713006850466,"ts":"types.ts","fn":"BrowserViewInstance.rectangle(set)","msg":"Running: this.updateRectangle from rectangle(set)"}
-{"level":30,"time":1713006850466,"ts":"types.ts","fn":"BrowserViewInstance.updateRectangle","msg":"Setting: rectangle \"{ height: 625, width: 1348,x: 20, y: 20 }\"with hiddenDistance"}
-{"level":30,"time":1713006850466,"ts":"main.ts","fn":"main","msg":"Event received: set-view-rectangle"}
-{"level":30,"time":1713006850466,"ts":"listeners.ts","fn":"onSetViewRectangle","msg":"Setting: rectangle \"{ height: 665, width: 1388, x: 0, y: 0 }\" to browserViews[5ea9cc8e-0b36-496b-92b4-00a06913646f]"}
-{"level":30,"time":1713006850466,"ts":"types.ts","fn":"BrowserViewInstance.rectangle(set)","msg":"Running: this.updateRectangle from rectangle(set)"}
-{"level":30,"time":1713006850466,"ts":"types.ts","fn":"BrowserViewInstance.updateRectangle","msg":"Setting: rectangle \"{ height: 625, width: 1348,x: 20, y: 20 }\"with hiddenDistance"}

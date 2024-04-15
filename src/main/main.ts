@@ -1,7 +1,7 @@
 import { BrowserWindow, app, globalShortcut, ipcMain } from "electron";
 import path from "path";
 import * as ch from "../common/channels";
-import { browserViews, onCreateViewAsync, onDoesViewExist, onLogError, onLogInfo, onSetViewRectangle, onSetViewUrl, onShowContextMenuAsync } from "../common/listeners";
+import { browserViews, onCreateViewAsync, onDeleteView, onDoesViewExist, onLogError, onLogInfo, onSetViewRectangle, onSetViewUrl, onShowContextMenuAsync } from "../common/listeners";
 import * as pre from "../common/logPrefixes";
 import { log } from "../common/logger";
 
@@ -49,6 +49,11 @@ function main(): void {
   ipcMain.handle(ch.doesViewExist, async (event, key) => {
     log.info(logOptions, `${pre.eventReceived}: ${ch.doesViewExist}`);
     return onDoesViewExist(event, key);
+  });
+  log.info(logOptions, `${pre.listeningOn}: ${ch.deleteView}`);
+  ipcMain.on(ch.deleteView, (event, key) => {
+    log.info(logOptions, `${pre.eventReceived}: ${ch.deleteView}`);
+    onDeleteView(event, key);
   });
 
   onAppReady(createMainWindow);

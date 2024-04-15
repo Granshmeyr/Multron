@@ -6,6 +6,7 @@ import { BrowserViewInstance } from "./types.ts";
 import { cursorViewportPosition } from "./util.ts";
 import { log } from "../common/logger.ts";
 import * as pre from "../common/logPrefixes.ts";
+import { mainWindow } from "../main/main.ts";
 
 export const browserViews: Record<string, BrowserViewInstance> = {};
 const fileName: string = "listeners.ts";
@@ -133,4 +134,17 @@ export function onDoesViewExist(
   }
   log.info(logOptions, `${pre.failure}: key "${key}" does not exist`);
   return false;
+}
+export function onDeleteView(
+  _event: Electron.IpcMainEvent,
+  key: string
+) {
+  const logOptions = { ts: fileName, fn: onDeleteView.name };
+  if (!(key in browserViews)) {
+    log.error(logOptions, `${pre.missing}: key "${key} does not exist for deletion"`);
+    return;
+  }
+  log.info(logOptions, `${pre.deleting}: view for key "${key}"`);
+  mainWindow?.removeBrowserView(browserViews[key].browserView);
+  delete browserViews[key];
 }

@@ -3,9 +3,9 @@ import * as ch from "../../../common/channels.ts";
 import { ContextOption, Direction } from "../../../common/enums";
 import { ColumnHandleProps, ColumnProps, ContextParams, RowHandleProps, RowProps, TileProps, Vector2 } from "../../../common/interfaces.ts";
 import * as pre from "../../../common/logPrefixes.ts";
-import { buildTree } from "../../common/containerShared.tsx";
+import { buildTree, deleteParentContainer, deleteTile } from "../../common/containerShared.tsx";
 import * as log from "../../common/loggerUtil.ts";
-import { BaseNode, ColumnNode, RowNode, TileNode, TileTree, containers, recordColumn, recordRow, recordTile, tiles } from "../../common/nodes.tsx";
+import { BaseNode, ColumnNode, ContainerNode, RowNode, TileNode, TileTree, containers, recordColumn, recordRow, recordTile, tiles } from "../../common/nodes.tsx";
 import { onResize, randomColor } from "../../common/util.ts";
 
 const colors: Record<string, string> = {};
@@ -223,6 +223,7 @@ export function Row(
           handlePercents: [splitPercentY()],
           refreshRoot: refreshRoot
         });
+        column.parent = containers[id as string];
         parent.children[tileIndex] = column;
       }
       function down() {
@@ -233,6 +234,7 @@ export function Row(
           handlePercents: [splitPercentY()],
           refreshRoot: refreshRoot
         });
+        column.parent = containers[id as string];
         parent.children[tileIndex] = column;
       }
       function left() {
@@ -264,26 +266,28 @@ export function Row(
     function setUrl() {
       tiles[tileId].url = new URL(params.url as string);
     }
-    function deleteTile() {
-      const parent = tiles[tileId].parent as RowNode;
-      for (let i = 0; i < parent.children.length; i++) {
-        const node = parent.children[i];
-        if (node instanceof TileNode && node.id === tileId) {
-          parent.children.splice(i, 1);
-          refreshRoot();
-          break;
-        }
+    function deletion() {
+      if ((tiles[tileId].parent as ContainerNode).children.length === 1) {
+        deleteParentContainer(id as  string, tileId, refreshRoot);
+      }
+      else {
+        deleteTile(tileId, refreshRoot);
       }
     }
     switch (params.option) {
     case ContextOption.Split: split(); break;
-    case ContextOption.Delete: deleteTile(); break;
+    case ContextOption.Delete: deletion(); break;
     case ContextOption.SetUrl: setUrl(); break;
     }
   }
 
   return (
-    <div ref={ref} className="flex grow flex-row" style={style}>
+    <div
+      ref={ref}
+      className="flex grow flex-row"
+      style={style}
+      id={id}
+    >
       { buildTree(children, handlePercents, setCurrentHandle, RowHandle) }
     </div>
   );
@@ -378,22 +382,24 @@ export function Column(
       function left() {
         const tileIndex = parent.children.indexOf(tile);
         const splitTile = recordTile();
-        const newRow = recordRow({
+        const row = recordRow({
           children: [splitTile, tile],
           handlePercents: [splitPercentX()],
           refreshRoot: refreshRoot
         });
-        parent.children[tileIndex] = newRow;
+        row.parent = containers[id as string];
+        parent.children[tileIndex] = row;
       }
       function right() {
         const tileIndex = parent.children.indexOf(tile);
         const splitTile = recordTile();
-        const newRow = recordRow({
+        const row = recordRow({
           children: [tile, splitTile],
           handlePercents: [splitPercentX()],
           refreshRoot: refreshRoot
         });
-        parent.children[tileIndex] = newRow;
+        row.parent = containers[id as string];
+        parent.children[tileIndex] = row;
       }
       switch (params.direction) {
       case Direction.Up: up(); break;
@@ -406,15 +412,28 @@ export function Column(
     function setUrl() {
       tiles[tileId].url = new URL(params.url as string);
     }
+    function deletion() {
+      if ((tiles[tileId].parent as ContainerNode).children.length === 1) {
+        deleteParentContainer(id as  string, tileId, refreshRoot);
+      }
+      else {
+        deleteTile(tileId, refreshRoot);
+      }
+    }
     switch (params.option) {
     case ContextOption.Split: split(); break;
-    case ContextOption.Delete: break;
+    case ContextOption.Delete: deletion(); break;
     case ContextOption.SetUrl: setUrl(); break;
     }
   }
 
   return (
-    <div ref={ref} className="flex grow flex-col" style={style}>
+    <div
+      ref={ref}
+      className="flex grow flex-col"
+      style={style}
+      id={id}
+    >
       { buildTree(children, handlePercents, setCurrentHandle, ColumnHandle) }
     </div>
   );

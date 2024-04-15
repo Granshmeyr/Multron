@@ -1,9 +1,10 @@
 import React, { ReactElement } from "react";
 import { v4 as uuidv4 } from "uuid";
+import * as ch from "../../common/channels";
 import { ColumnHandleProps, RowHandleProps } from "../../common/interfaces";
-import { BaseNode } from "./nodes";
-import * as log from "../common/loggerUtil";
 import * as pre from "../../common/logPrefixes";
+import * as log from "../common/loggerUtil";
+import { BaseNode, ContainerNode, TileNode, containers, tiles } from "./nodes";
 
 const fileName: string = "containerShared.tsx";
 
@@ -37,7 +38,7 @@ function createElement(
 ): ReactElement {
   const logOptions = { ts: fileName, fn: createElement.name };
   const flexGrow: number = calculateGrow(index, nodeArrayLength, handlePercents);
-  console.log(`calculateGrow({${index}}, {${nodeArrayLength}}, {${handlePercents}}) = ${flexGrow}`);
+  //console.log(`calculateGrow({${index}}, {${nodeArrayLength}}, {${handlePercents}}) = ${flexGrow}`);
   log.info(logOptions, `${pre.running}: ${createElement.name} with flexGrow ${flexGrow}`);
   baseNode.appendStyle({ flexGrow: flexGrow });
   return baseNode.toElement();
@@ -80,4 +81,43 @@ export function buildTree(
     }
   }
   return elementArray;
+}
+
+export function deleteTile(tileId: string, refreshRoot: React.DispatchWithoutAction) {
+  const parent = tiles[tileId].parent as ContainerNode;
+  for (let i = 0; i < parent.children.length; i++) {
+    const node = parent.children[i];
+    if (node instanceof TileNode && node.id === tileId) {
+      parent.handlePercents.splice(i, 1);
+      if (parent.handlePercents.length === 1) {
+        parent.handlePercents[0] = 1;
+      }
+      parent.children.splice(i, 1);
+      window.electronAPI.send(ch.deleteView, tileId);
+      delete tiles[tileId];
+      refreshRoot();
+      break;
+    }
+  }
+}
+
+export function deleteParentContainer(containerId: string, tileId: string, refreshRoot: React.DispatchWithoutAction) {
+  const parent = tiles[tileId].parent as ContainerNode;
+  if (parent.children.length === 1) {
+    const grandparent = parent.parent as ContainerNode;
+    for (let i = 0; i < grandparent.children.length; i++) {
+      const node = grandparent.children[i];
+      if (node instanceof ContainerNode && node.id === containerId) {
+        if (grandparent.handlePercents.length === 1) {
+          grandparent.handlePercents[0] = 1;
+        }
+        grandparent.children.splice(i, 1);
+        window.electronAPI.send(ch.deleteView, tileId);
+        delete tiles[tileId];
+        delete containers[containerId];
+        refreshRoot();
+        break;
+      }
+    }
+  }
 }

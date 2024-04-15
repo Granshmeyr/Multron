@@ -14,3 +14,4 @@ export const failure: string = "Failure";
 export const running: string = "Running";
 export const userInteraction: string = "User interaction";
 export const status: string = "Status";
+export const deleting: string = "Deleting";

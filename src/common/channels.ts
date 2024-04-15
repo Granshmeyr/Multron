@@ -7,3 +7,4 @@ export const mainProcessContextMenu: string = "main-process-context-menu";
 export const logInfo: string = "log-info";
 export const logError: string = "log-error";
 export const doesViewExist: string = "does-view-exist";
+export const deleteView: string = "delete-view";
