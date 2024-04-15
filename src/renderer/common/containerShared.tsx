@@ -1,7 +1,7 @@
 import React, { ReactElement } from "react";
 import { v4 as uuidv4 } from "uuid";
 import * as ch from "../../common/channels";
-import { ColumnHandleProps, RowHandleProps } from "../../common/interfaces";
+import { ColumnHandleProps, ContextParams, RowHandleProps } from "../../common/interfaces";
 import * as pre from "../../common/logPrefixes";
 import * as log from "../common/loggerUtil";
 import { BaseNode, ContainerNode, TileNode, containers, tiles } from "./nodes";
@@ -83,41 +83,45 @@ export function buildTree(
   return elementArray;
 }
 
-export function deleteTile(tileId: string, refreshRoot: React.DispatchWithoutAction) {
+export function deleteTile(containerId: string, tileId: string, refreshRoot: React.DispatchWithoutAction) {
   const parent = tiles[tileId].parent as ContainerNode;
+  const grandparent = parent.parent as ContainerNode;
+  function deleteTileFromParent(index: number) {
+    parent.children.splice(index, 1);
+    parent.handlePercents.splice(index, 1);
+    window.electronAPI.send(ch.deleteView, tileId);
+    delete tiles[tileId];
+    refreshRoot();
+  }
+  function deleteParent(index: number) {
+    const otherIndex: number = index === 1 ? 0 : 1;
+    let parentIndex: number;
+    for (let i = 0; i < grandparent.children.length; i++) {
+      const node = grandparent.children[i];
+      if (node instanceof ContainerNode && node.id === containerId) {
+        parentIndex = i;
+      }
+    }
+    grandparent.children[parentIndex!] = parent.children[otherIndex];
+    grandparent.children[parentIndex!].parent = grandparent;
+    window.electronAPI.send(ch.deleteView, tileId);
+    delete tiles[tileId];
+    delete containers[containerId];
+    refreshRoot();
+  }
   for (let i = 0; i < parent.children.length; i++) {
     const node = parent.children[i];
     if (node instanceof TileNode && node.id === tileId) {
-      parent.handlePercents.splice(i, 1);
-      if (parent.handlePercents.length === 1) {
-        parent.handlePercents[0] = 1;
-      }
-      parent.children.splice(i, 1);
-      window.electronAPI.send(ch.deleteView, tileId);
-      delete tiles[tileId];
-      refreshRoot();
-      break;
+      (() => {
+        switch (parent.children.length) {
+        case 2: deleteParent(i); break;
+        default: deleteTileFromParent(i); break;
+        }
+      })();
     }
   }
 }
 
-export function deleteParentContainer(containerId: string, tileId: string, refreshRoot: React.DispatchWithoutAction) {
-  const parent = tiles[tileId].parent as ContainerNode;
-  if (parent.children.length === 1) {
-    const grandparent = parent.parent as ContainerNode;
-    for (let i = 0; i < grandparent.children.length; i++) {
-      const node = grandparent.children[i];
-      if (node instanceof ContainerNode && node.id === containerId) {
-        if (grandparent.handlePercents.length === 1) {
-          grandparent.handlePercents[0] = 1;
-        }
-        grandparent.children.splice(i, 1);
-        window.electronAPI.send(ch.deleteView, tileId);
-        delete tiles[tileId];
-        delete containers[containerId];
-        refreshRoot();
-        break;
-      }
-    }
-  }
+export function setUrl(tileId: string, params: ContextParams) {
+  tiles[tileId].url = new URL(params.url as string);
 }

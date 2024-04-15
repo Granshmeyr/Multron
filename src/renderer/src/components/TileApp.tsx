@@ -3,9 +3,9 @@ import * as ch from "../../../common/channels.ts";
 import { ContextOption, Direction } from "../../../common/enums";
 import { ColumnHandleProps, ColumnProps, ContextParams, RowHandleProps, RowProps, TileProps, Vector2 } from "../../../common/interfaces.ts";
 import * as pre from "../../../common/logPrefixes.ts";
-import { buildTree, deleteParentContainer, deleteTile } from "../../common/containerShared.tsx";
+import { buildTree, deleteTile as deletion, setUrl } from "../../common/containerShared.tsx";
 import * as log from "../../common/loggerUtil.ts";
-import { BaseNode, ColumnNode, ContainerNode, RowNode, TileNode, TileTree, containers, recordColumn, recordRow, recordTile, tiles } from "../../common/nodes.tsx";
+import { BaseNode, ColumnNode, RowNode, TileNode, TileTree, containers, recordColumn, recordRow, recordTile, tiles } from "../../common/nodes.tsx";
 import { onResize, randomColor } from "../../common/util.ts";
 
 const colors: Record<string, string> = {};
@@ -263,21 +263,10 @@ export function Row(
       }
       refreshRoot();
     }
-    function setUrl() {
-      tiles[tileId].url = new URL(params.url as string);
-    }
-    function deletion() {
-      if ((tiles[tileId].parent as ContainerNode).children.length === 1) {
-        deleteParentContainer(id as  string, tileId, refreshRoot);
-      }
-      else {
-        deleteTile(tileId, refreshRoot);
-      }
-    }
     switch (params.option) {
     case ContextOption.Split: split(); break;
-    case ContextOption.Delete: deletion(); break;
-    case ContextOption.SetUrl: setUrl(); break;
+    case ContextOption.Delete: deletion(id as string, tileId, refreshRoot); break;
+    case ContextOption.SetUrl: setUrl(tileId, params); break;
     }
   }
 
@@ -409,21 +398,10 @@ export function Column(
       }
       refreshRoot();
     }
-    function setUrl() {
-      tiles[tileId].url = new URL(params.url as string);
-    }
-    function deletion() {
-      if ((tiles[tileId].parent as ContainerNode).children.length === 1) {
-        deleteParentContainer(id as  string, tileId, refreshRoot);
-      }
-      else {
-        deleteTile(tileId, refreshRoot);
-      }
-    }
     switch (params.option) {
     case ContextOption.Split: split(); break;
-    case ContextOption.Delete: deletion(); break;
-    case ContextOption.SetUrl: setUrl(); break;
+    case ContextOption.Delete: deletion(id as string, tileId, refreshRoot); break;
+    case ContextOption.SetUrl: setUrl(tileId, params); break;
     }
   }
 
