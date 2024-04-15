@@ -4,7 +4,7 @@
 
 
 
-# MultronView
+# Multron
 
 > A multiboxed browser experience
 
