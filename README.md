@@ -14,9 +14,7 @@ Utilizes Electron's [BrowserView](https://www.electronjs.org/docs/latest/api/bro
 
 **Planned Features:**
 
- - [ ] Dynamic layout editor w/ splitting, resizing 
-	 - [x] Create, split, and resize views
-	 - [ ] View deletion
+ - [x] Dynamic layout editor w/ splitting, resizing, deletion
  - [x] Set URL per BrowserView
 	 - [ ] Menu for user-input
  - [x] Set zoom per BrowserView
