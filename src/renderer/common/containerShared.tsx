@@ -83,9 +83,15 @@ export function buildTree(
   return elementArray;
 }
 
-export function deleteTile(containerId: string, tileId: string, refreshRoot: React.DispatchWithoutAction) {
+export function deletion(
+  containerId: string,
+  tileId: string,
+  refreshRoot: React.DispatchWithoutAction,
+  setRoot: React.Dispatch<React.SetStateAction<BaseNode>>,
+  rootContextBehavior: (id: string, params: ContextParams) => void
+) {
   const parent = tiles[tileId].parent as ContainerNode;
-  const grandparent = parent.parent as ContainerNode;
+  const grandparent = parent.parent;
   function deleteTileFromParent(index: number) {
     parent.children.splice(index, 1);
     parent.handlePercents.splice(index, 1);
@@ -94,6 +100,9 @@ export function deleteTile(containerId: string, tileId: string, refreshRoot: Rea
     refreshRoot();
   }
   function deleteParent(index: number) {
+    if (grandparent === null || !(grandparent instanceof ContainerNode)) {
+      return;
+    }
     const otherIndex: number = index === 1 ? 0 : 1;
     let parentIndex: number;
     for (let i = 0; i < grandparent.children.length; i++) {
@@ -102,8 +111,28 @@ export function deleteTile(containerId: string, tileId: string, refreshRoot: Rea
         parentIndex = i;
       }
     }
-    grandparent.children[parentIndex!] = parent.children[otherIndex];
-    grandparent.children[parentIndex!].parent = grandparent;
+    const otherNode = parent.children[otherIndex];
+    grandparent.children[parentIndex!] = otherNode;
+    otherNode.parent = grandparent;
+    window.electronAPI.send(ch.deleteView, tileId);
+    delete tiles[tileId];
+    delete containers[containerId];
+    refreshRoot();
+  }
+  function deleteParentAndSetRoot(index: number) {
+    const otherIndex: number = index === 1 ? 0 : 1;
+    const otherNode = parent.children[otherIndex];
+    setRoot(otherNode);
+    otherNode.parent = null;
+    if (otherNode.style === undefined) {
+      return;
+    }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { flexGrow, ...otherProps } = otherNode.style;
+    otherNode.style = otherProps;
+    if (otherNode instanceof TileNode) {
+      otherNode.contextBehavior = rootContextBehavior;
+    }
     window.electronAPI.send(ch.deleteView, tileId);
     delete tiles[tileId];
     delete containers[containerId];
@@ -111,13 +140,11 @@ export function deleteTile(containerId: string, tileId: string, refreshRoot: Rea
   }
   for (let i = 0; i < parent.children.length; i++) {
     const node = parent.children[i];
+    const childCount = parent.children.length;
     if (node instanceof TileNode && node.id === tileId) {
-      (() => {
-        switch (parent.children.length) {
-        case 2: deleteParent(i); break;
-        default: deleteTileFromParent(i); break;
-        }
-      })();
+      if (childCount !== 2) { deleteTileFromParent(i); break; }
+      if (grandparent !== null) { deleteParent(i); break; }
+      deleteParentAndSetRoot(i); break;
     }
   }
 }

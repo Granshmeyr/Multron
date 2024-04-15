@@ -3,7 +3,7 @@ import * as ch from "../../../common/channels.ts";
 import { ContextOption, Direction } from "../../../common/enums";
 import { ColumnHandleProps, ColumnProps, ContextParams, RowHandleProps, RowProps, TileProps, Vector2 } from "../../../common/interfaces.ts";
 import * as pre from "../../../common/logPrefixes.ts";
-import { buildTree, deleteTile as deletion, setUrl } from "../../common/containerShared.tsx";
+import { buildTree, deletion, setUrl } from "../../common/containerShared.tsx";
 import * as log from "../../common/loggerUtil.ts";
 import { BaseNode, ColumnNode, RowNode, TileNode, TileTree, containers, recordColumn, recordRow, recordTile, tiles } from "../../common/nodes.tsx";
 import { onResize, randomColor } from "../../common/util.ts";
@@ -37,7 +37,6 @@ export function TileApp(): ReactElement {
       editModeEnabled = args[0] as boolean;
     });
   }
-
   if (!window.electronAPI.isListening(ch.mainProcessContextMenu)) {
     log.info(logOptions, `${pre.listeningOn}: ${ch.mainProcessContextMenu}`);
     window.electronAPI.on(ch.mainProcessContextMenu, (_, ...args: unknown[]) => {
@@ -100,28 +99,36 @@ export function TileApp(): ReactElement {
         setRoot(recordColumn({
           children: [recordTile(), tile],
           handlePercents: [splitPercentY()],
-          refreshRoot: refreshRoot
+          refreshRoot: refreshRoot,
+          setRoot: setRoot,
+          rootContextBehavior: onContext
         }));
       }
       function down() {
         setRoot(recordColumn({
           children: [tile, recordTile()],
           handlePercents: [splitPercentY()],
-          refreshRoot: refreshRoot
+          refreshRoot: refreshRoot,
+          setRoot: setRoot,
+          rootContextBehavior: onContext
         }));
       }
       function left() {
         setRoot(recordRow({
           children: [recordTile(), tile],
           handlePercents: [splitPercentX()],
-          refreshRoot: refreshRoot
+          refreshRoot: refreshRoot,
+          setRoot: setRoot,
+          rootContextBehavior: onContext
         }));
       }
       function right() {
         setRoot(recordRow({
           children: [tile, recordTile()],
           handlePercents: [splitPercentX()],
-          refreshRoot: refreshRoot
+          refreshRoot: refreshRoot,
+          setRoot: setRoot,
+          rootContextBehavior: onContext
         }));
       }
       switch (params.direction) {
@@ -148,7 +155,7 @@ export function TileApp(): ReactElement {
 }
 
 export function Row(
-  { children, refreshRoot, handlePercents, style, id }: RowProps
+  { children, refreshRoot, setRoot, rootContextBehavior, handlePercents, style, id }: RowProps
 ): ReactElement {
   const logOptions = { ts: fileName, fn: Row.name };
   const [currentHandle, setCurrentHandle] = useState<number | null>(null);
@@ -156,8 +163,8 @@ export function Row(
 
   for (const child of children) {
     if (child instanceof TileNode) {
-      child.setContextBehavior(onContext);
-      child.setResizeBehavior(onResize);
+      child.contextBehavior = onContext;
+      child.resizeBehavior = onResize;
     }
   }
 
@@ -221,7 +228,9 @@ export function Row(
         const column = recordColumn({
           children: [splitTile, tile],
           handlePercents: [splitPercentY()],
-          refreshRoot: refreshRoot
+          refreshRoot: refreshRoot,
+          setRoot: setRoot,
+          rootContextBehavior: rootContextBehavior
         });
         column.parent = containers[id as string];
         parent.children[tileIndex] = column;
@@ -232,7 +241,9 @@ export function Row(
         const column = recordColumn({
           children: [tile, splitTile],
           handlePercents: [splitPercentY()],
-          refreshRoot: refreshRoot
+          refreshRoot: refreshRoot,
+          setRoot: setRoot,
+          rootContextBehavior: rootContextBehavior
         });
         column.parent = containers[id as string];
         parent.children[tileIndex] = column;
@@ -265,7 +276,13 @@ export function Row(
     }
     switch (params.option) {
     case ContextOption.Split: split(); break;
-    case ContextOption.Delete: deletion(id as string, tileId, refreshRoot); break;
+    case ContextOption.Delete: deletion(
+        id as string,
+        tileId,
+        refreshRoot,
+        setRoot,
+        rootContextBehavior
+    ); break;
     case ContextOption.SetUrl: setUrl(tileId, params); break;
     }
   }
@@ -283,7 +300,7 @@ export function Row(
 }
 
 export function Column(
-  { children, refreshRoot, handlePercents, style, id }: ColumnProps
+  { children, refreshRoot, setRoot, rootContextBehavior, handlePercents, style, id }: ColumnProps
 ): ReactElement {
   const logOptions = { ts: fileName, fn: Column.name };
   const [currentHandle, setCurrentHandle] = useState<number | null>(null);
@@ -291,8 +308,8 @@ export function Column(
 
   for (const child of children) {
     if (child instanceof TileNode) {
-      child.setContextBehavior(onContext);
-      child.setResizeBehavior(onResize);
+      child.contextBehavior = onContext;
+      child.resizeBehavior = onResize;
     }
   }
 
@@ -374,7 +391,9 @@ export function Column(
         const row = recordRow({
           children: [splitTile, tile],
           handlePercents: [splitPercentX()],
-          refreshRoot: refreshRoot
+          refreshRoot: refreshRoot,
+          setRoot: setRoot,
+          rootContextBehavior: rootContextBehavior
         });
         row.parent = containers[id as string];
         parent.children[tileIndex] = row;
@@ -385,7 +404,9 @@ export function Column(
         const row = recordRow({
           children: [tile, splitTile],
           handlePercents: [splitPercentX()],
-          refreshRoot: refreshRoot
+          refreshRoot: refreshRoot,
+          setRoot: setRoot,
+          rootContextBehavior: rootContextBehavior
         });
         row.parent = containers[id as string];
         parent.children[tileIndex] = row;
@@ -400,7 +421,13 @@ export function Column(
     }
     switch (params.option) {
     case ContextOption.Split: split(); break;
-    case ContextOption.Delete: deletion(id as string, tileId, refreshRoot); break;
+    case ContextOption.Delete: deletion(
+        id as string,
+        tileId,
+        refreshRoot,
+        setRoot,
+        rootContextBehavior
+    ); break;
     case ContextOption.SetUrl: setUrl(tileId, params); break;
     }
   }

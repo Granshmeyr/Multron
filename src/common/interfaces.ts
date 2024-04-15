@@ -13,6 +13,8 @@ export interface TileProps {
 export interface RowProps {
   children: BaseNode[];
   refreshRoot: React.DispatchWithoutAction;
+  setRoot: React.Dispatch<React.SetStateAction<BaseNode>>
+  rootContextBehavior: (id: string, params: ContextParams) => void;
   handlePercents: number[];
   style?: React.CSSProperties;
   id?: string;
@@ -20,6 +22,8 @@ export interface RowProps {
 export interface ColumnProps {
   children: BaseNode[];
   refreshRoot: React.DispatchWithoutAction;
+  setRoot: React.Dispatch<React.SetStateAction<BaseNode>>
+  rootContextBehavior: (id: string, params: ContextParams) => void;
   handlePercents: number[];
   style?: React.CSSProperties;
   id?: string;
