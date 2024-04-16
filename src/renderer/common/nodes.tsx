@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import * as ch from "../../common/channels";
 import { ContextOption, Direction } from "../../common/enums";
 import { ColumnProps, ContextParams, RowProps, TileProps } from "../../common/interfaces";
-import { Column, Row, Tile } from "../src/components/TileApp";
+import { Column, Row, Tile } from "../src/components/Tiles";
 import * as log from "../common/loggerUtil";
 import * as pre from "../../common/logPrefixes";
 
@@ -28,6 +28,8 @@ export abstract class BaseNode {
   abstract appendStyle(style: React.CSSProperties): void;
   abstract get style(): React.CSSProperties | undefined;
   abstract set style(value: React.CSSProperties);
+  abstract get id(): string;
+  abstract set id(value: string);
 }
 
 export abstract class ContainerNode extends BaseNode {
@@ -41,8 +43,6 @@ export abstract class ContainerNode extends BaseNode {
   abstract set rootContextBehavior(value: (id: string, params: ContextParams) => void);
   abstract get handlePercents(): number[];
   abstract set handlePercents(value: number[]);
-  abstract get id(): string;
-  abstract set id(value: string);
 }
 
 export class TileNode extends BaseNode {
@@ -223,7 +223,6 @@ export class RowNode extends ContainerNode {
       id={this.id}
     ></Row>;
   }
-
 
   get children(): BaseNode[] { return this._children; }
   set children(value: BaseNode[]) { this._children = value; }

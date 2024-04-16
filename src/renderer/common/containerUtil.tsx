@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import * as ch from "../../common/channels";
 import { ColumnHandleProps, ContextParams, RowHandleProps } from "../../common/interfaces";
 import * as pre from "../../common/logPrefixes";
-import * as log from "../common/loggerUtil";
+import * as log from "./loggerUtil";
 import { BaseNode, ContainerNode, TileNode, containers, tiles } from "./nodes";
 
 const fileName: string = "containerShared.tsx";

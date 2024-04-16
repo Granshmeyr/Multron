@@ -1,22 +1,23 @@
 import { ReactElement, useEffect, useReducer, useRef, useState } from "react";
 import * as ch from "../../../common/channels.ts";
-import { ContextOption, Direction } from "../../../common/enums";
+import { ContextOption, Direction } from "../../../common/enums.ts";
 import { ColumnHandleProps, ColumnProps, ContextParams, RowHandleProps, RowProps, TileProps, Vector2 } from "../../../common/interfaces.ts";
 import * as pre from "../../../common/logPrefixes.ts";
-import { buildTree, deletion, setUrl } from "../../common/containerShared.tsx";
+import { buildTree, deletion, setUrl } from "../../common/containerUtil.tsx";
 import * as log from "../../common/loggerUtil.ts";
-import { BaseNode, ColumnNode, RowNode, TileNode, TileTree, containers, recordColumn, recordRow, recordTile, tiles } from "../../common/nodes.tsx";
-import { onResize, randomColor } from "../../common/util.ts";
+import { BaseNode, ColumnNode, ContainerNode, RowNode, TileNode, TileTree, containers, recordColumn, recordRow, recordTile, tiles } from "../../common/nodes.tsx";
+import { onResize, randomColor } from "../../common/tilesUtil.ts";
 
 const colors: Record<string, string> = {};
 const fileName: string = "TileApp.tsx";
 let clickedPosition: Vector2;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 let editModeEnabled: boolean = false;
 
-export function TileApp(): ReactElement {
+export default function Main(): ReactElement {
   const logOptions = {
     ts: fileName,
-    fn: TileApp.name
+    fn: Main.name
   };
   const ref = useRef<HTMLDivElement>(null);
   const [tileTree] = useState<TileTree>(
@@ -41,24 +42,36 @@ export function TileApp(): ReactElement {
     log.info(logOptions, `${pre.listeningOn}: ${ch.mainProcessContextMenu}`);
     window.electronAPI.on(ch.mainProcessContextMenu, (_, ...args: unknown[]) => {
       log.info(logOptions, `${pre.eventReceived}: ${ch.mainProcessContextMenu}`);
-      const id: string = args[0] as string;
-      const params: ContextParams = args[1] as ContextParams;
+      const tileId: string = args[0] as string;
+      const params = args[1] as ContextParams | null;
       const position: Vector2 = args[2] as Vector2;
+      if (params === null) {
+        return;
+      }
       clickedPosition = position;
       function split() {
-        if (tiles[id].ref === null) {
+        if (tiles[tileId].ref === null) {
           log.error(logOptions, `${pre.invalidValue}: TileNode.ref is null`);
           return;
         }
-        tiles[id].split(id, params.direction as Direction);
-      }
-      function setUrl() {
-        tiles[id].url = new URL(params.url as string);
+        tiles[tileId].split(tileId, params!.direction as Direction);
       }
       switch (params.option) {
       case ContextOption.Split: split(); break;
-      case ContextOption.Delete: break;
-      case ContextOption.SetUrl: setUrl(); break;
+      case ContextOption.Delete: (
+        () => {
+          const parent = tiles[tileId].parent as ContainerNode | null;
+          if (parent === null) { return; }
+          deletion(
+            parent.id,
+            tileId,
+            parent.refreshRoot,
+            parent.setRoot,
+            parent.rootContextBehavior
+          );
+        })();
+        break;
+      case ContextOption.SetUrl: setUrl(tileId, params); break;
       }
     });
   }
