@@ -8,7 +8,7 @@ module.exports = {
   ],
   ignorePatterns: ['.eslintrc.cjs', 'out'],
   parser: '@typescript-eslint/parser',
-  plugins: ['react-refresh'],
+  plugins: ['react-refresh', "react"],
   rules: {
     'react-refresh/only-export-components': [
       'warn',
@@ -17,6 +17,6 @@ module.exports = {
     'semi': ['error', 'always'],
     'quotes': ['error', 'double'],
     'indent': ['error', 2],
-    "jsx-quotes": ["error", 'prefer-double']
+    "jsx-quotes": ["error", 'prefer-double'],
   },
 }
