@@ -1,6 +1,6 @@
 import React from "react";
+import { BaseNode } from "../renderer/common/nodeTypes";
 import { ContextOption, Direction } from "./enums";
-import { BaseNode } from "../renderer/common/nodes";
 
 export interface TileProps {
   className?: string;

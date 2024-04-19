@@ -5,14 +5,13 @@ import { ColumnHandleProps, ColumnProps, ContextParams, RowHandleProps, RowProps
 import * as pre from "../../../common/logPrefixes.ts";
 import { buildTree, deletion, setUrl } from "../../common/containerUtil.tsx";
 import * as log from "../../common/loggerUtil.ts";
-import { BaseNode, ColumnNode, ContainerNode, RowNode, TileNode, TileTree, containers, recordColumn, recordRow, recordTile, tiles } from "../../common/nodes.tsx";
-import { onResize, randomColor } from "../../common/tilesUtil.ts";
+import { BaseNode, ColumnNode, ContainerNode, RowNode, TileNode, TileTree, containers, recordColumn, recordRow, recordTile, tiles } from "../../common/nodeTypes.tsx";
+import { fpsToMs, marginizeRectangle, onResize, randomColor, setEditMode, shrinkRectangleAsync, throttle } from "../../common/util.ts";
 
-const colors: Record<string, string> = {};
+const colors = new Map<string, string>();
 const fileName: string = "TileApp.tsx";
+const resizeThrottleMs: number = fpsToMs(15);
 let clickedPosition: Vector2;
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-let editModeEnabled: boolean = false;
 
 export default function Main(): ReactElement {
   const logOptions = {
@@ -20,11 +19,14 @@ export default function Main(): ReactElement {
     fn: Main.name
   };
   const ref = useRef<HTMLDivElement>(null);
+  const throttledResize = useRef(throttle((id, rectangle) => {
+    onResize(id as string, rectangle as Electron.Rectangle);
+  }, resizeThrottleMs));
   const [tileTree] = useState<TileTree>(
     new TileTree(
       recordTile({
-        contextBehavior: (id, params) => { onContext(id, params); },
-        resizeBehavior: (id, rectangle) => { onResize(id, rectangle); }
+        contextBehavior: onContext,
+        resizeBehavior: throttledResize.current
       })
     )
   );
@@ -33,9 +35,32 @@ export default function Main(): ReactElement {
 
   if (!window.electronAPI.isListening(ch.toggleEditMode)) {
     log.info(logOptions, `${pre.listeningOn}: ${ch.toggleEditMode}`);
-    window.electronAPI.on(ch.toggleEditMode, (_, ...args: unknown[]) => {
+    window.electronAPI.on(ch.toggleEditMode, async (_, ...args: unknown[]) => {
       log.info(logOptions, `${pre.eventReceived}: ${ch.toggleEditMode}`);
-      editModeEnabled = args[0] as boolean;
+      const enabled = args[0] as boolean;
+      setEditMode(enabled);
+      if (!enabled) {
+        return;
+      }
+      const toShrink = new Map<string, Electron.Rectangle>();
+      for (const [id] of tiles) {
+        if (!(await window.electronAPI.invoke(ch.doesViewExist, id) as boolean)) {
+          continue;
+        }
+        const initialRect = await window.electronAPI.invoke(
+          ch.getViewRectangle, id
+        ) as Electron.Rectangle;
+        toShrink.set(id, initialRect);
+      }
+      for (const [id] of toShrink) {
+        const initialRect = toShrink.get(id)!;
+        shrinkRectangleAsync(
+          id,
+          initialRect,
+          marginizeRectangle(initialRect, 50),
+          400
+        );
+      }
     });
   }
   if (!window.electronAPI.isListening(ch.mainProcessContextMenu)) {
@@ -50,17 +75,17 @@ export default function Main(): ReactElement {
       }
       clickedPosition = position;
       function split() {
-        if (tiles[tileId].ref === null) {
+        if (tiles.get(tileId)!.ref === null) {
           log.error(logOptions, `${pre.invalidValue}: TileNode.ref is null`);
           return;
         }
-        tiles[tileId].split(tileId, params!.direction as Direction);
+        tiles.get(tileId)!.split(tileId, params!.direction as Direction);
       }
       switch (params.option) {
       case ContextOption.Split: split(); break;
       case ContextOption.Delete: (
         () => {
-          const parent = tiles[tileId].parent as ContainerNode | null;
+          const parent = tiles.get(tileId)!.parent as ContainerNode | null;
           if (parent === null) { return; }
           deletion(
             parent.id,
@@ -87,8 +112,8 @@ export default function Main(): ReactElement {
     };
   });
 
-  function onContext(id: string, params: ContextParams) {
-    const tile = tiles[id];
+  function onContext(tileId: string, params: ContextParams) {
+    const tile = tiles.get(tileId) as TileNode;
     function split() {
       function splitPercentY(): number {
         if (!ref.current) {
@@ -173,11 +198,18 @@ export function Row(
   const logOptions = { ts: fileName, fn: Row.name };
   const [currentHandle, setCurrentHandle] = useState<number | null>(null);
   const ref = useRef<HTMLDivElement>(null);
+  const resizeCache = useRef(new Map<TileNode, (...args: unknown[]) => unknown>());
 
   for (const child of children) {
     if (child instanceof TileNode) {
       child.contextBehavior = onContext;
-      child.resizeBehavior = onResize;
+      if (!(resizeCache.current.has(child))) {
+        const throttledResize = throttle((id, rectangle) => {
+          onResize(id as string, rectangle as Electron.Rectangle);
+        }, resizeThrottleMs);
+        resizeCache.current.set(child, throttledResize);
+      }
+      child.resizeBehavior = resizeCache.current.get(child)!;
     }
   }
 
@@ -194,7 +226,7 @@ export function Row(
         const mousePosition = e.clientX - ref.current.getBoundingClientRect().left;
         const newPercents = [...handlePercents];
         newPercents[currentHandle] = mousePosition / divWidth;
-        containers[id as string].handlePercents = newPercents;
+        containers.get(id as string)!.handlePercents = newPercents;
         refreshRoot();
       }
     }
@@ -214,9 +246,9 @@ export function Row(
 
   function onContext(tileId: string, params: ContextParams) {
     function split() {
-      const tile = tiles[tileId];
+      const tile = tiles.get(tileId) as TileNode;
       const parent = tile.parent as RowNode;
-      const tileRef = tiles[tileId].ref as React.RefObject<HTMLDivElement>;
+      const tileRef = tiles.get(tileId)!.ref as React.RefObject<HTMLDivElement>;
       function splitPercentY(): number {
         if (tileRef.current === null) {
           log.error(logOptions, `${pre.invalidValue}: TileNode.ref.current is null`);
@@ -245,7 +277,7 @@ export function Row(
           setRoot: setRoot,
           rootContextBehavior: rootContextBehavior
         });
-        column.parent = containers[id as string];
+        column.parent = containers.get(id as string)!;
         parent.children[tileIndex] = column;
       }
       function down() {
@@ -258,7 +290,7 @@ export function Row(
           setRoot: setRoot,
           rootContextBehavior: rootContextBehavior
         });
-        column.parent = containers[id as string];
+        column.parent = containers.get(id as string)!;
         parent.children[tileIndex] = column;
       }
       function left() {
@@ -268,7 +300,7 @@ export function Row(
         splitTile.parent = parent;
         const newPercents = [...handlePercents];
         newPercents.splice(tileIndex, 0, splitPercentX());
-        containers[id as string].handlePercents = newPercents;
+        containers.get(id as string)!.handlePercents = newPercents;
       }
       function right() {
         const tileIndex = parent.children.indexOf(tile);
@@ -277,7 +309,7 @@ export function Row(
         splitTile.parent = parent;
         const newPercents = [...handlePercents];
         newPercents.splice(tileIndex, 0, splitPercentX());
-        containers[id as string].handlePercents = newPercents;
+        containers.get(id as string)!.handlePercents = newPercents;
       }
       switch (params.direction) {
       case Direction.Up: up(); break;
@@ -307,7 +339,7 @@ export function Row(
       style={style}
       id={id}
     >
-      { buildTree(children, handlePercents, setCurrentHandle, RowHandle) }
+      {buildTree(children, handlePercents, setCurrentHandle, RowHandle)}
     </div>
   );
 }
@@ -318,11 +350,18 @@ export function Column(
   const logOptions = { ts: fileName, fn: Column.name };
   const [currentHandle, setCurrentHandle] = useState<number | null>(null);
   const ref = useRef<HTMLDivElement>(null);
+  const resizeCache = useRef(new Map<TileNode, (...args: unknown[]) => unknown>());
 
   for (const child of children) {
     if (child instanceof TileNode) {
       child.contextBehavior = onContext;
-      child.resizeBehavior = onResize;
+      if (!(resizeCache.current.has(child))) {
+        const throttledResize = throttle((id, rectangle) => {
+          onResize(id as string, rectangle as Electron.Rectangle);
+        }, resizeThrottleMs);
+        resizeCache.current.set(child, throttledResize);
+      }
+      child.resizeBehavior = resizeCache.current.get(child)!;
     }
   }
 
@@ -339,7 +378,7 @@ export function Column(
         const mousePosition = e.clientY - ref.current.getBoundingClientRect().top;
         const newPercents = [...handlePercents];
         newPercents[currentHandle] = mousePosition / divHeight;
-        containers[id as string].handlePercents = newPercents;
+        containers.get(id as string)!.handlePercents = newPercents;
         refreshRoot();
       }
     }
@@ -357,10 +396,10 @@ export function Column(
   });
 
   function onContext(tileId: string, params: ContextParams) {
-    const tile = tiles[tileId];
+    const tile = tiles.get(tileId) as TileNode;
     function split() {
       const parent = tile.parent as ColumnNode;
-      const tileRef = tiles[tileId].ref as React.RefObject<HTMLDivElement>;
+      const tileRef = tiles.get(tileId)!.ref as React.RefObject<HTMLDivElement>;
       function splitPercentY(): number {
         if (ref.current === null) {
           log.error(logOptions, `${pre.invalidValue}: Column ref is null`);
@@ -387,7 +426,7 @@ export function Column(
         splitTile.parent = parent;
         const newPercents = [...handlePercents];
         newPercents.splice(tileIndex, 0, splitPercentY());
-        containers[id as string].handlePercents = newPercents;
+        containers.get(id as string)!.handlePercents = newPercents;
       }
       function down() {
         const tileIndex = parent.children.indexOf(tile);
@@ -396,7 +435,7 @@ export function Column(
         splitTile.parent = parent;
         const newPercents = [...handlePercents];
         newPercents.splice(tileIndex, 0, splitPercentY());
-        containers[id as string].handlePercents = newPercents;
+        containers.get(id as string)!.handlePercents = newPercents;
       }
       function left() {
         const tileIndex = parent.children.indexOf(tile);
@@ -408,7 +447,7 @@ export function Column(
           setRoot: setRoot,
           rootContextBehavior: rootContextBehavior
         });
-        row.parent = containers[id as string];
+        row.parent = containers.get(id as string)!;
         parent.children[tileIndex] = row;
       }
       function right() {
@@ -421,7 +460,7 @@ export function Column(
           setRoot: setRoot,
           rootContextBehavior: rootContextBehavior
         });
-        row.parent = containers[id as string];
+        row.parent = containers.get(id as string)!;
         parent.children[tileIndex] = row;
       }
       switch (params.direction) {
@@ -452,7 +491,7 @@ export function Column(
       style={style}
       id={id}
     >
-      { buildTree(children, handlePercents, setCurrentHandle, ColumnHandle) }
+      {buildTree(children, handlePercents, setCurrentHandle, ColumnHandle)}
     </div>
   );
 }
@@ -474,14 +513,14 @@ export function Tile({
     y: 0
   });
 
-  if (!(id as string in colors)) {
-    colors[id as string] = randomColor();
+  if (!(colors.has(id as string))) {
+    colors.set(id as string, randomColor());
   }
-  const color = colors[id as string];
+  const color = colors.get(id as string);
 
   useEffect(() => {
     const _logOptions = { ts: fileName, fn: `${Tile.name}/${useEffect.name}` };
-    tiles[id as string].ref = ref;
+    tiles.get(id as string)!.ref = ref;
     async function createViewOrResizeAsync() {
       log.info(_logOptions, `${pre.invokingEvent}: ${ch.doesViewExist} for id "${id}"`);
       if (!await window.electronAPI.invoke(ch.doesViewExist, id) as boolean) {

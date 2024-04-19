@@ -24,8 +24,10 @@ contextBridge.exposeInMainWorld("electronAPI", {
     channel: string,
     listener: (event: Electron.IpcRendererEvent, ...args: any[]) => void
   ) => {
-    listeners.delete(channel);
-    ipcRenderer.removeListener(channel, listener);
+    if (listeners.has(channel)) {
+      listeners.delete(channel);
+      ipcRenderer.removeListener(channel, listener);
+    }
   },
   invoke: (
     channel: string,

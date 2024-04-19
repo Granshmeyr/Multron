@@ -1,14 +1,14 @@
 import { BrowserView, BrowserViewConstructorOptions, BrowserWindow, Menu } from "electron";
+import * as pre from "../common/logPrefixes.ts";
+import { log } from "../common/logger.ts";
+import { mainWindow } from "../main/main.ts";
 import * as ch from "./channels.ts";
 import { ContextOption, Direction } from "./enums.ts";
 import { ContextParams, Vector2 } from "./interfaces.ts";
-import { BrowserViewInstance } from "./types.ts";
-import { cursorViewportPosition } from "./util.ts";
-import { log } from "../common/logger.ts";
-import * as pre from "../common/logPrefixes.ts";
-import { mainWindow } from "../main/main.ts";
+import { BrowserViewInstance } from "./mainTypes.ts";
+import { cursorViewportPosition } from "./mainUtil.ts";
 
-export const browserViews: Record<string, BrowserViewInstance> = {};
+export const browserViews = new Map<string, BrowserViewInstance>();
 const fileName: string = "listeners.ts";
 
 export async function onShowContextMenuAsync(): Promise<ContextParams | null> {
@@ -33,7 +33,7 @@ export async function onShowContextMenuAsync(): Promise<ContextParams | null> {
       },
       {
         label: "Set URL",
-        click: () => { params = { option: ContextOption.SetUrl, url: "https://www.google.com" }; }
+        click: () => { params = { option: ContextOption.SetUrl, url: "https://www.google.com/" }; }
       },
       {
         label: "Delete",
@@ -54,8 +54,8 @@ export async function onCreateViewAsync(
 ): Promise<boolean> {
   const logOptions = { ts: fileName, fn: onCreateViewAsync.name };
   return new Promise<boolean>((resolve) => {
-    browserViews[id] = new BrowserViewInstance(new BrowserView(options));
-    const view = browserViews[id].browserView;
+    browserViews.set(id, new BrowserViewInstance(new BrowserView(options)));
+    const view = browserViews.get(id)!.browserView;
     view.webContents.on("context-menu", async () => {
       const position: Vector2 = cursorViewportPosition(mainWindow);
       const params: ContextParams | null = await onShowContextMenuAsync();
@@ -83,8 +83,8 @@ export async function onCreateViewAsync(
     mainWindow.addBrowserView(view);
     resolve(true);
 
-    for (const id in browserViews) {
-      log.info(logOptions, `${pre.status}: browserViews has id "${id}"`);
+    for (const [key] of browserViews) {
+      log.info(logOptions, `${pre.status}: browserViews has id "${key}"`);
     }
   });
 }
@@ -97,7 +97,7 @@ export function onSetViewRectangle(
   log.info({ ts: fileName, fn: onSetViewRectangle.name },
     `${pre.setting}: rectangle "{ height: ${rect.height}, width: ${rect.width}, x: ${rect.x}, y: ${rect.y} }" to browserViews[${id}]`
   );
-  browserViews[id].rectangle = rect;
+  browserViews.get(id)!.rectangle = rect;
 }
 export function onSetViewUrl(
   _event: Electron.IpcMainEvent,
@@ -107,7 +107,7 @@ export function onSetViewUrl(
   log.info({ ts: fileName, fn: onSetViewUrl.name },
     `${pre.setting}: url "${url}" to browserViews[${id}]`
   );
-  browserViews[id].url = url;
+  browserViews.get(id)!.url = url;
 }
 export function onLogInfo(
   _event: Electron.IpcMainEvent,
@@ -128,7 +128,7 @@ export function onDoesViewExist(
   key: string
 ): boolean {
   const logOptions = { ts: fileName, fn: onDoesViewExist.name };
-  if (key in browserViews) {
+  if (browserViews.has(key)) {
     log.info(logOptions, `${pre.success}: key "${key}" does exist`);
     return true;
   }
@@ -140,11 +140,17 @@ export function onDeleteView(
   key: string
 ) {
   const logOptions = { ts: fileName, fn: onDeleteView.name };
-  if (!(key in browserViews)) {
+  if (!(browserViews.has(key))) {
     log.error(logOptions, `${pre.missing}: key "${key} does not exist for deletion"`);
     return;
   }
   log.info(logOptions, `${pre.deleting}: view for key "${key}"`);
-  mainWindow?.removeBrowserView(browserViews[key].browserView);
-  delete browserViews[key];
+  mainWindow?.removeBrowserView(browserViews.get(key)!.browserView);
+  browserViews.delete(key);
+}
+export function onGetViewRectangle(
+  _event: Electron.IpcMainInvokeEvent,
+  key: string
+): Electron.Rectangle {
+  return browserViews.get(key)!.browserView.getBounds();
 }

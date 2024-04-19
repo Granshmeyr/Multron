@@ -17,8 +17,9 @@ Utilizes Electron's [BrowserView](https://www.electronjs.org/docs/latest/api/bro
 
  - [x] Dynamic layout editor w/ splitting, resizing, deletion
  - [x] Set URL per BrowserView
-	 - [ ] Menu for user-input
+	 - [ ] Menu for user-input (needs brainstorming)
  - [x] Set zoom per BrowserView
+ - [ ] Drag views to other tiles
  - [ ] Support per-view user sessions
  - [ ] Save layout of tiles / URLs
  - [ ] Restore layout from file

@@ -4,7 +4,7 @@ import * as ch from "../../common/channels";
 import { ColumnHandleProps, ContextParams, RowHandleProps } from "../../common/interfaces";
 import * as pre from "../../common/logPrefixes";
 import * as log from "./loggerUtil";
-import { BaseNode, ContainerNode, TileNode, containers, tiles } from "./nodes";
+import { BaseNode, ContainerNode, TileNode, containers, tiles } from "./nodeTypes";
 
 const fileName: string = "containerShared.tsx";
 
@@ -38,7 +38,6 @@ function createElement(
 ): ReactElement {
   const logOptions = { ts: fileName, fn: createElement.name };
   const flexGrow: number = calculateGrow(index, nodeArrayLength, handlePercents);
-  //console.log(`calculateGrow({${index}}, {${nodeArrayLength}}, {${handlePercents}}) = ${flexGrow}`);
   log.info(logOptions, `${pre.running}: ${createElement.name} with flexGrow ${flexGrow}`);
   baseNode.appendStyle({ flexGrow: flexGrow });
   return baseNode.toElement();
@@ -90,13 +89,13 @@ export function deletion(
   setRoot: React.Dispatch<React.SetStateAction<BaseNode>>,
   rootContextBehavior: (id: string, params: ContextParams) => void
 ) {
-  const parent = tiles[tileId].parent as ContainerNode;
+  const parent = tiles.get(tileId)!.parent as ContainerNode;
   const grandparent = parent.parent;
   function deleteTileFromParent(index: number) {
     parent.children.splice(index, 1);
     parent.handlePercents.splice(index, 1);
     window.electronAPI.send(ch.deleteView, tileId);
-    delete tiles[tileId];
+    tiles.delete(tileId);
     refreshRoot();
   }
   function deleteParent(index: number) {
@@ -115,8 +114,8 @@ export function deletion(
     grandparent.children[parentIndex!] = otherNode;
     otherNode.parent = grandparent;
     window.electronAPI.send(ch.deleteView, tileId);
-    delete tiles[tileId];
-    delete containers[containerId];
+    tiles.delete(tileId);
+    containers.delete(containerId);
     refreshRoot();
   }
   function deleteParentAndSetRoot(index: number) {
@@ -134,8 +133,8 @@ export function deletion(
       otherNode.contextBehavior = rootContextBehavior;
     }
     window.electronAPI.send(ch.deleteView, tileId);
-    delete tiles[tileId];
-    delete containers[containerId];
+    tiles.delete(tileId);
+    containers.delete(containerId);
     refreshRoot();
   }
   for (let i = 0; i < parent.children.length; i++) {
@@ -150,5 +149,5 @@ export function deletion(
 }
 
 export function setUrl(tileId: string, params: ContextParams) {
-  tiles[tileId].url = new URL(params.url as string);
+  tiles.get(tileId)!.url = new URL(params.url as string);
 }

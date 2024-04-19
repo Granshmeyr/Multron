@@ -1,8 +1,9 @@
 import { BrowserView } from "electron";
-import * as pre from "../common/logPrefixes";
-import { log } from "../common/logger";
-import { marginizeRectangle, rectangleToString as rectToString } from "./util";
+import * as pre from "./logPrefixes";
+import { log } from "./logger";
+import { rectangleToString as rectToString } from "./mainUtil";
 import { editModeEnabled } from "../main/main";
+import { marginizeRectangle } from "../renderer/common/util";
 
 const fileName: string = "types.ts";
 
@@ -11,6 +12,7 @@ export class BrowserViewInstance {
   private _url: string | null = null;
   private _rectangle: Electron.Rectangle= { height: 0, width: 0, x: 0, y: 0 };
   private editMargin: number = 20;
+  private editMarginBottom: number = 40;
   private hidden: boolean = false;
   private hiddenDistance: number = 10000;
 
@@ -45,7 +47,6 @@ export class BrowserViewInstance {
       this.unhide();
     }
   }
-
   hide() {
     const logOptions = { ts: fileName, fn: `${BrowserViewInstance.name}.${this.hide.name}` };
     if (this.hidden) {
@@ -89,7 +90,14 @@ export class BrowserViewInstance {
     }
     if (!this.hidden && editModeEnabled) {
       log.info(logOptions, `${pre.setting}: rectangle ` + `"${rectToString(marginRectangle)}"`);
-      this.browserView.setBounds(marginRectangle);
+      /*const rect: Electron.Rectangle = {
+        ...marginRectangle,
+        height: marginRectangle.height - this.editMarginBottom
+      };
+      if (this.browserView.getBounds() === rect) {
+        return;
+      }*/
+      this.browserView.setBounds(this._rectangle);
       return;
     }
     if (this.hidden && !editModeEnabled) {

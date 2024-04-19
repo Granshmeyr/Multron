@@ -3,12 +3,12 @@ import { v4 as uuidv4 } from "uuid";
 import * as ch from "../../common/channels";
 import { ContextOption, Direction } from "../../common/enums";
 import { ColumnProps, ContextParams, RowProps, TileProps } from "../../common/interfaces";
-import { Column, Row, Tile } from "../src/components/Tiles";
-import * as log from "../common/loggerUtil";
 import * as pre from "../../common/logPrefixes";
+import * as log from "../common/loggerUtil";
+import { Column, Row, Tile } from "../src/apps/Tiles";
 
-export const tiles: Record<string, TileNode> = {};
-export const containers: Record<string, ContainerNode> = {};
+export const tiles = new Map<string, TileNode>();
+export const containers = new Map<string, ContainerNode>();
 const fileName: string = "nodes.tsx";
 
 export class TileTree {
@@ -17,7 +17,7 @@ export class TileTree {
   constructor(root: BaseNode) {
     this.root = root;
     if (root instanceof TileNode && root.id) {
-      tiles[root.id] = root;
+      tiles.set(root.id, root);
     }
   }
 }
@@ -51,36 +51,35 @@ export class TileNode extends BaseNode {
   private _style?: React.CSSProperties;
   private _id: string;
   private _url?: URL;
-  private _contextBehavior: (id: string, params: ContextParams) => void;
+  private _contextBehavior: (id: string, params: ContextParams) => void ;
   private _resizeBehavior: (id: string, rectangle: Electron.Rectangle) => void;
 
-  constructor(
-    {
-      className: className,
-      style: style,
-      id: id = uuidv4(),
-      url: url,
-      contextBehavior: splitBehavior,
-      resizeBehavior: resizeBehavior
-    }: TileProps = {
-      id: uuidv4(),
-      contextBehavior: () => {
-        log.info({
-          ts: fileName, fn: `${TileNode.name}.constructor`
-        }, `${pre.missing}: contextBehavior param`); },
-      resizeBehavior: () => { log.info({
+  constructor({
+    className: className,
+    style: style,
+    id: id,
+    url: url,
+    contextBehavior: contextBehavior,
+    resizeBehavior: resizeBehavior
+  }: TileProps = {
+    id: uuidv4(),
+    contextBehavior: () => {
+      log.info({
         ts: fileName, fn: `${TileNode.name}.constructor`
-      }, `${pre.missing}: resizeBehavior param`); }
+      }, `${pre.missing}: contextBehavior param`);
     },
-    parent: ColumnNode | RowNode | null = null
-  ) {
+    resizeBehavior: () => {
+      log.info({
+        ts: fileName, fn: `${TileNode.name}.constructor`
+      }, `${pre.missing}: resizeBehavior param`);
+    }
+  }) {
     super();
-    this.parent = parent;
     this._className = className;
     this._style = style;
-    this._id = id;
+    this._id = id === undefined ? uuidv4() : id;
     this._url = url;
-    this._contextBehavior = splitBehavior;
+    this._contextBehavior = contextBehavior;
     this._resizeBehavior = resizeBehavior;
   }
 
@@ -249,18 +248,18 @@ export function recordTile(tileProps?: TileProps): TileNode {
   else {
     tileNode = new TileNode();
   }
-  tiles[tileNode.id] = tileNode;
+  tiles.set(tileNode.id, tileNode);
   return tileNode;
 }
 
 export function recordRow(rowProps: RowProps): RowNode {
   const rowNode: RowNode = new RowNode(rowProps);
-  containers[rowNode.id] = rowNode;
+  containers.set(rowNode.id, rowNode);
   return rowNode;
 }
 
 export function recordColumn(columnProps: ColumnProps): ColumnNode {
   const columnNode: ColumnNode = new ColumnNode(columnProps);
-  containers[columnNode.id] = columnNode;
+  containers.set(columnNode.id, columnNode);
   return columnNode;
 }

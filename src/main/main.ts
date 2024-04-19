@@ -1,13 +1,13 @@
 import { BrowserWindow, app, globalShortcut, ipcMain } from "electron";
 import path from "path";
 import * as ch from "../common/channels";
-import { browserViews, onCreateViewAsync, onDeleteView, onDoesViewExist, onLogError, onLogInfo, onSetViewRectangle, onSetViewUrl, onShowContextMenuAsync } from "../common/listeners";
+import { onCreateViewAsync, onDeleteView, onDoesViewExist, onGetViewRectangle, onLogError, onLogInfo, onSetViewRectangle, onSetViewUrl, onShowContextMenuAsync } from "../common/listeners";
 import * as pre from "../common/logPrefixes";
 import { log } from "../common/logger";
 
 export let mainWindow: BrowserWindow | null;
 export let editModeEnabled: boolean = false;
-const viteURL: string = "http://localhost:5173";
+export const viteURL: string = "http://localhost:5173";
 const editShortcut: string = "Control+e";
 let focused: boolean = false;
 
@@ -21,7 +21,7 @@ function main(): void {
     return onShowContextMenuAsync();
   });
   log.info(logOptions, `${pre.handlingOn}: ${ch.createViewAsync}`);
-  ipcMain.handle(ch.createViewAsync, async (event, id, options) => {
+  ipcMain.handle(ch.createViewAsync, (event, id, options) => {
     log.info(logOptions, `${pre.eventReceived}: ${ch.createViewAsync}`);
     return onCreateViewAsync(event, id, mainWindow as BrowserWindow, options);
   });
@@ -46,7 +46,7 @@ function main(): void {
     onLogError(event, options, message);
   });
   log.info(logOptions, `${pre.handlingOn}: ${ch.doesViewExist}`);
-  ipcMain.handle(ch.doesViewExist, async (event, key) => {
+  ipcMain.handle(ch.doesViewExist, (event, key) => {
     log.info(logOptions, `${pre.eventReceived}: ${ch.doesViewExist}`);
     return onDoesViewExist(event, key);
   });
@@ -54,6 +54,9 @@ function main(): void {
   ipcMain.on(ch.deleteView, (event, key) => {
     log.info(logOptions, `${pre.eventReceived}: ${ch.deleteView}`);
     onDeleteView(event, key);
+  });
+  ipcMain.handle(ch.getViewRectangle, (event, key) => {
+    return onGetViewRectangle(event, key);
   });
 
   onAppReady(createMainWindow);
@@ -106,6 +109,7 @@ function createMainWindow() {
     globalShortcut.unregister("Control+r");
   });
   mainWindow.loadURL(viteURL);
+  //mainWindow.loadFile(path.join(app.getAppPath(), "out", "renderer", "index.html"));
   mainWindow.webContents.openDevTools();
   mainWindow.on("closed", () => mainWindow = null);
 }
@@ -131,17 +135,11 @@ function onEdit() {
     log.info(logOptions, `${pre.toggling}: Edit Mode on`);
     mainWindow?.webContents.send(ch.toggleEditMode, false);
     editModeEnabled = false;
-    for (const id in browserViews) {
-      browserViews[id].updateRectangle();
-    }
   }
   else {
     log.info(logOptions, `${pre.toggling}: Edit Mode off`);
     mainWindow?.webContents.send(ch.toggleEditMode, true);
     editModeEnabled = true;
-    for (const id in browserViews) {
-      browserViews[id].updateRectangle();
-    }
   }
 }
 

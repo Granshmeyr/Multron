@@ -1,5 +1,5 @@
+import LinkIcon from "@mui/icons-material/Link";
 import MenuIcon from "@mui/icons-material/Menu";
-import InboxIcon from "@mui/icons-material/MoveToInbox";
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Drawer from "@mui/material/Drawer";
@@ -19,12 +19,24 @@ import TableRow from "@mui/material/TableRow";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import * as React from "react";
+import { useEffect } from "react";
+import * as ch from "../../../common/channels";
 
-const drawerWidth = 220;
+const drawerWidth = 210;
 
 export default function Main() {
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [isClosing, setIsClosing] = React.useState(false);
+
+  useEffect(() => {
+    return () => {
+      window.electronAPI.removeListener(ch.viewData, onViewData);
+    };
+  });
+
+  function onViewData() {
+    return;
+  }
 
   function handleDrawerClose() {
     setIsClosing(true);
@@ -47,7 +59,7 @@ export default function Main() {
         <ListItem key={"Set URLs"} disablePadding>
           <ListItemButton>
             <ListItemIcon>
-              <InboxIcon></InboxIcon>
+              <LinkIcon></LinkIcon>
             </ListItemIcon>
             <ListItemText primary={"Set URLs"} />
           </ListItemButton>
@@ -66,8 +78,7 @@ export default function Main() {
         <AppBar
           position="fixed"
           sx={{
-            width: { sm: `calc(100% - ${drawerWidth}px)` },
-            ml: { sm: `${drawerWidth}px` },
+            display: { sm: "none" }
           }}
         >
           <Toolbar
@@ -78,7 +89,6 @@ export default function Main() {
               aria-label="open drawer"
               edge="start"
               onClick={handleDrawerToggle}
-              sx={{ mr: 2, display: { sm: "none" } }}
             >
               <MenuIcon />
             </IconButton>
@@ -116,13 +126,16 @@ export default function Main() {
       <Box
         sx={{
           flexGrow: 1, p: 3,
-          width: "100vw",
-          height: "calc(100vh - 24px)"
+          width: `calc(100vw - ${drawerWidth}px)`,
+          height: "calc(100vh)"
         }}
         component="main"
       >
         <Toolbar
           variant="dense"
+          sx={{
+            display: { xs: "block", sm: "none" }
+          }}
         ></Toolbar>
         <DenseTable></DenseTable>
       </Box>

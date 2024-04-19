@@ -8,3 +8,4 @@ export const logInfo: string = "log-info";
 export const logError: string = "log-error";
 export const doesViewExist: string = "does-view-exist";
 export const deleteView: string = "delete-view";
+export const getViewRectangle: string = "get-view-rectangle";
