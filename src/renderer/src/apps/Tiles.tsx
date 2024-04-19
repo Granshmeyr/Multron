@@ -1,12 +1,12 @@
 import { ReactElement, useEffect, useReducer, useRef, useState } from "react";
 import * as ch from "../../../common/channels.ts";
 import { ContextOption, Direction } from "../../../common/enums.ts";
-import { ColumnHandleProps, ColumnProps, ContextParams, RowHandleProps, RowProps, TileProps, Vector2 } from "../../../common/interfaces.ts";
+import { ColumnHandleProps, ColumnProps, ContextParams, RowHandleProps, RowProps, TileProps, Vector2, ViewData } from "../../../common/interfaces.ts";
 import * as pre from "../../../common/logPrefixes.ts";
 import { buildTree, deletion, setUrl } from "../../common/containerUtil.tsx";
 import * as log from "../../common/loggerUtil.ts";
 import { BaseNode, ColumnNode, ContainerNode, RowNode, TileNode, TileTree, containers, recordColumn, recordRow, recordTile, tiles } from "../../common/nodeTypes.tsx";
-import { fpsToMs, marginizeRectangle, onResize, randomColor, setEditMode, shrinkRectangleAsync, throttle } from "../../common/util.ts";
+import { editMargin, fpsToMs, marginizeRectangle, onResize, randomColor, setEditMode, interpRectangleAsync, throttle, editShrinkMs } from "../../common/util.ts";
 
 const colors = new Map<string, string>();
 const fileName: string = "TileApp.tsx";
@@ -38,28 +38,33 @@ export default function Main(): ReactElement {
     window.electronAPI.on(ch.toggleEditMode, async (_, ...args: unknown[]) => {
       log.info(logOptions, `${pre.eventReceived}: ${ch.toggleEditMode}`);
       const enabled = args[0] as boolean;
+      const viewData = await window.electronAPI.invoke(ch.getViewData) as Map<string, ViewData>;
       setEditMode(enabled);
-      if (!enabled) {
-        return;
-      }
-      const toShrink = new Map<string, Electron.Rectangle>();
-      for (const [id] of tiles) {
-        if (!(await window.electronAPI.invoke(ch.doesViewExist, id) as boolean)) {
-          continue;
+      function enterEditMode() {
+        for (const [id, data] of viewData) {
+          const initialRect = data.rectangle;
+          interpRectangleAsync(
+            id,
+            initialRect,
+            marginizeRectangle(initialRect, editMargin),
+            editShrinkMs
+          );
         }
-        const initialRect = await window.electronAPI.invoke(
-          ch.getViewRectangle, id
-        ) as Electron.Rectangle;
-        toShrink.set(id, initialRect);
       }
-      for (const [id] of toShrink) {
-        const initialRect = toShrink.get(id)!;
-        shrinkRectangleAsync(
-          id,
-          initialRect,
-          marginizeRectangle(initialRect, 50),
-          400
-        );
+      function exitEditMode() {
+        for (const [id, data] of viewData) {
+          const initialRect = data.rectangle;
+          interpRectangleAsync(
+            id,
+            initialRect,
+            marginizeRectangle(initialRect, -editMargin),
+            editShrinkMs
+          );
+        }
+      }
+      switch (enabled) {
+      case true: enterEditMode(); break;
+      default: exitEditMode(); break;
       }
     });
   }
@@ -522,8 +527,9 @@ export function Tile({
     const _logOptions = { ts: fileName, fn: `${Tile.name}/${useEffect.name}` };
     tiles.get(id as string)!.ref = ref;
     async function createViewOrResizeAsync() {
-      log.info(_logOptions, `${pre.invokingEvent}: ${ch.doesViewExist} for id "${id}"`);
-      if (!await window.electronAPI.invoke(ch.doesViewExist, id) as boolean) {
+      log.info(_logOptions, `${pre.invokingEvent}: ${ch.getViewData} for id "${id}"`);
+      const viewData = await window.electronAPI.invoke(ch.getViewData) as Map<string, ViewData>;
+      if (!(viewData.has(id as string))) {
         log.info(_logOptions, `${pre.invokingEvent}: ${ch.createViewAsync} for id "${id}"`);
         await window.electronAPI.invoke(ch.createViewAsync, id, {
           webPreferences: {

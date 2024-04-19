@@ -4,7 +4,7 @@ import { log } from "../common/logger.ts";
 import { mainWindow } from "../main/main.ts";
 import * as ch from "./channels.ts";
 import { ContextOption, Direction } from "./enums.ts";
-import { ContextParams, Vector2 } from "./interfaces.ts";
+import { ContextParams, Vector2, ViewData } from "./interfaces.ts";
 import { BrowserViewInstance } from "./mainTypes.ts";
 import { cursorViewportPosition } from "./mainUtil.ts";
 
@@ -123,17 +123,15 @@ export function onLogError(
 ) {
   log.error(options, message);
 }
-export function onDoesViewExist(
-  _event: Electron.IpcMainInvokeEvent,
-  key: string
-): boolean {
-  const logOptions = { ts: fileName, fn: onDoesViewExist.name };
-  if (browserViews.has(key)) {
-    log.info(logOptions, `${pre.success}: key "${key}" does exist`);
-    return true;
+export function onGetViewData(): Map<string, ViewData> {
+  const data = new Map<string, ViewData>();
+  for (const [id, instance] of browserViews) {
+    data.set(id, {
+      url: instance.url,
+      rectangle: instance.rectangle
+    });
   }
-  log.info(logOptions, `${pre.failure}: key "${key}" does not exist`);
-  return false;
+  return data;
 }
 export function onDeleteView(
   _event: Electron.IpcMainEvent,

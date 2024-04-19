@@ -6,6 +6,5 @@ export const toggleEditMode: string = "toggle-edit-mode";
 export const mainProcessContextMenu: string = "main-process-context-menu";
 export const logInfo: string = "log-info";
 export const logError: string = "log-error";
-export const doesViewExist: string = "does-view-exist";
+export const getViewData: string = "get-view-data";
 export const deleteView: string = "delete-view";
-export const getViewRectangle: string = "get-view-rectangle";

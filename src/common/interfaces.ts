@@ -36,3 +36,7 @@ export interface ContextParams {
   direction?: Direction,
   url?: string
 }
+export interface ViewData {
+  url: string | null,
+  rectangle: Electron.Rectangle
+}

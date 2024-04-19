@@ -53,6 +53,7 @@ export class TileNode extends BaseNode {
   private _url?: URL;
   private _contextBehavior: (id: string, params: ContextParams) => void ;
   private _resizeBehavior: (id: string, rectangle: Electron.Rectangle) => void;
+  private rectangle: Electron.Rectangle = { height: 0, width: 0, x: 0, y: 0 };
 
   constructor({
     className: className,

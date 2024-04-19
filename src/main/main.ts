@@ -1,7 +1,7 @@
 import { BrowserWindow, app, globalShortcut, ipcMain } from "electron";
 import path from "path";
 import * as ch from "../common/channels";
-import { onCreateViewAsync, onDeleteView, onDoesViewExist, onGetViewRectangle, onLogError, onLogInfo, onSetViewRectangle, onSetViewUrl, onShowContextMenuAsync } from "../common/listeners";
+import { onCreateViewAsync, onDeleteView, onGetViewData, onLogError, onLogInfo, onSetViewRectangle, onSetViewUrl, onShowContextMenuAsync } from "../common/listeners";
 import * as pre from "../common/logPrefixes";
 import { log } from "../common/logger";
 
@@ -45,18 +45,15 @@ function main(): void {
     log.info(logOptions, `${pre.eventReceived}: ${ch.logError}`);
     onLogError(event, options, message);
   });
-  log.info(logOptions, `${pre.handlingOn}: ${ch.doesViewExist}`);
-  ipcMain.handle(ch.doesViewExist, (event, key) => {
-    log.info(logOptions, `${pre.eventReceived}: ${ch.doesViewExist}`);
-    return onDoesViewExist(event, key);
+  log.info(logOptions, `${pre.handlingOn}: ${ch.getViewData}`);
+  ipcMain.handle(ch.getViewData, () => {
+    log.info(logOptions, `${pre.eventReceived}: ${ch.getViewData}`);
+    return onGetViewData();
   });
   log.info(logOptions, `${pre.listeningOn}: ${ch.deleteView}`);
   ipcMain.on(ch.deleteView, (event, key) => {
     log.info(logOptions, `${pre.eventReceived}: ${ch.deleteView}`);
     onDeleteView(event, key);
-  });
-  ipcMain.handle(ch.getViewRectangle, (event, key) => {
-    return onGetViewRectangle(event, key);
   });
 
   onAppReady(createMainWindow);

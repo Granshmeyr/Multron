@@ -10,7 +10,7 @@ const fileName: string = "types.ts";
 export class BrowserViewInstance {
   browserView: BrowserView;
   private _url: string | null = null;
-  private _rectangle: Electron.Rectangle= { height: 0, width: 0, x: 0, y: 0 };
+  private _rectangle: Electron.Rectangle = { height: 0, width: 0, x: 0, y: 0 };
   private editMargin: number = 20;
   private editMarginBottom: number = 40;
   private hidden: boolean = false;

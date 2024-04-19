@@ -1,6 +1,8 @@
 import * as ch from "../../common/channels";
 
 export let editMode: boolean = false;
+export const editMargin: number = -20;
+export const editShrinkMs: number = 250;
 
 export function setEditMode(value: boolean) {
   editMode = value;
@@ -31,7 +33,7 @@ export function randomColor() {
   return "#" + ("00000"+(Math.random()*(1<<24)|0).toString(16)).slice(-6);
 }
 export function onResize(id: string, rectangle: Electron.Rectangle) {
-  const sendRect = editMode ? marginizeRectangle(rectangle, 50) : rectangle;
+  const sendRect = editMode ? marginizeRectangle(rectangle, editMargin) : rectangle;
   requestAnimationFrame(() => {
     window.electronAPI.send(ch.setViewRectangle, id, sendRect);
   });
@@ -39,7 +41,7 @@ export function onResize(id: string, rectangle: Electron.Rectangle) {
 export function lerp(start: number, end: number, t: number): number {
   return start * (1 - t) + end * t;
 }
-export function shrinkRectangleAsync(
+export function interpRectangleAsync(
   id: string,
   initialRect: Electron.Rectangle,
   targetRect: Electron.Rectangle,
@@ -77,10 +79,10 @@ export function marginizeRectangle(
     return { height: 100, width: 100, x: 10, y: 10 };
   }
   return {
-    height: rectangle.height - (margin * 2),
-    width: rectangle.width - (margin * 2),
-    x: rectangle.x + margin,
-    y: rectangle.y + margin
+    height: rectangle.height + (margin * 2),
+    width: rectangle.width + (margin * 2),
+    x: rectangle.x - margin,
+    y: rectangle.y - margin
   };
 }
 export function isRectangleValid(rectangle: Electron.Rectangle): boolean {
