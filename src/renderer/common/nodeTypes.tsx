@@ -4,7 +4,7 @@ import * as ch from "../../common/channels";
 import { ContextOption, Direction } from "../../common/enums";
 import { ColumnProps, ContextParams, RowProps, TileProps } from "../../common/interfaces";
 import * as pre from "../../common/logPrefixes";
-import * as log from "../common/loggerUtil";
+import * as log from "./loggerUtil";
 import { Column, Row, Tile } from "../src/apps/Tiles";
 
 export const tiles = new Map<string, TileNode>();
@@ -47,13 +47,13 @@ export abstract class ContainerNode extends BaseNode {
 
 export class TileNode extends BaseNode {
   ref: React.RefObject<HTMLDivElement> | null = null;
+  imgUrl: string | null = null;
   private _className?: string;
   private _style?: React.CSSProperties;
   private _id: string;
   private _url?: URL;
   private _contextBehavior: (id: string, params: ContextParams) => void ;
   private _resizeBehavior: (id: string, rectangle: Electron.Rectangle) => void;
-  private rectangle: Electron.Rectangle = { height: 0, width: 0, x: 0, y: 0 };
 
   constructor({
     className: className,
@@ -64,12 +64,12 @@ export class TileNode extends BaseNode {
     resizeBehavior: resizeBehavior
   }: TileProps = {
     id: uuidv4(),
-    contextBehavior: () => {
+    contextBehavior: function () {
       log.info({
         ts: fileName, fn: `${TileNode.name}.constructor`
       }, `${pre.missing}: contextBehavior param`);
     },
-    resizeBehavior: () => {
+    resizeBehavior: function () {
       log.info({
         ts: fileName, fn: `${TileNode.name}.constructor`
       }, `${pre.missing}: resizeBehavior param`);
@@ -85,14 +85,17 @@ export class TileNode extends BaseNode {
   }
 
   toElement(): ReactElement {
-    return <Tile
-      className={this.className}
-      style={this.style}
-      id={this.id}
-      url={this.url}
-      contextBehavior={this._contextBehavior}
-      resizeBehavior={this._resizeBehavior}>
-    </Tile>;
+    return (
+      <Tile
+        className={this.className}
+        style={this.style}
+        id={this.id}
+        url={this.url}
+        contextBehavior={this._contextBehavior}
+        resizeBehavior={this._resizeBehavior}
+      >
+      </Tile>
+    );
   }
 
   get className(): string | undefined { return this._className; }

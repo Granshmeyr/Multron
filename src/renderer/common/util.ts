@@ -1,4 +1,5 @@
 import * as ch from "../../common/channels";
+import { tiles } from "./nodeTypes";
 
 export let editMode: boolean = false;
 export const editMargin: number = -20;
@@ -19,7 +20,7 @@ export function throttle(fn: (...args: unknown[]) => unknown, wait: number = 300
       inThrottle = true;
     } else {
       clearTimeout(lastFn);
-      lastFn = setTimeout(() => {
+      lastFn = setTimeout(function (this: unknown) {
         if (Date.now() - lastTime >= wait) {
           fn.apply(this, args);
           lastTime = Date.now();
@@ -33,9 +34,11 @@ export function randomColor() {
   return "#" + ("00000"+(Math.random()*(1<<24)|0).toString(16)).slice(-6);
 }
 export function onResize(id: string, rectangle: Electron.Rectangle) {
-  const sendRect = editMode ? marginizeRectangle(rectangle, editMargin) : rectangle;
-  requestAnimationFrame(() => {
-    window.electronAPI.send(ch.setViewRectangle, id, sendRect);
+  requestAnimationFrame(async function () {
+    const sendRect = editMode ? marginizeRectangle(rectangle, editMargin) : rectangle;
+    const buffer = await window.electronAPI.invoke(ch.resizeCapture, id, sendRect) as Buffer;
+    const blob = new Blob([buffer], { type: "image/jpeg" });
+    tiles.get(id)!.imgUrl = URL.createObjectURL(blob);
   });
 }
 export function lerp(start: number, end: number, t: number): number {
@@ -47,7 +50,7 @@ export function interpRectangleAsync(
   targetRect: Electron.Rectangle,
   ms: number
 ): Promise<void> {
-  return new Promise<void>((resolve) => {
+  return new Promise<void>(function (resolve) {
     const startTime = Date.now();
     function update() {
       const currentTime = Date.now();
@@ -78,12 +81,14 @@ export function marginizeRectangle(
   if (!isRectangleValid(rectangle)) {
     return { height: 100, width: 100, x: 10, y: 10 };
   }
-  return {
+  const newRect =  {
     height: rectangle.height + (margin * 2),
     width: rectangle.width + (margin * 2),
     x: rectangle.x - margin,
     y: rectangle.y - margin
   };
+  console.log(`converted rect ${rectToString(rectangle)} to ${rectToString(newRect)}`);
+  return newRect;
 }
 export function isRectangleValid(rectangle: Electron.Rectangle): boolean {
   const numbers: number[] = [rectangle.height, rectangle.width, rectangle.x, rectangle.y];
@@ -97,4 +102,8 @@ export function isRectangleValid(rectangle: Electron.Rectangle): boolean {
 }
 export function fpsToMs(fps: number): number {
   return 1000 / fps;
+}
+export function rectToString(rectangle: Electron.Rectangle): string {
+  return `{ height: ${rectangle.height}, width: ${rectangle.width},` +
+  `x: ${rectangle.x}, y: ${rectangle.y} }`;
 }

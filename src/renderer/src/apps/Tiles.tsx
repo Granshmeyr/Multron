@@ -19,7 +19,7 @@ export default function Main(): ReactElement {
     fn: Main.name
   };
   const ref = useRef<HTMLDivElement>(null);
-  const throttledResize = useRef(throttle((id, rectangle) => {
+  const throttledResize = useRef(throttle(function (id, rectangle) {
     onResize(id as string, rectangle as Electron.Rectangle);
   }, resizeThrottleMs));
   const [tileTree] = useState<TileTree>(
@@ -35,7 +35,7 @@ export default function Main(): ReactElement {
 
   if (!window.electronAPI.isListening(ch.toggleEditMode)) {
     log.info(logOptions, `${pre.listeningOn}: ${ch.toggleEditMode}`);
-    window.electronAPI.on(ch.toggleEditMode, async (_, ...args: unknown[]) => {
+    window.electronAPI.on(ch.toggleEditMode, async function (_, ...args: unknown[]) {
       log.info(logOptions, `${pre.eventReceived}: ${ch.toggleEditMode}`);
       const enabled = args[0] as boolean;
       const viewData = await window.electronAPI.invoke(ch.getViewData) as Map<string, ViewData>;
@@ -43,6 +43,7 @@ export default function Main(): ReactElement {
       function enterEditMode() {
         for (const [id, data] of viewData) {
           const initialRect = data.rectangle;
+          log.info(logOptions, `${pre.running}: ${interpRectangleAsync.name} from non-margin to marginized rect`);
           interpRectangleAsync(
             id,
             initialRect,
@@ -54,6 +55,7 @@ export default function Main(): ReactElement {
       function exitEditMode() {
         for (const [id, data] of viewData) {
           const initialRect = data.rectangle;
+          log.info(logOptions, `${pre.running}: ${interpRectangleAsync.name} from marginized to non-margin rect`);
           interpRectangleAsync(
             id,
             initialRect,
@@ -70,7 +72,7 @@ export default function Main(): ReactElement {
   }
   if (!window.electronAPI.isListening(ch.mainProcessContextMenu)) {
     log.info(logOptions, `${pre.listeningOn}: ${ch.mainProcessContextMenu}`);
-    window.electronAPI.on(ch.mainProcessContextMenu, (_, ...args: unknown[]) => {
+    window.electronAPI.on(ch.mainProcessContextMenu, function (_, ...args: unknown[]) {
       log.info(logOptions, `${pre.eventReceived}: ${ch.mainProcessContextMenu}`);
       const tileId: string = args[0] as string;
       const params = args[1] as ContextParams | null;
@@ -89,7 +91,7 @@ export default function Main(): ReactElement {
       switch (params.option) {
       case ContextOption.Split: split(); break;
       case ContextOption.Delete: (
-        () => {
+        function () {
           const parent = tiles.get(tileId)!.parent as ContainerNode | null;
           if (parent === null) { return; }
           deletion(
@@ -106,13 +108,13 @@ export default function Main(): ReactElement {
     });
   }
 
-  useEffect(() => {
+  useEffect(function () {
     function onContextMenu(e: MouseEvent) {
       clickedPosition = { x: e.clientX, y: e.clientY };
     }
 
     document.addEventListener("contextmenu", onContextMenu);
-    return () => {
+    return function () {
       document.removeEventListener("contextmenu", onContextMenu);
     };
   });
@@ -209,7 +211,7 @@ export function Row(
     if (child instanceof TileNode) {
       child.contextBehavior = onContext;
       if (!(resizeCache.current.has(child))) {
-        const throttledResize = throttle((id, rectangle) => {
+        const throttledResize = throttle(function (id, rectangle) {
           onResize(id as string, rectangle as Electron.Rectangle);
         }, resizeThrottleMs);
         resizeCache.current.set(child, throttledResize);
@@ -218,7 +220,7 @@ export function Row(
     }
   }
 
-  useEffect(() => {
+  useEffect(function () {
     function onMouseUp(e: MouseEvent) {
       if (e.button !== 0) {
         return;
@@ -242,7 +244,7 @@ export function Row(
     document.addEventListener("contextmenu", onContextMenu);
     document.addEventListener("mouseup", onMouseUp);
     document.addEventListener("mousemove", onMouseMove);
-    return () => {
+    return function () {
       document.removeEventListener("contextmenu", onContextMenu);
       document.removeEventListener("mouseup", onMouseUp);
       document.removeEventListener("mousemove", onMouseMove);
@@ -361,7 +363,7 @@ export function Column(
     if (child instanceof TileNode) {
       child.contextBehavior = onContext;
       if (!(resizeCache.current.has(child))) {
-        const throttledResize = throttle((id, rectangle) => {
+        const throttledResize = throttle(function (id, rectangle) {
           onResize(id as string, rectangle as Electron.Rectangle);
         }, resizeThrottleMs);
         resizeCache.current.set(child, throttledResize);
@@ -370,7 +372,7 @@ export function Column(
     }
   }
 
-  useEffect(() => {
+  useEffect(function () {
     function onMouseUp(e: MouseEvent) {
       if (e.button !== 0) {
         return;
@@ -393,7 +395,7 @@ export function Column(
     document.addEventListener("contextmenu", onContextMenu);
     document.addEventListener("mouseup", onMouseUp);
     document.addEventListener("mousemove", onMouseMove);
-    return () => {
+    return function () {
       document.removeEventListener("contextmenu", onContextMenu);
       document.removeEventListener("mouseup", onMouseUp);
       document.removeEventListener("mousemove", onMouseMove);
@@ -523,7 +525,7 @@ export function Tile({
   }
   const color = colors.get(id as string);
 
-  useEffect(() => {
+  useEffect(function () {
     const _logOptions = { ts: fileName, fn: `${Tile.name}/${useEffect.name}` };
     tiles.get(id as string)!.ref = ref;
     async function createViewOrResizeAsync() {
@@ -543,7 +545,7 @@ export function Tile({
         resizeBehavior(id as string, rectangle.current);
       }
     }
-    const resizeObserver = new ResizeObserver(async () => {
+    const resizeObserver = new ResizeObserver(async function () {
       rectangle.current = {
         height: ref.current?.offsetHeight ?? 100,
         width: ref.current?.offsetWidth ?? 100,
@@ -556,44 +558,90 @@ export function Tile({
     if (ref.current) {
       resizeObserver.observe(ref.current);
     }
-    return () => {
+    return function () {
       resizeObserver.disconnect();
     };
   }, [id, resizeBehavior]);
 
-  return (
-    <div
-      className={(() => {
-        if (className !== undefined) {
-          return defaultClass + " " + className;
-        }
-        return defaultClass;
-      })()}
-      style={{ ...style, backgroundColor: color }}
-      id={id}
-      ref={ref}
-      onContextMenu={
-        async () => {
-          log.info(logOptions, `${pre.invokingEvent}: ${ch.showContextMenuAsync}`);
-          const params = await window.electronAPI.invoke(ch.showContextMenuAsync) as ContextParams | null;
-          if (params === null) {
-            log.info(logOptions, `${pre.userInteraction}: selected Nothing (null)`);
-            return;
-          }
-          const option: string = (() => {
-            switch (params.option) {
-            case ContextOption.Split: return "Split";
-            case ContextOption.Delete: return "Delete";
-            case ContextOption.SetUrl: return "SetUrl";
+  function toElement(): ReactElement {
+    const imgUrl: string | null = tiles.get(id as string)!.imgUrl;
+    function withImg() {
+      return (
+        <div
+          className={(function () {
+            if (className !== undefined) {
+              return defaultClass + " " + className;
             }
-          })();
-          log.info(logOptions, `${pre.userInteraction}: selected ${option}`);
-          contextBehavior?.(id as string, params);
-        }
-      }
-    >
-    </div>
-  );
+            return defaultClass;
+          })()}
+          style={{ ...style, backgroundColor: color }}
+          id={id}
+          ref={ref}
+          onContextMenu={
+            async function () {
+              log.info(logOptions, `${pre.invokingEvent}: ${ch.showContextMenuAsync}`);
+              const params = await window.electronAPI.invoke(ch.showContextMenuAsync) as ContextParams | null;
+              if (params === null) {
+                log.info(logOptions, `${pre.userInteraction}: selected Nothing (null)`);
+                return;
+              }
+              const option: string = (function () {
+                switch (params.option) {
+                case ContextOption.Split: return "Split";
+                case ContextOption.Delete: return "Delete";
+                case ContextOption.SetUrl: return "SetUrl";
+                }
+              })();
+              log.info(logOptions, `${pre.userInteraction}: selected ${option}`);
+              contextBehavior?.(id as string, params);
+            }
+          }
+        >
+          <img src={tiles.get(id as string)!.imgUrl as string}></img>
+        </div>
+      );
+    }
+    function noImg() {
+      return (
+        <div
+          className={(function () {
+            if (className !== undefined) {
+              return defaultClass + " " + className;
+            }
+            return defaultClass;
+          })()}
+          style={{ ...style, backgroundColor: color }}
+          id={id}
+          ref={ref}
+          onContextMenu={
+            async function () {
+              log.info(logOptions, `${pre.invokingEvent}: ${ch.showContextMenuAsync}`);
+              const params = await window.electronAPI.invoke(ch.showContextMenuAsync) as ContextParams | null;
+              if (params === null) {
+                log.info(logOptions, `${pre.userInteraction}: selected Nothing (null)`);
+                return;
+              }
+              const option: string = (function () {
+                switch (params.option) {
+                case ContextOption.Split: return "Split";
+                case ContextOption.Delete: return "Delete";
+                case ContextOption.SetUrl: return "SetUrl";
+                }
+              })();
+              log.info(logOptions, `${pre.userInteraction}: selected ${option}`);
+              contextBehavior?.(id as string, params);
+            }
+          }
+        >
+        </div>
+      );
+    }
+    switch (imgUrl !== null) {
+    case true: return withImg();
+    default: return noImg();
+    }
+  }
+  return toElement();
 }
 
 function RowHandle({ onMouseDown }: RowHandleProps): ReactElement {

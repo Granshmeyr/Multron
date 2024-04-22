@@ -1,6 +1,6 @@
 
 > electronwm@0.0.0 dev
-> electron-vite dev -w
+> npx electron-vite dev -w
 
 [36mvite v5.2.8 [32mbuilding SSR bundle for development...[36m[39m
 [36m
@@ -8,10 +8,10 @@ watching for file changes...[39m
 [36m
 build started...[39m
 transforming...
-[32m✓[39m 87 modules transformed.
+[32m✓[39m 89 modules transformed.
 rendering chunks...
-[2mout/main/[22m[36mmain.js  [39m[1m[2m152.04 kB[22m[1m[22m
-[36mbuilt in 1158ms.[39m
+[2mout/main/[22m[36mmain.js  [39m[1m[2m152.15 kB[22m[1m[22m
+[36mbuilt in 1632ms.[39m
 [32m
 build the electron main process successfully[39m
 [90m
@@ -25,8 +25,8 @@ build started...[39m
 transforming...
 [32m✓[39m 1 modules transformed.
 rendering chunks...
-[2mout/preload/[22m[36mpreload.js  [39m[1m[2m0.75 kB[22m[1m[22m
-[36mbuilt in 21ms.[39m
+[2mout/preload/[22m[36mpreload.js  [39m[1m[2m0.79 kB[22m[1m[22m
+[36mbuilt in 22ms.[39m
 [32m
 build the electron preload files successfully[39m
 [90m
@@ -40,3 +40,34 @@ build the electron preload files successfully[39m
 start electron app...
 [39m
 
+{"level":30,"time":1713623309299,"ts":"main.ts","fn":"main","msg":"Handling on: show-context-menu-async"}
+{"level":30,"time":1713623309299,"ts":"main.ts","fn":"main","msg":"Handling on: create-view-async"}
+{"level":30,"time":1713623309299,"ts":"main.ts","fn":"main","msg":"Listening on: set-view-rectangle"}
+{"level":30,"time":1713623309299,"ts":"main.ts","fn":"main","msg":"Listening on: set-view-url"}
+{"level":30,"time":1713623309299,"ts":"main.ts","fn":"main","msg":"Listening on: log-info"}
+{"level":30,"time":1713623309299,"ts":"main.ts","fn":"main","msg":"Listening on: log-error"}
+{"level":30,"time":1713623309299,"ts":"main.ts","fn":"main","msg":"Handling on: get-view-data"}
+{"level":30,"time":1713623309299,"ts":"main.ts","fn":"main","msg":"Listening on: delete-view"}
+{"level":30,"time":1713623312019,"ts":"TileApp.tsx","fn":"Main","msg":"Listening on: toggle-edit-mode"}
+{"level":30,"time":1713623312019,"ts":"TileApp.tsx","fn":"Main","msg":"Listening on: main-process-context-menu"}
+{"level":30,"time":1713623312026,"ts":"TileApp.tsx","fn":"Tile/useEffect","msg":"Invoking event: get-view-data for id \"22240d96-af41-43a8-968c-17b038d0cae7\""}
+{"level":30,"time":1713623312027,"ts":"main.ts","fn":"main","msg":"Event received: get-view-data"}
+{"level":30,"time":1713623312043,"ts":"TileApp.tsx","fn":"Tile/useEffect","msg":"Invoking event: get-view-data for id \"22240d96-af41-43a8-968c-17b038d0cae7\""}
+{"level":30,"time":1713623312044,"ts":"main.ts","fn":"main","msg":"Event received: get-view-data"}
+{"level":30,"time":1713623312044,"ts":"TileApp.tsx","fn":"Tile/useEffect","msg":"Invoking event: create-view-async for id \"22240d96-af41-43a8-968c-17b038d0cae7\""}
+{"level":30,"time":1713623312044,"ts":"main.ts","fn":"main","msg":"Event received: create-view-async"}
+{"level":30,"time":1713623312047,"ts":"types.ts","fn":"ViewInstance.hide","msg":"Toggling: hide for view with rectangle \"{ height: 0, width: 0, x: 0, y: 0 }\""}
+{"level":30,"time":1713623312053,"ts":"TileApp.tsx","fn":"Tile/useEffect","msg":"Invoking event: create-view-async for id \"22240d96-af41-43a8-968c-17b038d0cae7\""}
+{"level":30,"time":1713623312053,"ts":"main.ts","fn":"main","msg":"Event received: create-view-async"}
+{"level":30,"time":1713623312054,"ts":"types.ts","fn":"ViewInstance.hide","msg":"Toggling: hide for view with rectangle \"{ height: 0, width: 0, x: 0, y: 0 }\""}
+{"level":30,"time":1713623313565,"ts":"TileApp.tsx","fn":"Tile/useEffect","msg":"Invoking event: get-view-data for id \"22240d96-af41-43a8-968c-17b038d0cae7\""}
+{"level":30,"time":1713623313565,"ts":"main.ts","fn":"main","msg":"Event received: get-view-data"}
+{"level":30,"time":1713623313566,"ts":"TileApp.tsx","fn":"Tile/useEffect","msg":"Invoking event: create-view-async for id \"22240d96-af41-43a8-968c-17b038d0cae7\""}
+{"level":30,"time":1713623313566,"ts":"main.ts","fn":"main","msg":"Event received: create-view-async"}
+{"level":30,"time":1713623313566,"ts":"types.ts","fn":"ViewInstance.hide","msg":"Toggling: hide for view with rectangle \"{ height: 0, width: 0, x: 0, y: 0 }\""}
+{"level":30,"time":1713623313960,"ts":"TileApp.tsx","fn":"Tile","msg":"Invoking event: show-context-menu-async"}
+{"level":30,"time":1713623313960,"ts":"main.ts","fn":"main","msg":"Event received: show-context-menu-async"}
+{"level":30,"time":1713623314476,"ts":"TileApp.tsx","fn":"Tile","msg":"User interaction: selected SetUrl"}
+{"level":30,"time":1713623314477,"ts":"nodes.tsx","fn":"TileNode.url(set)","msg":"Sending event: set-view-url for id \"22240d96-af41-43a8-968c-17b038d0cae7\""}
+{"level":30,"time":1713623314477,"ts":"main.ts","fn":"main","msg":"Event received: set-view-url"}
+{"level":30,"time":1713623314477,"ts":"listeners.ts","fn":"onSetViewUrl","msg":"Setting: url \"https://www.google.com/\" to views[22240d96-af41-43a8-968c-17b038d0cae7]"}

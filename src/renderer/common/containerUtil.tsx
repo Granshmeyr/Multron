@@ -66,7 +66,7 @@ export function buildTree(
         <Handle
           key={ uuidv4() }
           onMouseDown={
-            (e: React.DragEvent<HTMLDivElement>) => {
+            function (e: React.DragEvent<HTMLDivElement>) {
               if (e.button !== 0) {
                 return;
               }

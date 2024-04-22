@@ -1,14 +1,14 @@
-import { BrowserView } from "electron";
+import { WebContentsView } from "electron";
 import * as pre from "./logPrefixes";
 import { log } from "./logger";
-import { rectangleToString as rectToString } from "./mainUtil";
+import { rectToString as rectToString } from "./mainUtil";
 import { editModeEnabled } from "../main/main";
 import { marginizeRectangle } from "../renderer/common/util";
 
 const fileName: string = "types.ts";
 
-export class BrowserViewInstance {
-  browserView: BrowserView;
+export class ViewInstance {
+  view: WebContentsView;
   private _url: string | null = null;
   private _rectangle: Electron.Rectangle = { height: 0, width: 0, x: 0, y: 0 };
   private editMargin: number = 20;
@@ -16,8 +16,8 @@ export class BrowserViewInstance {
   private hidden: boolean = false;
   private hiddenDistance: number = 10000;
 
-  constructor(browserView: BrowserView) {
-    this.browserView = browserView;
+  constructor(view: WebContentsView) {
+    this.view = view;
     this.hide();
   }
 
@@ -25,18 +25,18 @@ export class BrowserViewInstance {
     return this._rectangle;
   }
   set rectangle(value: Electron.Rectangle) {
-    const logOptions = { ts: fileName, fn: `${BrowserViewInstance.name}.rectangle(set)` };
+    const logOptions = { ts: fileName, fn: `${ViewInstance.name}.rectangle(set)` };
     this._rectangle = value;
     log.info(logOptions, `${pre.running}: this.${this.updateRectangle.name} from rectangle(set)`);
     this.updateRectangle();
   }
   get url(): string | null { return this._url; }
   set url(value: string) {
-    const logOptions = { ts: fileName, fn: `${BrowserViewInstance.name}.url(set)` };
+    const logOptions = { ts: fileName, fn: `${ViewInstance.name}.url(set)` };
     const rect = this.rectangle;
     const unhide: boolean = this.url === null;
     this._url = value;
-    this.browserView.webContents.loadURL(value);
+    this.view.webContents.loadURL(value);
     if (unhide) {
       log.info(
         logOptions,
@@ -48,7 +48,7 @@ export class BrowserViewInstance {
     }
   }
   hide() {
-    const logOptions = { ts: fileName, fn: `${BrowserViewInstance.name}.${this.hide.name}` };
+    const logOptions = { ts: fileName, fn: `${ViewInstance.name}.${this.hide.name}` };
     if (this.hidden) {
       return;
     }
@@ -60,7 +60,7 @@ export class BrowserViewInstance {
     this.updateRectangle();
   }
   unhide() {
-    const logOptions = { ts: fileName, fn: `${BrowserViewInstance.name}.${this.unhide.name}` };
+    const logOptions = { ts: fileName, fn: `${ViewInstance.name}.${this.unhide.name}` };
     if (
       !this.hidden ||
       this.url === null
@@ -76,42 +76,42 @@ export class BrowserViewInstance {
   }
   updateRectangle() {
     const marginRectangle = marginizeRectangle(this.rectangle, this.editMargin);
-    const logOptions = { ts: fileName, fn: `${BrowserViewInstance.name}.${this.updateRectangle.name}` };
+    const logOptions = { ts: fileName, fn: `${ViewInstance.name}.${this.updateRectangle.name}` };
     if (this.hidden && editModeEnabled) {
-      log.info(logOptions, `${pre.setting}: rectangle ` +
+      log.info(logOptions, `${pre.running}: ${this.view.setBounds.name} with rect ` +
         `"${rectToString(marginRectangle)}"` +
         "with hiddenDistance"
       );
-      this.browserView.setBounds({
+      this.view.setBounds({
         ...marginRectangle,
         y: marginRectangle.y + this.hiddenDistance
       });
       return;
     }
     if (!this.hidden && editModeEnabled) {
-      log.info(logOptions, `${pre.setting}: rectangle ` + `"${rectToString(marginRectangle)}"`);
+      log.info(logOptions, `${pre.running}: ${this.view.setBounds.name} with rect ` + `"${rectToString(marginRectangle)}"`);
       /*const rect: Electron.Rectangle = {
         ...marginRectangle,
         height: marginRectangle.height - this.editMarginBottom
       };
-      if (this.browserView.getBounds() === rect) {
+      if (this.view.getBounds() === rect) {
         return;
       }*/
-      this.browserView.setBounds(this._rectangle);
+      this.view.setBounds(this._rectangle);
       return;
     }
     if (this.hidden && !editModeEnabled) {
-      log.info(logOptions, `${pre.setting}: rectangle ` +
+      log.info(logOptions, `${pre.running}: ${this.view.setBounds.name} with rect ` +
       `"${rectToString(marginRectangle)}"` +
       "with hiddenDistance"
       );
-      this.browserView.setBounds({
+      this.view.setBounds({
         ...this.rectangle,
         y: this.rectangle.y + this.hiddenDistance
       });
       return;
     }
-    log.info(logOptions, `${pre.setting}: rectangle ` + `"${rectToString(this.rectangle)}"`);
-    this.browserView.setBounds(this.rectangle);
+    log.info(logOptions, `${pre.running}: ${this.view.setBounds.name} with rect ` + `"${rectToString(this.rectangle)}"`);
+    this.view.setBounds(this.rectangle);
   }
 }

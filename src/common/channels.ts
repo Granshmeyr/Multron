@@ -8,3 +8,4 @@ export const logInfo: string = "log-info";
 export const logError: string = "log-error";
 export const getViewData: string = "get-view-data";
 export const deleteView: string = "delete-view";
+export const resizeCapture: string = "resize-capture";
