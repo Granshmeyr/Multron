@@ -28,8 +28,12 @@ export interface ColumnProps {
   style?: React.CSSProperties;
   id?: string;
 }
-export interface ColumnHandleProps { onMouseDown: (e: React.DragEvent<HTMLDivElement>) => void; }
-export interface RowHandleProps { onMouseDown: (e: React.DragEvent<HTMLDivElement>) => void; }
+export interface ColumnHandleProps {
+  onMouseDown: (e: React.DragEvent<HTMLDivElement>) => void;
+}
+export interface RowHandleProps {
+  onMouseDown: (e: React.DragEvent<HTMLDivElement>) => void;
+}
 export interface Vector2 { x: number, y: number }
 export interface ContextParams {
   option: ContextOption,

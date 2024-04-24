@@ -16,6 +16,7 @@
   color: white;
   cursor: move;
   transform: translate(0%, -50%);
+  z-index: 1;
  }
 
  .handle-row {
@@ -32,6 +33,7 @@
   color: white;
   cursor: move;
   transform: translate(-50%, 0%);
+  z-index: 1;
  }
 
 :root {

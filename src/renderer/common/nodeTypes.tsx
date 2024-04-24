@@ -47,7 +47,7 @@ export abstract class ContainerNode extends BaseNode {
 
 export class TileNode extends BaseNode {
   ref: React.RefObject<HTMLDivElement> | null = null;
-  imgUrl: string | null = null;
+  img: string | null = null;
   private _className?: string;
   private _style?: React.CSSProperties;
   private _id: string;
@@ -64,15 +64,19 @@ export class TileNode extends BaseNode {
     resizeBehavior: resizeBehavior
   }: TileProps = {
     id: uuidv4(),
-    contextBehavior: function () {
+    contextBehavior: () => {
+      // #region logging
       log.info({
         ts: fileName, fn: `${TileNode.name}.constructor`
       }, `${pre.missing}: contextBehavior param`);
+      // #endregion
     },
-    resizeBehavior: function () {
+    resizeBehavior: () => {
+      // #region logging
       log.info({
         ts: fileName, fn: `${TileNode.name}.constructor`
       }, `${pre.missing}: resizeBehavior param`);
+      // #endregion
     }
   }) {
     super();
@@ -108,8 +112,10 @@ export class TileNode extends BaseNode {
   set url(value: URL) {
     const logOptions = { ts: fileName, fn: `${TileNode.name}.url(set)` };
     this._url = value;
+    // #region logging
     log.info(logOptions, `${pre.sendingEvent}: ${ch.setViewUrl} for id "${this.id}"`);
     window.electronAPI.send(ch.setViewUrl, this.id, value.toString());
+    // #endregion
   }
   set contextBehavior(value: (id: string, params: ContextParams) => void) { this._contextBehavior = value; }
   set resizeBehavior(value: (id: string, rectangle: Electron.Rectangle) => void) { this._resizeBehavior = value; }

@@ -1,5 +1,4 @@
 import * as ch from "../../common/channels";
-import { tiles } from "./nodeTypes";
 
 export let editMode: boolean = false;
 export const editMargin: number = -20;
@@ -33,14 +32,6 @@ export function throttle(fn: (...args: unknown[]) => unknown, wait: number = 300
 export function randomColor() {
   return "#" + ("00000"+(Math.random()*(1<<24)|0).toString(16)).slice(-6);
 }
-export function onResize(id: string, rectangle: Electron.Rectangle) {
-  requestAnimationFrame(async function () {
-    const sendRect = editMode ? marginizeRectangle(rectangle, editMargin) : rectangle;
-    const buffer = await window.electronAPI.invoke(ch.resizeCapture, id, sendRect) as Buffer;
-    const blob = new Blob([buffer], { type: "image/jpeg" });
-    tiles.get(id)!.imgUrl = URL.createObjectURL(blob);
-  });
-}
 export function lerp(start: number, end: number, t: number): number {
   return start * (1 - t) + end * t;
 }
@@ -50,7 +41,7 @@ export function interpRectangleAsync(
   targetRect: Electron.Rectangle,
   ms: number
 ): Promise<void> {
-  return new Promise<void>(function (resolve) {
+  return new Promise<void>((resolve) => {
     const startTime = Date.now();
     function update() {
       const currentTime = Date.now();
@@ -87,7 +78,6 @@ export function marginizeRectangle(
     x: rectangle.x - margin,
     y: rectangle.y - margin
   };
-  console.log(`converted rect ${rectToString(rectangle)} to ${rectToString(newRect)}`);
   return newRect;
 }
 export function isRectangleValid(rectangle: Electron.Rectangle): boolean {

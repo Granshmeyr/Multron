@@ -1,4 +1,4 @@
-import { BrowserWindow, screen } from "electron";
+import { BrowserWindow, WebContentsView, screen } from "electron";
 import { Vector2 } from "./interfaces";
 
 export function cursorViewportPosition(base: BrowserWindow): Vector2 {
@@ -13,4 +13,17 @@ export function cursorViewportPosition(base: BrowserWindow): Vector2 {
 export function rectToString(rectangle: Electron.Rectangle): string {
   return `{ height: ${rectangle.height}, width: ${rectangle.width},` +
   `x: ${rectangle.x}, y: ${rectangle.y} }`;
+}
+export function reparentView(
+  view: WebContentsView,
+  from: BrowserWindow,
+  to: BrowserWindow
+) {
+  if (
+    from.contentView.children.includes(view) &&
+    !(to.contentView.children.includes(view))
+  ) {
+    from.contentView.removeChildView(view);
+    to.contentView.addChildView(view);
+  }
 }

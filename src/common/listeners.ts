@@ -12,37 +12,37 @@ export const views = new Map<string, ViewInstance>();
 const fileName: string = "listeners.ts";
 
 export async function onShowContextMenuAsync(): Promise<ContextParams | null> {
-  return new Promise<ContextParams | null>(function (resolve) {
+  return new Promise<ContextParams | null>((resolve) => {
     let params: ContextParams | null = null;
     const options: Electron.MenuItemConstructorOptions[] = [
       {
         label: "Split Up",
-        click: function () { params = { option: ContextOption.Split, direction: Direction.Up }; }
+        click: () => { params = { option: ContextOption.Split, direction: Direction.Up }; }
       },
       {
         label: "Split Down",
-        click: function () { params = { option: ContextOption.Split, direction: Direction.Down }; }
+        click: () => { params = { option: ContextOption.Split, direction: Direction.Down }; }
       },
       {
         label: "Split Left",
-        click: function () { params = { option: ContextOption.Split, direction: Direction.Left }; }
+        click: () => { params = { option: ContextOption.Split, direction: Direction.Left }; }
       },
       {
         label: "Split Right",
-        click: function () { params = { option: ContextOption.Split, direction: Direction.Right }; }
+        click: () => { params = { option: ContextOption.Split, direction: Direction.Right }; }
       },
       {
         label: "Set URL",
-        click: function () { params = { option: ContextOption.SetUrl, url: "https://www.google.com/" }; }
+        click: () => { params = { option: ContextOption.SetUrl, url: "https://www.google.com/" }; }
       },
       {
         label: "Delete",
-        click: function () { params = { option: ContextOption.Delete }; }
+        click: () => { params = { option: ContextOption.Delete }; }
       }
     ];
     const menu: Electron.Menu = Menu.buildFromTemplate(options);
     menu.popup({
-      callback: function () { resolve(params); }
+      callback: () => { resolve(params); }
     });
   });
 }
@@ -53,17 +53,17 @@ export async function onCreateViewAsync(
   options?: WebContentsViewConstructorOptions
 ): Promise<boolean> {
   const logOptions = { ts: fileName, fn: onCreateViewAsync.name };
-  return new Promise<boolean>(function (resolve) {
+  return new Promise<boolean>((resolve) => {
     views.set(id, new ViewInstance(new WebContentsView(options)));
     const view = views.get(id)!.view;
-    view.webContents.on("context-menu", async function () {
+    view.webContents.on("context-menu", async () => {
       const position: Vector2 = cursorViewportPosition(window);
       const params: ContextParams | null = await onShowContextMenuAsync();
       window.webContents.send(
         ch.mainProcessContextMenu, id, params, position
       );
     });
-    view.webContents.on("zoom-changed", function (_, zoomDirection) {
+    view.webContents.on("zoom-changed", (_, zoomDirection) => {
       const currentZoom = view.webContents.getZoomLevel();
       function zoomIn() {
         view.webContents.setZoomLevel(currentZoom + 0.1);
@@ -77,14 +77,18 @@ export async function onCreateViewAsync(
       }
     });
     const rect: Electron.Rectangle = view.getBounds();
+    // #region logging
     log.info({ ts: fileName, fn: onCreateViewAsync.name },
       `${pre.addingView}: { height: ${rect.height}, width: ${rect.width}, x: ${rect.x}, y: ${rect.y} } under key ${id}`
     );
+    // #endregion
     window.contentView.addChildView(view);
     resolve(true);
 
     for (const [key] of views) {
+      // #region logging
       log.info(logOptions, `${pre.status}: views has id "${key}"`);
+      // #endregion
     }
   });
 }
@@ -94,9 +98,11 @@ export function onSetViewRectangle(
   rectangle: Electron.Rectangle
 ) {
   const rect = rectangle;
+  // #region logging
   log.info({ ts: fileName, fn: onSetViewRectangle.name },
     `${pre.setting}: rectangle "{ height: ${rect.height}, width: ${rect.width}, x: ${rect.x}, y: ${rect.y} }" to views[${id}]`
   );
+  // #endregion
   views.get(id)!.rectangle = rect;
 }
 export function onSetViewUrl(
@@ -104,9 +110,11 @@ export function onSetViewUrl(
   id: string,
   url: string
 ) {
+  // #region logging
   log.info({ ts: fileName, fn: onSetViewUrl.name },
     `${pre.setting}: url "${url}" to views[${id}]`
   );
+  // #endregion
   views.get(id)!.url = url;
 }
 export function onLogInfo(
@@ -139,10 +147,14 @@ export function onDeleteView(
 ) {
   const logOptions = { ts: fileName, fn: onDeleteView.name };
   if (!(views.has(id))) {
+    // #region logging
     log.error(logOptions, `${pre.missing}: key "${id} does not exist for deletion"`);
+    // #endregion
     return;
   }
+  // #region logging
   log.info(logOptions, `${pre.deleting}: view for key "${id}"`);
+  // #endregion
   mainWindow?.contentView.removeChildView(views.get(id)!.view);
   views.delete(id);
 }
@@ -159,8 +171,9 @@ export async function onResizeCaptureAsync(
 ): Promise<Buffer> {
   const instance = views.get(id)!;
   instance.rectangle = rectangle;
+  instance.view.webContents.startPainting();
   const image = await instance.view.webContents.capturePage();
-  return new Promise<Buffer>(function (resolve) {
-    resolve(image.toJPEG(80));
+  return new Promise<Buffer>((resolve) => {
+    resolve(image.toJPEG(5));
   });
 }

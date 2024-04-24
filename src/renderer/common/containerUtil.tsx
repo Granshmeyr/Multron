@@ -38,7 +38,9 @@ function createElement(
 ): ReactElement {
   const logOptions = { ts: fileName, fn: createElement.name };
   const flexGrow: number = calculateGrow(index, nodeArrayLength, handlePercents);
+  // #region logging
   log.info(logOptions, `${pre.running}: ${createElement.name} with flexGrow ${flexGrow}`);
+  // #endregion
   baseNode.appendStyle({ flexGrow: flexGrow });
   return baseNode.toElement();
 }
@@ -66,11 +68,13 @@ export function buildTree(
         <Handle
           key={ uuidv4() }
           onMouseDown={
-            function (e: React.DragEvent<HTMLDivElement>) {
+            (e: React.DragEvent<HTMLDivElement>) => {
               if (e.button !== 0) {
                 return;
               }
+              // #region logging
               log.info(logOptions, `${pre.userInteraction}: Dragging handle index "${index}"`);
+              // #endregion
               setCurrentHandle(index);
             }
           }
