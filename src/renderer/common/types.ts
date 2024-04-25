@@ -1,6 +1,3 @@
-/* eslint-disable */
-// @ts-nocheck
-
 import * as ch from "../../common/channels";
 import { tiles } from "./nodeTypes";
 
@@ -48,4 +45,3 @@ export class ResizeTicker {
     }
   }
 }
-export const resizeTicker = new ResizeTicker(200);

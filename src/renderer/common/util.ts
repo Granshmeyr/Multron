@@ -1,8 +1,11 @@
 import * as ch from "../../common/channels";
+import { tiles } from "./nodeTypes";
+import { ResizeTicker } from "./types";
 
 export let editMode: boolean = false;
 export const editMargin: number = -20;
 export const editShrinkMs: number = 250;
+export const resizeTicker = new ResizeTicker(fpsToMs(30));
 
 export function setEditMode(value: boolean) {
   editMode = value;
@@ -64,6 +67,17 @@ export function interpRectangleAsync(
     }
     update();
   });
+}
+export async function onResize(id: string, rectangle: Electron.Rectangle) {
+  console.log("resizing tile stuff");
+  try {
+    const buffer = await window.electronAPI.invoke(ch.resizeCapture, id, rectangle) as Buffer;
+    const blob = new Blob([buffer], { type: "image/jpeg" });
+      tiles.get(id)!.img = URL.createObjectURL(blob);
+  }
+  catch (err) {
+    console.error(err);
+  }
 }
 export function marginizeRectangle(
   rectangle: Electron.Rectangle,

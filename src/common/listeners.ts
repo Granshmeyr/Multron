@@ -171,7 +171,6 @@ export async function onResizeCaptureAsync(
 ): Promise<Buffer> {
   const instance = views.get(id)!;
   instance.rectangle = rectangle;
-  instance.view.webContents.startPainting();
   const image = await instance.view.webContents.capturePage();
   return new Promise<Buffer>((resolve) => {
     resolve(image.toJPEG(5));

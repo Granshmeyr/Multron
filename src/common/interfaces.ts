@@ -30,9 +30,11 @@ export interface ColumnProps {
 }
 export interface ColumnHandleProps {
   onMouseDown: (e: React.DragEvent<HTMLDivElement>) => void;
+  onMouseUp: React.MouseEventHandler<HTMLDivElement>;
 }
 export interface RowHandleProps {
   onMouseDown: (e: React.DragEvent<HTMLDivElement>) => void;
+  onMouseUp: React.MouseEventHandler<HTMLDivElement>;
 }
 export interface Vector2 { x: number, y: number }
 export interface ContextParams {

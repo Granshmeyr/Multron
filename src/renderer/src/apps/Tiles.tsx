@@ -7,6 +7,7 @@ import { buildTree, deletion, setUrl } from "../../common/containerUtil.tsx";
 import * as log from "../../common/loggerUtil.ts";
 import { BaseNode, ColumnNode, ContainerNode, RowNode, TileNode, TileTree, containers, recordColumn, recordRow, recordTile, tiles } from "../../common/nodeTypes.jsx";
 import { randomColor, setEditMode } from "../../common/util.ts";
+import { resizeTicker } from "../../common/util.ts";
 
 const colors = new Map<string, string>();
 const fileName: string = "TileApp.tsx";
@@ -102,8 +103,11 @@ export default function Main(): ReactElement {
     function onContextMenu(e: MouseEvent) {
       clickedPosition = { x: e.clientX, y: e.clientY };
     }
-    function onMouseUp() {
-      //resizeTicker.disable();
+    function onMouseUp(e: MouseEvent) {
+      if (e.button !== 0) {
+        return;
+      }
+      resizeTicker.disable();
     }
 
     document.addEventListener("contextmenu", onContextMenu);
@@ -220,6 +224,7 @@ export function Row(
       if (e.button !== 0) {
         return;
       }
+      resizeTicker.disable();
       setCurrentHandle(null);
     }
     function onMouseMove(e: MouseEvent) {
@@ -372,6 +377,7 @@ export function Column(
       if (e.button !== 0) {
         return;
       }
+      resizeTicker.disable();
       setCurrentHandle(null);
     }
     function onMouseMove(e: MouseEvent) {
@@ -675,22 +681,24 @@ export function Tile({
   return element();
 }
 
-function RowHandle({ onMouseDown }: RowHandleProps): ReactElement {
+function RowHandle({ onMouseDown, onMouseUp }: RowHandleProps): ReactElement {
   return (
     <div
       className="w-0 relative"
       onMouseDown={onMouseDown}
+      onMouseUp={onMouseUp}
     >
       <div className="handle-row"></div>
     </div>
   );
 }
 
-function ColumnHandle({ onMouseDown }: ColumnHandleProps): ReactElement {
+function ColumnHandle({ onMouseDown, onMouseUp }: ColumnHandleProps): ReactElement {
   return (
     <div
       className="h-0 relative"
       onMouseDown={onMouseDown}
+      onMouseUp={onMouseUp}
     >
       <div className="handle-col"></div>
     </div>

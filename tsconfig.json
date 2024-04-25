@@ -30,8 +30,9 @@
     "ts-configs/electron.vite.d.ts",
     "ts-configs/interfaces.d.ts",
     "ts-configs/types.d.ts",
-    "ts-configs/global.d.ts"
-, "src/renderer/common/types.ts.bak"  ],
+    "ts-configs/global.d.ts",
+    "src/renderer/common/types.ts"
+  ],
   "references": [
     {
       "path": "./tsconfig.node.json"

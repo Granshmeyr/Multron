@@ -5,6 +5,7 @@ import { ColumnHandleProps, ContextParams, RowHandleProps } from "../../common/i
 import * as pre from "../../common/logPrefixes";
 import * as log from "./loggerUtil";
 import { BaseNode, ContainerNode, TileNode, containers, tiles } from "./nodeTypes";
+import { resizeTicker } from "./util";
 
 const fileName: string = "containerShared.tsx";
 
@@ -66,7 +67,7 @@ export function buildTree(
     if (index !== arrayLength - 1) {
       const handle: ReactElement = (
         <Handle
-          key={ uuidv4() }
+          key={uuidv4()}
           onMouseDown={
             (e: React.DragEvent<HTMLDivElement>) => {
               if (e.button !== 0) {
@@ -76,6 +77,14 @@ export function buildTree(
               log.info(logOptions, `${pre.userInteraction}: Dragging handle index "${index}"`);
               // #endregion
               setCurrentHandle(index);
+            }
+          }
+          onMouseUp={
+            (e: React.MouseEvent) => {
+              if (e.button !== 0) {
+                return;
+              }
+              resizeTicker.disable();
             }
           }
         ></Handle>
@@ -130,8 +139,7 @@ export function deletion(
     if (otherNode.style === undefined) {
       return;
     }
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { flexGrow, ...otherProps } = otherNode.style;
+    const { ...otherProps } = otherNode.style;
     otherNode.style = otherProps;
     if (otherNode instanceof TileNode) {
       otherNode.contextBehavior = rootContextBehavior;
@@ -145,6 +153,7 @@ export function deletion(
     const node = parent.children[i];
     const childCount = parent.children.length;
     if (node instanceof TileNode && node.id === tileId) {
+      resizeTicker.rectangles.delete(tileId);
       if (childCount !== 2) { deleteTileFromParent(i); break; }
       if (grandparent !== null) { deleteParent(i); break; }
       deleteParentAndSetRoot(i); break;
