@@ -6,10 +6,11 @@ import { ScopedCssBaseline } from "@mui/material";
 import * as React from "react";
 import * as ReactDOM from "react-dom/client";
 import "./index.css";
-import TilesApp from "../src/apps/Tiles";
+//import TilesApp from "../src/apps/Tiles";
+import TilesGreeting from "../src/apps/app-components/TilesGreeting";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <ScopedCssBaseline><TilesApp></TilesApp></ScopedCssBaseline>
+    <ScopedCssBaseline><TilesGreeting></TilesGreeting></ScopedCssBaseline>
   </React.StrictMode>
 );

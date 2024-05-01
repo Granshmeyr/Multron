@@ -9,21 +9,22 @@
 
 > A multiboxed browser experience
 
-Utilizes Electron's [BrowserView](https://www.electronjs.org/docs/latest/api/browser-view) to render multiple Chromium windows within the same window (<ins>mul</ins>tiboxed Elec<ins>tron</ins>).
+Utilizes Electron's [WebContentsView](https://www.electronjs.org/docs/latest/api/web-contents-view) to render multiple Chromium windows within the same window (<ins>mul</ins>tiboxed Elec<ins>tron</ins>).
 
 ---
 
 **Planned Features:**
 
  - [x] Dynamic layout editor w/ splitting, resizing, deletion
- - [x] Set URL per BrowserView
-	 - [ ] Menu for user-input (needs brainstorming)
- - [x] Set zoom per BrowserView
- - [ ] Drag views to other tiles
+ - [x] Set zoom per view
+ - [ ] Modal for setting URL
+	 - [ ] "Speed dial" icons for easy access to favorited URLs
+ - [ ] Ability to pop-out a tile into a normal browser window
+ - [ ] Drag views between different tiles
  - [ ] Support per-view user sessions
  - [ ] Save layout of tiles / URLs
  - [ ] Restore layout from file
- - [ ] General configuration menu & file
+ - [ ] Settings menu
 
 ---
 
