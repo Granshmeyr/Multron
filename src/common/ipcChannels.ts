@@ -1,0 +1,11 @@
+export const showContextMenuAsync: string = "show-context-menu-ipc-async";
+export const createViewAsync: string = "create-view-ipc-async";
+export const setViewRectangle: string = "set-view-ipc-rectangle";
+export const setViewUrl: string = "set-view-url-ipc";
+export const toggleEditMode: string = "toggle-edit-mode-ipc";
+export const mainProcessContextMenu: string = "main-process-context-menu-ipc";
+export const logInfo: string = "log-info-ipc";
+export const logError: string = "log-error-ipc";
+export const getViewData: string = "get-view-data-ipc";
+export const deleteView: string = "delete-view-ipc";
+export const resizeCapture: string = "resize-capture-ipc";

@@ -1,6 +1,6 @@
 import { BrowserWindow, app, globalShortcut, ipcMain, screen } from "electron";
 import path from "path";
-import * as ch from "../common/channels";
+import * as ich from "../common/ipcChannels";
 import { onCreateViewAsync, onDeleteView, onGetViewData, onLogError, onLogInfo, onResizeCaptureAsync, onSetViewRectangle, onSetViewUrl, onShowContextMenuAsync, views } from "../common/listeners";
 import * as pre from "../common/logPrefixes";
 import { log } from "../common/logger";
@@ -17,49 +17,49 @@ const fileName: string = "main.ts";
 function main(): void {
   // #region events
   const logOptions = { ts: fileName, fn: main.name };
-  log.info(logOptions, `${pre.handlingOn}: ${ch.showContextMenuAsync}`);
-  ipcMain.handle(ch.showContextMenuAsync, async () => {
-    log.info(logOptions, `${pre.eventReceived}: ${ch.showContextMenuAsync}`);
+  log.info(logOptions, `${pre.handlingOn}: ${ich.showContextMenuAsync}`);
+  ipcMain.handle(ich.showContextMenuAsync, async () => {
+    log.info(logOptions, `${pre.eventReceived}: ${ich.showContextMenuAsync}`);
     return onShowContextMenuAsync();
   });
-  log.info(logOptions, `${pre.handlingOn}: ${ch.createViewAsync}`);
-  ipcMain.handle(ch.createViewAsync, (event, id, options) => {
-    log.info(logOptions, `${pre.eventReceived}: ${ch.createViewAsync}`);
+  log.info(logOptions, `${pre.handlingOn}: ${ich.createViewAsync}`);
+  ipcMain.handle(ich.createViewAsync, (event, id, options) => {
+    log.info(logOptions, `${pre.eventReceived}: ${ich.createViewAsync}`);
     return onCreateViewAsync(event, id, mainWindow as BrowserWindow, options);
   });
-  log.info(logOptions, `${pre.listeningOn}: ${ch.setViewRectangle}`);
-  ipcMain.on(ch.setViewRectangle, (event, id, rectangle) => {
-    log.info(logOptions, `${pre.eventReceived}: ${ch.setViewRectangle}`);
+  log.info(logOptions, `${pre.listeningOn}: ${ich.setViewRectangle}`);
+  ipcMain.on(ich.setViewRectangle, (event, id, rectangle) => {
+    log.info(logOptions, `${pre.eventReceived}: ${ich.setViewRectangle}`);
     onSetViewRectangle(event, id, rectangle);
   });
-  log.info(logOptions, `${pre.listeningOn}: ${ch.setViewUrl}`);
-  ipcMain.on(ch.setViewUrl, (event, id, url) => {
-    log.info(logOptions, `${pre.eventReceived}: ${ch.setViewUrl}`);
+  log.info(logOptions, `${pre.listeningOn}: ${ich.setViewUrl}`);
+  ipcMain.on(ich.setViewUrl, (event, id, url) => {
+    log.info(logOptions, `${pre.eventReceived}: ${ich.setViewUrl}`);
     onSetViewUrl(event, id, url);
   });
-  log.info(logOptions, `${pre.listeningOn}: ${ch.logInfo}`);
-  ipcMain.on(ch.logInfo, (event, options, message) => {
+  log.info(logOptions, `${pre.listeningOn}: ${ich.logInfo}`);
+  ipcMain.on(ich.logInfo, (event, options, message) => {
     //log.info(logOptions, `${pre.eventReceived}: ${ch.logInfo}`);
     onLogInfo(event, options, message);
   });
-  log.info(logOptions, `${pre.listeningOn}: ${ch.logError}`);
-  ipcMain.on(ch.logError, (event, options, message) => {
-    log.info(logOptions, `${pre.eventReceived}: ${ch.logError}`);
+  log.info(logOptions, `${pre.listeningOn}: ${ich.logError}`);
+  ipcMain.on(ich.logError, (event, options, message) => {
+    log.info(logOptions, `${pre.eventReceived}: ${ich.logError}`);
     onLogError(event, options, message);
   });
-  log.info(logOptions, `${pre.handlingOn}: ${ch.getViewData}`);
-  ipcMain.handle(ch.getViewData, () => {
-    log.info(logOptions, `${pre.eventReceived}: ${ch.getViewData}`);
+  log.info(logOptions, `${pre.handlingOn}: ${ich.getViewData}`);
+  ipcMain.handle(ich.getViewData, () => {
+    log.info(logOptions, `${pre.eventReceived}: ${ich.getViewData}`);
     return onGetViewData();
   });
-  log.info(logOptions, `${pre.listeningOn}: ${ch.deleteView}`);
-  ipcMain.on(ch.deleteView, (event, id) => {
-    log.info(logOptions, `${pre.eventReceived}: ${ch.deleteView}`);
+  log.info(logOptions, `${pre.listeningOn}: ${ich.deleteView}`);
+  ipcMain.on(ich.deleteView, (event, id) => {
+    log.info(logOptions, `${pre.eventReceived}: ${ich.deleteView}`);
     onDeleteView(event, id);
   });
-  log.info(logOptions, `${pre.listeningOn}: ${ch.resizeCapture}`);
-  ipcMain.handle(ch.resizeCapture, async (event, id, rectangle) => {
-    log.info(logOptions, `${pre.eventReceived}: ${ch.resizeCapture}`);
+  log.info(logOptions, `${pre.listeningOn}: ${ich.resizeCapture}`);
+  ipcMain.handle(ich.resizeCapture, async (event, id, rectangle) => {
+    log.info(logOptions, `${pre.eventReceived}: ${ich.resizeCapture}`);
     return await onResizeCaptureAsync(event, id, rectangle);
   });
   // #endregion
@@ -157,7 +157,7 @@ function onEdit() {
     // #region logging
     log.info(logOptions, `${pre.toggling}: Edit Mode on`);
     // #endregion
-    mainWindow?.webContents.send(ch.toggleEditMode, false);
+    mainWindow?.webContents.send(ich.toggleEditMode, false);
     editModeEnabled = false;
     for (const [, value] of views) {
       value.unhide();
@@ -167,7 +167,7 @@ function onEdit() {
     // #region logging
     log.info(logOptions, `${pre.toggling}: Edit Mode off`);
     // #endregion
-    mainWindow?.webContents.send(ch.toggleEditMode, true);
+    mainWindow?.webContents.send(ich.toggleEditMode, true);
     editModeEnabled = true;
     for (const [, value] of views) {
       value.hide();

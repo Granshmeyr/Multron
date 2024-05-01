@@ -1,6 +1,6 @@
 import React, { ReactElement } from "react";
 import { v4 as uuidv4 } from "uuid";
-import * as ch from "../../common/channels";
+import * as ich from "../../common/ipcChannels";
 import { ColumnHandleProps, ContextParams, RowHandleProps } from "../../common/interfaces";
 import * as pre from "../../common/logPrefixes";
 import * as log from "./loggerUtil";
@@ -101,7 +101,7 @@ export function deletion(
   function deleteTileFromParent(index: number) {
     parent.children.splice(index, 1);
     parent.handlePercents.splice(index, 1);
-    window.electronAPI.send(ch.deleteView, tileId);
+    window.electronAPI.send(ich.deleteView, tileId);
     tiles.delete(tileId);
     refreshRoot();
   }
@@ -113,14 +113,14 @@ export function deletion(
     let parentIndex: number;
     for (let i = 0; i < grandparent.children.length; i++) {
       const node = grandparent.children[i];
-      if (node instanceof ContainerNode && node.id === containerId) {
+      if (node instanceof ContainerNode && node.nodeId === containerId) {
         parentIndex = i;
       }
     }
     const otherNode = parent.children[otherIndex];
     grandparent.children[parentIndex!] = otherNode;
     otherNode.parent = grandparent;
-    window.electronAPI.send(ch.deleteView, tileId);
+    window.electronAPI.send(ich.deleteView, tileId);
     tiles.delete(tileId);
     containers.delete(containerId);
     refreshRoot();
@@ -138,7 +138,7 @@ export function deletion(
     if (otherNode instanceof TileNode) {
       otherNode.contextBehavior = rootContextBehavior;
     }
-    window.electronAPI.send(ch.deleteView, tileId);
+    window.electronAPI.send(ich.deleteView, tileId);
     tiles.delete(tileId);
     containers.delete(containerId);
     refreshRoot();
@@ -146,7 +146,7 @@ export function deletion(
   for (let i = 0; i < parent.children.length; i++) {
     const node = parent.children[i];
     const childCount = parent.children.length;
-    if (node instanceof TileNode && node.id === tileId) {
+    if (node instanceof TileNode && node.nodeId === tileId) {
       if (childCount !== 2) { deleteTileFromParent(i); break; }
       if (grandparent !== null) { deleteParent(i); break; }
       deleteParentAndSetRoot(i); break;

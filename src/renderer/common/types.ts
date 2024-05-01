@@ -1,5 +1,5 @@
-import * as ch from "../../common/channels";
 import { ViewData } from "../../common/interfaces";
+import * as ich from "../../common/ipcChannels";
 import { tiles } from "./nodeTypes";
 import { compareRects, fpsToMs } from "./util";
 
@@ -32,7 +32,7 @@ export class ResizeTicker {
           continue;
         }
         const buffer = await window.electronAPI.invoke(
-          ch.resizeCapture, id, rect
+          ich.resizeCapture, id, rect
         ) as Buffer;
         if (buffer.length === 0
           || buffer.every((byte) => { byte === 255; })
@@ -67,7 +67,7 @@ export class ResizeTicker {
     );
   }
   private async integrityCheckAsync(): Promise<boolean> {
-    const viewData = await window.electronAPI.invoke(ch.getViewData) as Map<string, ViewData>;
+    const viewData = await window.electronAPI.invoke(ich.getViewData) as Map<string, ViewData>;
     return new Promise<boolean>((resolve) => {
       for (const [id, data] of viewData) {
         const rect = tiles.get(id)!.getRect();

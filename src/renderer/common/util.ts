@@ -1,4 +1,4 @@
-import * as ch from "../../common/channels";
+import * as ich from "../../common/ipcChannels";
 
 export let editMode: boolean = false;
 export const editMargin: number = -20;
@@ -53,12 +53,12 @@ export function interpRectangleAsync(
         width: Math.round(lerp(initialRect.width, targetRect.width, t)),
         height: Math.round(lerp(initialRect.height, targetRect.height, t))
       };
-      window.electronAPI.send(ch.setViewRectangle, id, newBounds);
+      window.electronAPI.send(ich.setViewRectangle, id, newBounds);
       if (t < 1) {
         requestAnimationFrame(update);
       }
       else {
-        window.electronAPI.send(ch.setViewRectangle, id, targetRect);
+        window.electronAPI.send(ich.setViewRectangle, id, targetRect);
         resolve();
       }
     }

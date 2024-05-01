@@ -2,7 +2,7 @@ import { BrowserWindow, Menu, WebContentsView, WebContentsViewConstructorOptions
 import * as pre from "../common/logPrefixes.ts";
 import { log } from "../common/logger.ts";
 import { mainWindow } from "../main/main.ts";
-import * as ch from "./channels.ts";
+import * as ich from "./ipcChannels.ts";
 import { ContextOption, Direction } from "./enums.ts";
 import { ContextParams, Vector2, ViewData } from "./interfaces.ts";
 import { ViewInstance } from "./mainTypes.ts";
@@ -60,7 +60,7 @@ export async function onCreateViewAsync(
       const position: Vector2 = cursorViewportPosition(window);
       const params: ContextParams | null = await onShowContextMenuAsync();
       window.webContents.send(
-        ch.mainProcessContextMenu, id, params, position
+        ich.mainProcessContextMenu, id, params, position
       );
     });
     view.webContents.on("zoom-changed", (_, zoomDirection) => {

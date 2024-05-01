@@ -1,15 +1,15 @@
 import { ReactElement, useEffect, useReducer, useRef, useState } from "react";
-import * as ch from "../../../common/channels.ts";
 import { ContextOption, Direction } from "../../../common/enums.ts";
 import { ColumnHandleProps, ColumnProps, ContextParams, RowHandleProps, RowProps, TileProps, Vector2, ViewData } from "../../../common/interfaces.ts";
+import * as ich from "../../../common/ipcChannels.ts";
 import * as pre from "../../../common/logPrefixes.ts";
 import { buildTree, deletion, setUrl } from "../../common/containerUtil.tsx";
 import * as log from "../../common/loggerUtil.ts";
 import { BaseNode, ColumnNode, ContainerNode, RowNode, TileNode, TileTree, containers, recordColumn, recordRow, recordTile, tiles } from "../../common/nodeTypes.jsx";
 import { resizeTicker } from "../../common/types.ts";
-import { randomColor, setEditMode } from "../../common/util.ts";
+import { setEditMode } from "../../common/util.ts";
+import Greeting from "./app-components/TilesGreeting.tsx";
 
-const colors = new Map<string, string>();
 const fileName: string = "TileApp.tsx";
 let clickedPosition: Vector2;
 
@@ -36,13 +36,13 @@ export default function Main(): ReactElement {
     resizeTicker.refreshRoot = refreshRoot;
   }
 
-  if (!window.electronAPI.isListening(ch.toggleEditMode)) {
+  if (!window.electronAPI.isListening(ich.toggleEditMode)) {
     // #region logging
-    log.info(logOptions, `${pre.listeningOn}: ${ch.toggleEditMode}`);
+    log.info(logOptions, `${pre.listeningOn}: ${ich.toggleEditMode}`);
     // #endregion
-    window.electronAPI.on(ch.toggleEditMode, async (_, ...args: unknown[]) => {
+    window.electronAPI.on(ich.toggleEditMode, async (_, ...args: unknown[]) => {
       // #region logging
-      log.info(logOptions, `${pre.eventReceived}: ${ch.toggleEditMode}`);
+      log.info(logOptions, `${pre.eventReceived}: ${ich.toggleEditMode}`);
       // #endregion
       const enabled = args[0] as boolean;
       setEditMode(enabled);
@@ -57,13 +57,13 @@ export default function Main(): ReactElement {
       }
     });
   }
-  if (!window.electronAPI.isListening(ch.mainProcessContextMenu)) {
+  if (!window.electronAPI.isListening(ich.mainProcessContextMenu)) {
     // #region logging
-    log.info(logOptions, `${pre.listeningOn}: ${ch.mainProcessContextMenu}`);
+    log.info(logOptions, `${pre.listeningOn}: ${ich.mainProcessContextMenu}`);
     // #endregion
-    window.electronAPI.on(ch.mainProcessContextMenu, (_, ...args: unknown[]) => {
+    window.electronAPI.on(ich.mainProcessContextMenu, (_, ...args: unknown[]) => {
       // #region logging
-      log.info(logOptions, `${pre.eventReceived}: ${ch.mainProcessContextMenu}`);
+      log.info(logOptions, `${pre.eventReceived}: ${ich.mainProcessContextMenu}`);
       // #endregion
       const tileId: string = args[0] as string;
       const params = args[1] as ContextParams | null;
@@ -88,7 +88,7 @@ export default function Main(): ReactElement {
           const parent = tiles.get(tileId)!.parent as ContainerNode | null;
           if (parent === null) { return; }
           deletion(
-            parent.id,
+            parent.nodeId,
             tileId,
             parent.refreshRoot,
             parent.setRoot,
@@ -215,7 +215,7 @@ export function Row({
   rootContextBehavior,
   handlePercents,
   style,
-  id
+  nodeId
 }: RowProps): ReactElement {
   const logOptions = { ts: fileName, fn: Row.name };
   const [currentHandle, setCurrentHandle] = useState<number | null>(null);
@@ -243,7 +243,7 @@ export function Row({
         const mousePosition = e.clientX - ref.current.getBoundingClientRect().left;
         const newPercents = [...handlePercents];
         newPercents[currentHandle] = mousePosition / divWidth;
-        containers.get(id as string)!.handlePercents = newPercents;
+        containers.get(nodeId as string)!.handlePercents = newPercents;
         refreshRoot();
       }
     }
@@ -298,7 +298,7 @@ export function Row({
           setRoot: setRoot,
           rootContextBehavior: rootContextBehavior
         });
-        column.parent = containers.get(id as string)!;
+        column.parent = containers.get(nodeId as string)!;
         parent.children[tileIndex] = column;
       }
       function down() {
@@ -311,7 +311,7 @@ export function Row({
           setRoot: setRoot,
           rootContextBehavior: rootContextBehavior
         });
-        column.parent = containers.get(id as string)!;
+        column.parent = containers.get(nodeId as string)!;
         parent.children[tileIndex] = column;
       }
       function left() {
@@ -321,7 +321,7 @@ export function Row({
         splitTile.parent = parent;
         const newPercents = [...handlePercents];
         newPercents.splice(tileIndex, 0, splitPercentX());
-        containers.get(id as string)!.handlePercents = newPercents;
+        containers.get(nodeId as string)!.handlePercents = newPercents;
       }
       function right() {
         const tileIndex = parent.children.indexOf(tile);
@@ -330,7 +330,7 @@ export function Row({
         splitTile.parent = parent;
         const newPercents = [...handlePercents];
         newPercents.splice(tileIndex, 0, splitPercentX());
-        containers.get(id as string)!.handlePercents = newPercents;
+        containers.get(nodeId as string)!.handlePercents = newPercents;
       }
       switch (params.direction) {
       case Direction.Up: up(); break;
@@ -343,7 +343,7 @@ export function Row({
     switch (params.option) {
     case ContextOption.Split: split(); break;
     case ContextOption.Delete: deletion(
-        id as string,
+        nodeId as string,
         tileId,
         refreshRoot,
         setRoot,
@@ -358,7 +358,7 @@ export function Row({
       ref={ref}
       className="flex grow flex-row"
       style={style}
-      id={id}
+      id={nodeId}
     >
       {buildTree(
         children,
@@ -377,7 +377,7 @@ export function Column({
   rootContextBehavior,
   handlePercents,
   style,
-  id
+  nodeId
 }: ColumnProps): ReactElement {
   const logOptions = { ts: fileName, fn: Column.name };
   const [currentHandle, setCurrentHandle] = useState<number | null>(null);
@@ -405,7 +405,7 @@ export function Column({
         const mousePosition = e.clientY - ref.current.getBoundingClientRect().top;
         const newPercents = [...handlePercents];
         newPercents[currentHandle] = mousePosition / divHeight;
-        containers.get(id as string)!.handlePercents = newPercents;
+        containers.get(nodeId as string)!.handlePercents = newPercents;
         refreshRoot();
       }
     }
@@ -457,7 +457,7 @@ export function Column({
         splitTile.parent = parent;
         const newPercents = [...handlePercents];
         newPercents.splice(tileIndex, 0, splitPercentY());
-        containers.get(id as string)!.handlePercents = newPercents;
+        containers.get(nodeId as string)!.handlePercents = newPercents;
       }
       function down() {
         const tileIndex = parent.children.indexOf(tile);
@@ -466,7 +466,7 @@ export function Column({
         splitTile.parent = parent;
         const newPercents = [...handlePercents];
         newPercents.splice(tileIndex, 0, splitPercentY());
-        containers.get(id as string)!.handlePercents = newPercents;
+        containers.get(nodeId as string)!.handlePercents = newPercents;
       }
       function left() {
         const tileIndex = parent.children.indexOf(tile);
@@ -478,7 +478,7 @@ export function Column({
           setRoot: setRoot,
           rootContextBehavior: rootContextBehavior
         });
-        row.parent = containers.get(id as string)!;
+        row.parent = containers.get(nodeId as string)!;
         parent.children[tileIndex] = row;
       }
       function right() {
@@ -491,7 +491,7 @@ export function Column({
           setRoot: setRoot,
           rootContextBehavior: rootContextBehavior
         });
-        row.parent = containers.get(id as string)!;
+        row.parent = containers.get(nodeId as string)!;
         parent.children[tileIndex] = row;
       }
       switch (params.direction) {
@@ -505,7 +505,7 @@ export function Column({
     switch (params.option) {
     case ContextOption.Split: split(); break;
     case ContextOption.Delete: deletion(
-        id as string,
+        nodeId as string,
         tileId,
         refreshRoot,
         setRoot,
@@ -520,7 +520,7 @@ export function Column({
       ref={ref}
       className="flex grow flex-col"
       style={style}
-      id={id}
+      id={nodeId}
     >
       {buildTree(
         children,
@@ -535,7 +535,7 @@ export function Column({
 export function Tile({
   className,
   style,
-  id,
+  nodeId,
   contextBehavior,
   resizeBehavior,
 }: TileProps): ReactElement {
@@ -550,35 +550,30 @@ export function Tile({
     y: 0
   });
 
-  if (!(colors.has(id as string))) {
-    colors.set(id as string, randomColor());
-  }
-  const color = colors.get(id as string);
-
-  tiles.get(id as string)!.bgLoader.setter = setBg;
+  tiles.get(nodeId as string)!.bgLoader.setter = setBg;
 
   useEffect(() => {
     const _logOptions = { ts: fileName, fn: `${Tile.name}/${useEffect.name}` };
-  tiles.get(id as string)!.ref = ref;
+  tiles.get(nodeId as string)!.ref = ref;
   async function createViewOrResizeAsync() {
     // #region logging
-    log.info(_logOptions, `${pre.invokingEvent}: ${ch.getViewData} for id "${id}"`);
+    log.info(_logOptions, `${pre.invokingEvent}: ${ich.getViewData} for id "${nodeId}"`);
     // #endregion
-    const viewData = await window.electronAPI.invoke(ch.getViewData) as Map<string, ViewData>;
-    if (!(viewData.has(id as string))) {
+    const viewData = await window.electronAPI.invoke(ich.getViewData) as Map<string, ViewData>;
+    if (!(viewData.has(nodeId as string))) {
       // #region logging
-      log.info(_logOptions, `${pre.invokingEvent}: ${ch.createViewAsync} for id "${id}"`);
+      log.info(_logOptions, `${pre.invokingEvent}: ${ich.createViewAsync} for id "${nodeId}"`);
       // #endregion
-      await window.electronAPI.invoke(ch.createViewAsync, id, {
+      await window.electronAPI.invoke(ich.createViewAsync, nodeId, {
         webPreferences: {
           disableHtmlFullscreenWindowResize: true,
           enablePreferredSizeMode: true,
         }
       });
-      resizeBehavior(id as string, rectangle.current);
+      resizeBehavior(nodeId as string, rectangle.current);
     }
     else {
-      resizeBehavior(id as string, rectangle.current);
+      resizeBehavior(nodeId as string, rectangle.current);
     }
   }
   const resizeObserver = new ResizeObserver(async () => {
@@ -597,7 +592,7 @@ export function Tile({
   return () => {
     resizeObserver.disconnect();
   };
-  }, [id, resizeBehavior]);
+  }, [nodeId, resizeBehavior]);
 
   function element(): ReactElement {
     function withImg() {
@@ -614,14 +609,14 @@ export function Tile({
             backgroundRepeat: "round",
             backgroundImage: `url(${bg})`
           }}
-          id={id}
+          id={nodeId}
           ref={ref}
           onContextMenu={
             async () => {
             // #region logging
-              log.info(logOptions, `${pre.invokingEvent}: ${ch.showContextMenuAsync}`);
+              log.info(logOptions, `${pre.invokingEvent}: ${ich.showContextMenuAsync}`);
               // #endregion
-              const params = await window.electronAPI.invoke(ch.showContextMenuAsync) as ContextParams | null;
+              const params = await window.electronAPI.invoke(ich.showContextMenuAsync) as ContextParams | null;
               if (params === null) {
               // #region logging
                 log.info(logOptions, `${pre.userInteraction}: selected Nothing (null)`);
@@ -638,48 +633,7 @@ export function Tile({
               // #region logging
               log.info(logOptions, `${pre.userInteraction}: selected ${option}`);
               // #endregion
-              contextBehavior?.(id as string, params);
-            }
-          }
-        >
-        </div>
-      );
-    }
-    function noImg() {
-      return (
-        <div
-          className={(() => {
-            if (className !== undefined) {
-              return defaultClass + " " + className;
-            }
-            return defaultClass;
-          })()}
-          style={{ ...style, backgroundColor: color }}
-          id={id}
-          ref={ref}
-          onContextMenu={
-            async () => {
-            // #region logging
-              log.info(logOptions, `${pre.invokingEvent}: ${ch.showContextMenuAsync}`);
-              // #endregion
-              const params = await window.electronAPI.invoke(ch.showContextMenuAsync) as ContextParams | null;
-              if (params === null) {
-              // #region logging
-                log.info(logOptions, `${pre.userInteraction}: selected Nothing (null)`);
-                // #endregion
-                return;
-              }
-              const option: string = (() => {
-                switch (params.option) {
-                case ContextOption.Split: return "Split";
-                case ContextOption.Delete: return "Delete";
-                case ContextOption.SetUrl: return "SetUrl";
-                }
-              })();
-              // #region logging
-              log.info(logOptions, `${pre.userInteraction}: selected ${option}`);
-              // #endregion
-              contextBehavior?.(id as string, params);
+              contextBehavior?.(nodeId as string, params);
             }
           }
         >
@@ -690,7 +644,7 @@ export function Tile({
     case true:
       return withImg();
     default:
-      return noImg();
+      return <Greeting nodeId={`${nodeId as string}`} ref={ref}></Greeting>;
     }
   }
   return element();

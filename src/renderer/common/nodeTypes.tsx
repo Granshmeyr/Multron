@@ -1,6 +1,6 @@
 import { CSSProperties, ReactElement } from "react";
 import { v4 as uuidv4 } from "uuid";
-import * as ch from "../../common/channels";
+import * as ich from "../../common/ipcChannels";
 import { ContextOption, Direction } from "../../common/enums";
 import { ColumnProps, ContextParams, RowProps, TileProps } from "../../common/interfaces";
 import * as pre from "../../common/logPrefixes";
@@ -17,8 +17,8 @@ export class TileTree {
 
   constructor(root: BaseNode) {
     this.root = root;
-    if (root instanceof TileNode && root.id) {
-      tiles.set(root.id, root);
+    if (root instanceof TileNode && root.nodeId) {
+      tiles.set(root.nodeId, root);
     }
   }
 }
@@ -29,8 +29,8 @@ export abstract class BaseNode {
   abstract appendStyle(style: React.CSSProperties): void;
   abstract get style(): React.CSSProperties | undefined;
   abstract set style(value: React.CSSProperties);
-  abstract get id(): string;
-  abstract set id(value: string);
+  abstract get nodeId(): string;
+  abstract set nodeId(value: string);
 }
 
 export abstract class ContainerNode extends BaseNode {
@@ -59,12 +59,12 @@ export class TileNode extends BaseNode {
   constructor({
     className: className,
     style: style,
-    id: id,
+    nodeId: id,
     url: url,
     contextBehavior: contextBehavior,
     resizeBehavior: resizeBehavior
   }: TileProps = {
-    id: uuidv4(),
+    nodeId: uuidv4(),
     contextBehavior: () => {
       // #region logging
       log.info({
@@ -94,7 +94,7 @@ export class TileNode extends BaseNode {
       <Tile
         className={this.className}
         style={this.style}
-        id={this.id}
+        nodeId={this.nodeId}
         url={this.url}
         contextBehavior={this._contextBehavior}
         resizeBehavior={this._resizeBehavior}
@@ -107,15 +107,15 @@ export class TileNode extends BaseNode {
   set className(value: string) { this._className = value; }
   get style(): React.CSSProperties | undefined { return this._style; }
   set style(value: React.CSSProperties) { this._style = value; }
-  get id(): string { return this._id; }
-  set id(value: string) { this._id = value; }
+  get nodeId(): string { return this._id; }
+  set nodeId(value: string) { this._id = value; }
   get url(): URL | undefined { return this._url; }
   set url(value: URL) {
     const logOptions = { ts: fileName, fn: `${TileNode.name}.url(set)` };
     this._url = value;
     // #region logging
-    log.info(logOptions, `${pre.sendingEvent}: ${ch.setViewUrl} for id "${this.id}"`);
-    window.electronAPI.send(ch.setViewUrl, this.id, value.toString());
+    log.info(logOptions, `${pre.sendingEvent}: ${ich.setViewUrl} for id "${this.nodeId}"`);
+    window.electronAPI.send(ich.setViewUrl, this.nodeId, value.toString());
     // #endregion
   }
   set contextBehavior(value: (id: string, params: ContextParams) => void) { this._contextBehavior = value; }
@@ -157,7 +157,7 @@ export class ColumnNode extends ContainerNode {
     refreshRoot: forceState,
     setRoot: setRoot,
     rootContextBehavior: rootContextBehavior,
-    id: id = uuidv4(),
+    nodeId: id = uuidv4(),
     handlePercents: handlePercents,
     style: style
   }: ColumnProps) {
@@ -182,7 +182,7 @@ export class ColumnNode extends ContainerNode {
       rootContextBehavior={this.rootContextBehavior}
       handlePercents={this.handlePercents}
       style={this.style}
-      id={this.id}
+      nodeId={this.nodeId}
     ></Column>;
   }
 
@@ -198,8 +198,8 @@ export class ColumnNode extends ContainerNode {
   set handlePercents(value: number[]) { this._handlePercents = value; }
   get style(): React.CSSProperties | undefined { return this._style; }
   set style(value: React.CSSProperties) { this._style = value; }
-  get id(): string { return this._id; }
-  set id(value: string) { this._id = value; }
+  get nodeId(): string { return this._id; }
+  set nodeId(value: string) { this._id = value; }
   appendStyle(style: CSSProperties): void { this.style = { ...this.style, ...style }; }
 }
 
@@ -217,7 +217,7 @@ export class RowNode extends ContainerNode {
     refreshRoot: forceState,
     setRoot: setRoot,
     rootContextBehavior: rootContextBehavior,
-    id: id = uuidv4(),
+    nodeId: id = uuidv4(),
     handlePercents: handlePercents,
     style: style
   }: RowProps) {
@@ -242,7 +242,7 @@ export class RowNode extends ContainerNode {
       rootContextBehavior={this.rootContextBehavior}
       handlePercents={this.handlePercents}
       style={this.style}
-      id={this.id}
+      nodeId={this.nodeId}
     ></Row>;
   }
 
@@ -258,8 +258,8 @@ export class RowNode extends ContainerNode {
   set handlePercents(value: number[]) { this._handlePercents = value; }
   get style(): React.CSSProperties | undefined { return this._style; }
   set style(value: React.CSSProperties) { this._style = value; }
-  get id(): string { return this._id; }
-  set id(value: string) { this._id = value; }
+  get nodeId(): string { return this._id; }
+  set nodeId(value: string) { this._id = value; }
   appendStyle(style: CSSProperties): void { this.style = { ...this.style, ...style }; }
 }
 
@@ -271,18 +271,18 @@ export function recordTile(tileProps?: TileProps): TileNode {
   else {
     tileNode = new TileNode();
   }
-  tiles.set(tileNode.id, tileNode);
+  tiles.set(tileNode.nodeId, tileNode);
   return tileNode;
 }
 
 export function recordRow(rowProps: RowProps): RowNode {
   const rowNode: RowNode = new RowNode(rowProps);
-  containers.set(rowNode.id, rowNode);
+  containers.set(rowNode.nodeId, rowNode);
   return rowNode;
 }
 
 export function recordColumn(columnProps: ColumnProps): ColumnNode {
   const columnNode: ColumnNode = new ColumnNode(columnProps);
-  containers.set(columnNode.id, columnNode);
+  containers.set(columnNode.nodeId, columnNode);
   return columnNode;
 }

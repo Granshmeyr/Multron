@@ -1,27 +1,55 @@
-import { TextField } from "@mui/material";
-import { ReactElement, ReactNode } from "react";
+import LinkIcon from "@mui/icons-material/Link";
+import { Box, BoxProps, TextField } from "@mui/material";
+import InputAdornment from "@mui/material/InputAdornment";
+import { ReactElement, forwardRef, useRef } from "react";
+import * as ich from "../../../../common/ipcChannels";
 
-export default function Main(): ReactElement {
-  function root(child: ReactElement): ReactElement {
-    return <div className="h-screen w-full">{child}</div>;
-  }
-
-  const element: ReactElement = (
-    root(
-      <div className="flex-col h-full w-full justify-center items-center">
-        <div
-          className="bg-primary flex h-full w-full justify-center items-center"
-        >
-          <TextField
-            id="filled-basic"
-            label="filled"
-            variant="filled"
-          >
-          </TextField>
-        </div>
-      </div>
-    )
-  );
-
-  return element;
+interface CustomBoxProps extends BoxProps {
+  nodeId?: string
 }
+
+export const Main = forwardRef<HTMLDivElement, CustomBoxProps>(
+  ({ nodeId }, ref) => {
+    const input = useRef<string>("");
+
+    function onKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
+      if (e.key === "Enter") {
+        window.electronAPI.send(ich.setViewUrl, nodeId, input.current);
+      }
+    }
+
+    const element: ReactElement = (
+      <Box
+        className="
+            flex
+            flex-col
+            h-full
+            w-full
+            justify-center
+            items-center"
+        ref={ref}
+      >
+        <TextField
+          className="w-8/12"
+          id="filled-basic"
+          label="Set URL"
+          variant="filled"
+          onChange={(e) => { input.current = e.target.value; }}
+          onKeyDown={(e) => { onKeyDown(e); }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <LinkIcon></LinkIcon>
+              </InputAdornment>
+            ),
+          }}
+        >
+        </TextField>
+      </Box>
+    );
+
+    return element;
+  }
+);
+
+export default Main;

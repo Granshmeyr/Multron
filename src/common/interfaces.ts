@@ -5,7 +5,7 @@ import { ContextOption, Direction } from "./enums";
 export interface TileProps {
   className?: string;
   style?: React.CSSProperties;
-  id?: string;
+  nodeId?: string;
   url?: URL;
   contextBehavior: (id: string, params: ContextParams) => void;
   resizeBehavior: (id: string, rectangle: Electron.Rectangle) => void;
@@ -17,7 +17,7 @@ export interface RowProps {
   rootContextBehavior: (id: string, params: ContextParams) => void;
   handlePercents: number[];
   style?: React.CSSProperties;
-  id?: string;
+  nodeId?: string;
 }
 export interface ColumnProps {
   children: BaseNode[];
@@ -26,7 +26,7 @@ export interface ColumnProps {
   rootContextBehavior: (id: string, params: ContextParams) => void;
   handlePercents: number[];
   style?: React.CSSProperties;
-  id?: string;
+  nodeId?: string;
 }
 export interface ColumnHandleProps {
   onMouseDown: (e: React.DragEvent<HTMLDivElement>) => void;
