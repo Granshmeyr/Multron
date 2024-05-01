@@ -6,6 +6,7 @@ import { ColumnProps, ContextParams, RowProps, TileProps } from "../../common/in
 import * as pre from "../../common/logPrefixes";
 import * as log from "./loggerUtil";
 import { Column, Row, Tile } from "../src/apps/Tiles";
+import { BgLoader } from "./types";
 
 export const tiles = new Map<string, TileNode>();
 export const containers = new Map<string, ContainerNode>();
@@ -47,7 +48,7 @@ export abstract class ContainerNode extends BaseNode {
 
 export class TileNode extends BaseNode {
   ref: React.RefObject<HTMLDivElement> | null = null;
-  img: string | null = null;
+  bgLoader: BgLoader = new BgLoader();
   private _className?: string;
   private _style?: React.CSSProperties;
   private _id: string;
@@ -119,6 +120,18 @@ export class TileNode extends BaseNode {
   }
   set contextBehavior(value: (id: string, params: ContextParams) => void) { this._contextBehavior = value; }
   set resizeBehavior(value: (id: string, rectangle: Electron.Rectangle) => void) { this._resizeBehavior = value; }
+  getRect(): Electron.Rectangle | null {
+    if (this.ref === null) {
+      return null;
+    }
+    const element = this.ref.current as HTMLDivElement;
+    return {
+      height: element.offsetHeight,
+      width: element.offsetWidth,
+      x: element.offsetLeft,
+      y: element.offsetTop
+    };
+  }
   appendStyle(style: React.CSSProperties) {
     this.style = { ...this.style, ...style };
   }

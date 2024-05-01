@@ -5,7 +5,7 @@ import { ColumnHandleProps, ContextParams, RowHandleProps } from "../../common/i
 import * as pre from "../../common/logPrefixes";
 import * as log from "./loggerUtil";
 import { BaseNode, ContainerNode, TileNode, containers, tiles } from "./nodeTypes";
-import { resizeTicker } from "./util";
+import { resizeTicker } from "./types";
 
 const fileName: string = "containerShared.tsx";
 
@@ -77,16 +77,10 @@ export function buildTree(
               log.info(logOptions, `${pre.userInteraction}: Dragging handle index "${index}"`);
               // #endregion
               setCurrentHandle(index);
+              resizeTicker.start();
             }
           }
-          onMouseUp={
-            (e: React.MouseEvent) => {
-              if (e.button !== 0) {
-                return;
-              }
-              resizeTicker.disable();
-            }
-          }
+          onMouseUp={() => { return; }}
         ></Handle>
       );
       elementArray.push(handle);
@@ -153,7 +147,6 @@ export function deletion(
     const node = parent.children[i];
     const childCount = parent.children.length;
     if (node instanceof TileNode && node.id === tileId) {
-      resizeTicker.rectangles.delete(tileId);
       if (childCount !== 2) { deleteTileFromParent(i); break; }
       if (grandparent !== null) { deleteParent(i); break; }
       deleteParentAndSetRoot(i); break;

@@ -68,6 +68,9 @@ function main(): void {
     createMainWindow();
     createHideWindow();
     globalShortcut.register(editShortcut, onEdit);
+    globalShortcut.register("Control+t", () => {
+      mainWindow!.webContents.send("debug");
+    });
   });
   app.on("will-quit", () => {
     globalShortcut.unregisterAll();

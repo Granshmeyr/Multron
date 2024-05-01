@@ -1,11 +1,8 @@
 import * as ch from "../../common/channels";
-import { tiles } from "./nodeTypes";
-import { ResizeTicker } from "./types";
 
 export let editMode: boolean = false;
 export const editMargin: number = -20;
 export const editShrinkMs: number = 250;
-export const resizeTicker = new ResizeTicker(fpsToMs(30));
 
 export function setEditMode(value: boolean) {
   editMode = value;
@@ -68,17 +65,6 @@ export function interpRectangleAsync(
     update();
   });
 }
-export async function onResize(id: string, rectangle: Electron.Rectangle) {
-  console.log("resizing tile stuff");
-  try {
-    const buffer = await window.electronAPI.invoke(ch.resizeCapture, id, rectangle) as Buffer;
-    const blob = new Blob([buffer], { type: "image/jpeg" });
-      tiles.get(id)!.img = URL.createObjectURL(blob);
-  }
-  catch (err) {
-    console.error(err);
-  }
-}
 export function marginizeRectangle(
   rectangle: Electron.Rectangle,
   margin: number
@@ -108,6 +94,18 @@ export function fpsToMs(fps: number): number {
   return 1000 / fps;
 }
 export function rectToString(rectangle: Electron.Rectangle): string {
-  return `{ height: ${rectangle.height}, width: ${rectangle.width},` +
+  return `{ height: ${rectangle.height}, width: ${rectangle.width}, ` +
   `x: ${rectangle.x}, y: ${rectangle.y} }`;
+}
+export function compareRects(
+  first: Electron.Rectangle,
+  second: Electron.Rectangle
+): boolean {
+  function rectToArray(rect: Electron.Rectangle): number[] {
+    return [rect.height, rect.width, rect.x, rect.y];
+  }
+  const firstValues: number[] = rectToArray(first);
+  const secondValues: number[] = rectToArray(second);
+  return firstValues.every((value, i) => value === secondValues[i]);
+
 }

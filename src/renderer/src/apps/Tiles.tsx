@@ -6,8 +6,8 @@ import * as pre from "../../../common/logPrefixes.ts";
 import { buildTree, deletion, setUrl } from "../../common/containerUtil.tsx";
 import * as log from "../../common/loggerUtil.ts";
 import { BaseNode, ColumnNode, ContainerNode, RowNode, TileNode, TileTree, containers, recordColumn, recordRow, recordTile, tiles } from "../../common/nodeTypes.jsx";
+import { resizeTicker } from "../../common/types.ts";
 import { randomColor, setEditMode } from "../../common/util.ts";
-import { resizeTicker } from "../../common/util.ts";
 
 const colors = new Map<string, string>();
 const fileName: string = "TileApp.tsx";
@@ -23,15 +23,18 @@ export default function Main(): ReactElement {
     new TileTree(
       recordTile({
         contextBehavior: onContext,
-        resizeBehavior: (id: string, rectangle: Electron.Rectangle) => {
-          resizeTicker.rectangles.set(id, rectangle);
-          resizeTicker.enable();
+        resizeBehavior: () => {
+          resizeTicker.start();
         }
       })
     )
   );
   const [root, setRoot] = useState<BaseNode>(tileTree.root);
   const [, refreshRoot] = useReducer(x => x + 1, 0);
+
+  if (resizeTicker.refreshRoot === null) {
+    resizeTicker.refreshRoot = refreshRoot;
+  }
 
   if (!window.electronAPI.isListening(ch.toggleEditMode)) {
     // #region logging
@@ -44,10 +47,9 @@ export default function Main(): ReactElement {
       const enabled = args[0] as boolean;
       setEditMode(enabled);
       function enterEditMode() {
-        return;
+        resizeTicker.tickAsync();
       }
       function exitEditMode() {
-        return;
       }
       switch (enabled) {
       case true: enterEditMode(); break;
@@ -98,6 +100,11 @@ export default function Main(): ReactElement {
       }
     });
   }
+  if (!window.electronAPI.isListening("debug")) {
+    window.electronAPI.on("debug", () => {
+      console.log("debug invoked");
+    });
+  }
 
   useEffect(() => {
     function onContextMenu(e: MouseEvent) {
@@ -107,7 +114,6 @@ export default function Main(): ReactElement {
       if (e.button !== 0) {
         return;
       }
-      resizeTicker.disable();
     }
 
     document.addEventListener("contextmenu", onContextMenu);
@@ -202,9 +208,15 @@ export default function Main(): ReactElement {
   );
 }
 
-export function Row(
-  { children, refreshRoot, setRoot, rootContextBehavior, handlePercents, style, id }: RowProps
-): ReactElement {
+export function Row({
+  children,
+  refreshRoot,
+  setRoot,
+  rootContextBehavior,
+  handlePercents,
+  style,
+  id
+}: RowProps): ReactElement {
   const logOptions = { ts: fileName, fn: Row.name };
   const [currentHandle, setCurrentHandle] = useState<number | null>(null);
   const ref = useRef<HTMLDivElement>(null);
@@ -212,9 +224,8 @@ export function Row(
   for (const child of children) {
     if (child instanceof TileNode) {
       child.contextBehavior = onContext;
-      child.resizeBehavior = (id: string, rectangle: Electron.Rectangle) => {
-        resizeTicker.rectangles.set(id, rectangle);
-        resizeTicker.enable();
+      child.resizeBehavior = () => {
+        resizeTicker.start();
       };
     }
   }
@@ -224,7 +235,6 @@ export function Row(
       if (e.button !== 0) {
         return;
       }
-      resizeTicker.disable();
       setCurrentHandle(null);
     }
     function onMouseMove(e: MouseEvent) {
@@ -350,14 +360,25 @@ export function Row(
       style={style}
       id={id}
     >
-      {buildTree(children, handlePercents, setCurrentHandle, RowHandle)}
+      {buildTree(
+        children,
+        handlePercents,
+        setCurrentHandle,
+        RowHandle
+      )}
     </div>
   );
 }
 
-export function Column(
-  { children, refreshRoot, setRoot, rootContextBehavior, handlePercents, style, id }: ColumnProps
-): ReactElement {
+export function Column({
+  children,
+  refreshRoot,
+  setRoot,
+  rootContextBehavior,
+  handlePercents,
+  style,
+  id
+}: ColumnProps): ReactElement {
   const logOptions = { ts: fileName, fn: Column.name };
   const [currentHandle, setCurrentHandle] = useState<number | null>(null);
   const ref = useRef<HTMLDivElement>(null);
@@ -365,9 +386,8 @@ export function Column(
   for (const child of children) {
     if (child instanceof TileNode) {
       child.contextBehavior = onContext;
-      child.resizeBehavior = (id: string, rectangle: Electron.Rectangle) => {
-        resizeTicker.rectangles.set(id, rectangle);
-        resizeTicker.enable();
+      child.resizeBehavior = () => {
+        resizeTicker.start();
       };
     }
   }
@@ -377,7 +397,6 @@ export function Column(
       if (e.button !== 0) {
         return;
       }
-      resizeTicker.disable();
       setCurrentHandle(null);
     }
     function onMouseMove(e: MouseEvent) {
@@ -503,7 +522,12 @@ export function Column(
       style={style}
       id={id}
     >
-      {buildTree(children, handlePercents, setCurrentHandle, ColumnHandle)}
+      {buildTree(
+        children,
+        handlePercents,
+        setCurrentHandle,
+        ColumnHandle
+      )}
     </div>
   );
 }
@@ -517,6 +541,7 @@ export function Tile({
 }: TileProps): ReactElement {
   const logOptions = { ts: fileName, fn: Tile.name };
   const defaultClass: string = "flex-grow";
+  const [bg, setBg] = useState<string | null>(null);
   const ref = useRef<HTMLDivElement>(null);
   const rectangle = useRef<Electron.Rectangle>({
     height: 100,
@@ -530,51 +555,51 @@ export function Tile({
   }
   const color = colors.get(id as string);
 
+  tiles.get(id as string)!.bgLoader.setter = setBg;
+
   useEffect(() => {
     const _logOptions = { ts: fileName, fn: `${Tile.name}/${useEffect.name}` };
-    tiles.get(id as string)!.ref = ref;
-    async function createViewOrResizeAsync() {
+  tiles.get(id as string)!.ref = ref;
+  async function createViewOrResizeAsync() {
+    // #region logging
+    log.info(_logOptions, `${pre.invokingEvent}: ${ch.getViewData} for id "${id}"`);
+    // #endregion
+    const viewData = await window.electronAPI.invoke(ch.getViewData) as Map<string, ViewData>;
+    if (!(viewData.has(id as string))) {
       // #region logging
-      log.info(_logOptions, `${pre.invokingEvent}: ${ch.getViewData} for id "${id}"`);
+      log.info(_logOptions, `${pre.invokingEvent}: ${ch.createViewAsync} for id "${id}"`);
       // #endregion
-      const viewData = await window.electronAPI.invoke(ch.getViewData) as Map<string, ViewData>;
-      if (!(viewData.has(id as string))) {
-        // #region logging
-        log.info(_logOptions, `${pre.invokingEvent}: ${ch.createViewAsync} for id "${id}"`);
-        // #endregion
-        await window.electronAPI.invoke(ch.createViewAsync, id, {
-          webPreferences: {
-            disableHtmlFullscreenWindowResize: true,
-            enablePreferredSizeMode: true,
-            backgroundThrottling: false
-          }
-        });
-        resizeBehavior(id as string, rectangle.current);
-      }
-      else {
-        resizeBehavior(id as string, rectangle.current);
-      }
+      await window.electronAPI.invoke(ch.createViewAsync, id, {
+        webPreferences: {
+          disableHtmlFullscreenWindowResize: true,
+          enablePreferredSizeMode: true,
+        }
+      });
+      resizeBehavior(id as string, rectangle.current);
     }
-    const resizeObserver = new ResizeObserver(async () => {
-      rectangle.current = {
-        height: ref.current?.offsetHeight ?? 100,
-        width: ref.current?.offsetWidth ?? 100,
-        x: ref.current?.offsetLeft ?? 0,
-        y: ref.current?.offsetTop ?? 0
-      };
-      createViewOrResizeAsync();
-    });
-    createViewOrResizeAsync();
-    if (ref.current) {
-      resizeObserver.observe(ref.current);
+    else {
+      resizeBehavior(id as string, rectangle.current);
     }
-    return () => {
-      resizeObserver.disconnect();
+  }
+  const resizeObserver = new ResizeObserver(async () => {
+    rectangle.current = {
+      height: ref.current?.offsetHeight ?? 100,
+      width: ref.current?.offsetWidth ?? 100,
+      x: ref.current?.offsetLeft ?? 0,
+      y: ref.current?.offsetTop ?? 0
     };
+    createViewOrResizeAsync();
+  });
+  createViewOrResizeAsync();
+  if (ref.current) {
+    resizeObserver.observe(ref.current);
+  }
+  return () => {
+    resizeObserver.disconnect();
+  };
   }, [id, resizeBehavior]);
 
   function element(): ReactElement {
-    const imgUrl: string | null = tiles.get(id as string)!.img;
     function withImg() {
       return (
         <div
@@ -584,17 +609,21 @@ export function Tile({
             }
             return defaultClass;
           })()}
-          style={{ ...style, backgroundColor: color }}
+          style={{
+            ...style,
+            backgroundRepeat: "round",
+            backgroundImage: `url(${bg})`
+          }}
           id={id}
           ref={ref}
           onContextMenu={
             async () => {
-              // #region logging
+            // #region logging
               log.info(logOptions, `${pre.invokingEvent}: ${ch.showContextMenuAsync}`);
               // #endregion
               const params = await window.electronAPI.invoke(ch.showContextMenuAsync) as ContextParams | null;
               if (params === null) {
-                // #region logging
+              // #region logging
                 log.info(logOptions, `${pre.userInteraction}: selected Nothing (null)`);
                 // #endregion
                 return;
@@ -613,22 +642,6 @@ export function Tile({
             }
           }
         >
-          <div className="relative h-0 w-0">
-            <img
-              src={tiles.get(id as string)!.img as string}
-              style={{
-                position: "absolute",
-                top: "0px",
-                left: "0px",
-                width: `${ref.current?.offsetWidth}px`,
-                height: `${ref.current?.offsetHeight}px`,
-                maxWidth: `${ref.current?.offsetWidth}px`,
-                maxHeight: `${ref.current?.offsetHeight}px`,
-                backgroundColor: "coral"
-              }}
-            >
-            </img>
-          </div>
         </div>
       );
     }
@@ -646,12 +659,12 @@ export function Tile({
           ref={ref}
           onContextMenu={
             async () => {
-              // #region logging
+            // #region logging
               log.info(logOptions, `${pre.invokingEvent}: ${ch.showContextMenuAsync}`);
               // #endregion
               const params = await window.electronAPI.invoke(ch.showContextMenuAsync) as ContextParams | null;
               if (params === null) {
-                // #region logging
+              // #region logging
                 log.info(logOptions, `${pre.userInteraction}: selected Nothing (null)`);
                 // #endregion
                 return;
@@ -673,9 +686,11 @@ export function Tile({
         </div>
       );
     }
-    switch (imgUrl !== null) {
-    case true: return withImg();
-    default: return noImg();
+    switch (bg !== null) {
+    case true:
+      return withImg();
+    default:
+      return noImg();
     }
   }
   return element();
