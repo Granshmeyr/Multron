@@ -6,15 +6,22 @@ import { ScopedCssBaseline, ThemeProvider } from "@mui/material";
 import * as React from "react";
 import * as ReactDOM from "react-dom/client";
 import "./index.css";
-import TilesApp from "../src/apps/Tiles";
-//import TilesGreeting from "../src/apps/app-components/TilesGreeting";
 import * as Themes from "../common/themes";
+//import TilesApp from "./apps/Tiles";
+//import TilesGreeting from "./apps/app-components/TilesGreeting";
+import PieWrapper from "./apps/app-components/PieWrapper";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <ThemeProvider theme={Themes.dark}>
       <ScopedCssBaseline>
-        <TilesApp></TilesApp>
+        <PieWrapper
+          buttons={{
+            middle: { icon: "error", opacity: 0.5 }
+          }}
+        >
+          <div className="flex h-screen w-screen bg-pink-500"></div>
+        </PieWrapper>
       </ScopedCssBaseline>
     </ThemeProvider>
   </React.StrictMode>

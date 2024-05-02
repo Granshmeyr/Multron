@@ -3,11 +3,9 @@ import { BaseNode } from "../renderer/common/nodeTypes";
 import { ContextOption, Direction } from "./enums";
 
 export interface TileProps {
-  className?: string;
   style?: React.CSSProperties;
   nodeId?: string;
   url?: URL;
-  contextBehavior: (id: string, params: ContextParams) => void;
   resizeBehavior: (id: string, rectangle: Electron.Rectangle) => void;
 }
 export interface RowProps {

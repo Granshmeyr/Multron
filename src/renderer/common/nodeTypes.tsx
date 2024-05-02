@@ -1,11 +1,10 @@
 import { CSSProperties, ReactElement } from "react";
 import { v4 as uuidv4 } from "uuid";
-import * as ich from "../../common/ipcChannels";
-import { ContextOption, Direction } from "../../common/enums";
 import { ColumnProps, ContextParams, RowProps, TileProps } from "../../common/interfaces";
+import * as ich from "../../common/ipcChannels";
 import * as pre from "../../common/logPrefixes";
-import * as log from "./loggerUtil";
 import { Column, Row, Tile } from "../src/apps/Tiles";
+import * as log from "./loggerUtil";
 import { BgLoader } from "./types";
 
 export const tiles = new Map<string, TileNode>();
@@ -49,29 +48,18 @@ export abstract class ContainerNode extends BaseNode {
 export class TileNode extends BaseNode {
   ref: React.RefObject<HTMLDivElement> | null = null;
   bgLoader: BgLoader = new BgLoader();
-  private _className?: string;
   private _style?: React.CSSProperties;
   private _id: string;
   private _url?: URL;
-  private _contextBehavior: (id: string, params: ContextParams) => void ;
   private _resizeBehavior: (id: string, rectangle: Electron.Rectangle) => void;
 
   constructor({
-    className: className,
     style: style,
     nodeId: id,
     url: url,
-    contextBehavior: contextBehavior,
     resizeBehavior: resizeBehavior
   }: TileProps = {
     nodeId: uuidv4(),
-    contextBehavior: () => {
-      // #region logging
-      log.info({
-        ts: fileName, fn: `${TileNode.name}.constructor`
-      }, `${pre.missing}: contextBehavior param`);
-      // #endregion
-    },
     resizeBehavior: () => {
       // #region logging
       log.info({
@@ -81,30 +69,24 @@ export class TileNode extends BaseNode {
     }
   }) {
     super();
-    this._className = className;
     this._style = style;
     this._id = id === undefined ? uuidv4() : id;
     this._url = url;
-    this._contextBehavior = contextBehavior;
     this._resizeBehavior = resizeBehavior;
   }
 
   toElement(): ReactElement {
     return (
       <Tile
-        className={this.className}
         style={this.style}
         nodeId={this.nodeId}
         url={this.url}
-        contextBehavior={this._contextBehavior}
         resizeBehavior={this._resizeBehavior}
       >
       </Tile>
     );
   }
 
-  get className(): string | undefined { return this._className; }
-  set className(value: string) { this._className = value; }
   get style(): React.CSSProperties | undefined { return this._style; }
   set style(value: React.CSSProperties) { this._style = value; }
   get nodeId(): string { return this._id; }
@@ -118,7 +100,6 @@ export class TileNode extends BaseNode {
     window.electronAPI.send(ich.setViewUrl, this.nodeId, value.toString());
     // #endregion
   }
-  set contextBehavior(value: (id: string, params: ContextParams) => void) { this._contextBehavior = value; }
   set resizeBehavior(value: (id: string, rectangle: Electron.Rectangle) => void) { this._resizeBehavior = value; }
   getRect(): Electron.Rectangle | null {
     if (this.ref === null) {
@@ -134,9 +115,6 @@ export class TileNode extends BaseNode {
   }
   appendStyle(style: React.CSSProperties) {
     this.style = { ...this.style, ...style };
-  }
-  split(id: string, direction: Direction) {
-    this._contextBehavior(id, { option: ContextOption.Split, direction: direction });
   }
   resize(id: string, rectangle: Electron.Rectangle) {
     this._resizeBehavior(id, rectangle);
