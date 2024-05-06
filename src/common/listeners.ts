@@ -1,10 +1,10 @@
-import { BrowserWindow, Menu, WebContentsView, WebContentsViewConstructorOptions } from "electron";
+import { BrowserWindow, Menu, WebContentsView, WebContentsViewConstructorOptions, screen } from "electron";
+import * as ich from "../common/ipcChannels.ts";
 import * as pre from "../common/logPrefixes.ts";
 import { log } from "../common/logger.ts";
-import { mainWindow } from "../main/main.ts";
-import * as ich from "./ipcChannels.ts";
+import { mainWindow, overlayWindow } from "../main/main.ts";
 import { ContextOption, Direction } from "./enums.ts";
-import { ContextParams, Vector2, ViewData } from "./interfaces.ts";
+import { ContextParams, TaskbarBounds, Vector2, ViewData } from "./interfaces.ts";
 import { ViewInstance } from "./mainTypes.ts";
 import { cursorViewportPosition } from "./mainUtil.ts";
 
@@ -47,7 +47,7 @@ export async function onShowContextMenuAsync(): Promise<ContextParams | null> {
   });
 }
 export async function onCreateViewAsync(
-  _event: Electron.IpcMainInvokeEvent,
+  _e: Electron.IpcMainInvokeEvent,
   id: string,
   window: BrowserWindow,
   options?: WebContentsViewConstructorOptions
@@ -58,10 +58,7 @@ export async function onCreateViewAsync(
     const view = views.get(id)!.view;
     view.webContents.on("context-menu", async () => {
       const position: Vector2 = cursorViewportPosition(window);
-      const params: ContextParams | null = await onShowContextMenuAsync();
-      window.webContents.send(
-        ich.mainProcessContextMenu, id, params, position
-      );
+      const params: ContextParams | null = onShowContextMenuAsync();
     });
     view.webContents.on("zoom-changed", (_, zoomDirection) => {
       const currentZoom = view.webContents.getZoomLevel();
@@ -93,11 +90,10 @@ export async function onCreateViewAsync(
   });
 }
 export function onSetViewRectangle(
-  _event: Electron.IpcMainEvent,
+  _e: Electron.IpcMainEvent,
   id: string,
-  rectangle: Electron.Rectangle
+  rect: Electron.Rectangle
 ) {
-  const rect = rectangle;
   // #region logging
   log.info({ ts: fileName, fn: onSetViewRectangle.name },
     `${pre.setting}: rectangle "{ height: ${rect.height}, width: ${rect.width}, x: ${rect.x}, y: ${rect.y} }" to views[${id}]`
@@ -106,7 +102,7 @@ export function onSetViewRectangle(
   views.get(id)!.rectangle = rect;
 }
 export function onSetViewUrl(
-  _event: Electron.IpcMainEvent,
+  _e: Electron.IpcMainEvent,
   id: string,
   url: string
 ) {
@@ -118,14 +114,14 @@ export function onSetViewUrl(
   views.get(id)!.url = url;
 }
 export function onLogInfo(
-  _event: Electron.IpcMainEvent,
+  _e: Electron.IpcMainEvent,
   options: unknown,
   message: string
 ) {
   log.info(options, message);
 }
 export function onLogError(
-  _event: Electron.IpcMainEvent,
+  _e: Electron.IpcMainEvent,
   options: unknown,
   message: string
 ) {
@@ -142,7 +138,7 @@ export function onGetViewData(): Map<string, ViewData> {
   return data;
 }
 export function onDeleteView(
-  _event: Electron.IpcMainEvent,
+  _e: Electron.IpcMainEvent,
   id: string
 ) {
   const logOptions = { ts: fileName, fn: onDeleteView.name };
@@ -159,20 +155,64 @@ export function onDeleteView(
   views.delete(id);
 }
 export function onGetViewRectangle(
-  _event: Electron.IpcMainInvokeEvent,
+  _e: Electron.IpcMainInvokeEvent,
   id: string
 ): Electron.Rectangle {
   return views.get(id)!.view.getBounds();
 }
 export async function onResizeCaptureAsync(
-  _event: Electron.IpcMainInvokeEvent,
+  _e: Electron.IpcMainInvokeEvent,
   id: string,
-  rectangle: Electron.Rectangle
+  rect: Electron.Rectangle
 ): Promise<Buffer> {
   const instance = views.get(id)!;
-  instance.rectangle = rectangle;
+  instance.rectangle = rect;
   const image = await instance.view.webContents.capturePage();
   return new Promise<Buffer>((resolve) => {
     resolve(image.toJPEG(80));
   });
+}
+export function onShowOverlay(
+  _e: Electron.IpcMainEvent,
+  pos: Vector2
+) {
+  overlayWindow!.webContents.send(ich.showOverlayResponse, pos);
+}
+export function onHideOverlay() {
+  overlayWindow!.webContents.send(ich.hideOverlayResponse);
+}
+export function onGetTaskbarBounds(): TaskbarBounds {
+  const display = screen.getPrimaryDisplay();
+  const bounds = display.bounds;
+  const workArea = display.workArea;
+  const diffW = bounds.width - workArea.width;
+  const diffH = bounds.height - workArea.height;
+  let direction: Direction;
+  let width: number;
+  let height: number;
+  if (diffW !== 0) {
+    if (workArea.x === 0) {
+      direction = Direction.Left;
+    }
+    else {
+      direction = Direction.Right;
+    }
+    width = diffW;
+    height = bounds.height;
+  }
+  else {
+    if (workArea.y === 0) {
+      direction = Direction.Up;
+    }
+    else {
+      direction = Direction.Down;
+    }
+    width = bounds.width;
+    height = diffH;
+  }
+  return {
+    direction: direction,
+    width: width,
+    height: height
+  };
 }

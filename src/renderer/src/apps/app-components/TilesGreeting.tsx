@@ -1,37 +1,40 @@
 import LinkIcon from "@mui/icons-material/Link";
 import { Box, BoxProps, TextField } from "@mui/material";
 import InputAdornment from "@mui/material/InputAdornment";
-import { ReactElement, forwardRef, useRef } from "react";
-import * as ich from "../../../../common/ipcChannels";
+import { forwardRef, useRef } from "react";
 
 interface CustomBoxProps extends BoxProps {
-  nodeId?: string
+  fn?: (input: string) => unknown
 }
 
 export const Main = forwardRef<HTMLDivElement, CustomBoxProps>(
-  ({ nodeId }, ref) => {
+  ({ fn }, ref) => {
     const input = useRef<string>("");
 
     function onKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
-      if (e.key === "Enter") {
-        window.electronAPI.send(ich.setViewUrl, nodeId, input.current);
+      if (e.key !== "Enter") return;
+      switch (fn === undefined) {
+      case true: console.log(`submitted: ${input.current}`); break;
+      default: fn!(input.current); break;
       }
     }
 
-    const element: ReactElement = (
+    return (
       <Box
-        className="
-            flex
-            flex-col
-            h-full
-            w-full
-            justify-center
-            items-center"
+        className={(() => {
+          return [
+            "flex",
+            "flex-col",
+            "h-full",
+            "w-full",
+            "justify-center",
+            "items-center"
+          ].join(" ");
+        })()}
         ref={ref}
       >
         <TextField
           className="w-8/12"
-          id="filled-basic"
           label="Set URL"
           variant="filled"
           onChange={(e) => { input.current = e.target.value; }}
@@ -39,7 +42,7 @@ export const Main = forwardRef<HTMLDivElement, CustomBoxProps>(
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
-                <LinkIcon></LinkIcon>
+                <LinkIcon />
               </InputAdornment>
             ),
           }}
@@ -47,8 +50,6 @@ export const Main = forwardRef<HTMLDivElement, CustomBoxProps>(
         </TextField>
       </Box>
     );
-
-    return element;
   }
 );
 

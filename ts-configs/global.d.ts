@@ -7,10 +7,8 @@ declare global {
             ) => void;
             on: (
                 channel: string,
-                listener: (
-                    event: Electron.IpcRendererEvent,
-                    ...args: unknown[]
-                ) => void
+                uuid: string,
+                listener: (event: Electron.IpcRendererEvent, ...args: unknown[]) => void,
             ) => void
             once: (
                 channel: string,
@@ -21,13 +19,12 @@ declare global {
             ) => Electron.IpcRenderer;
             removeListener: (
                 channel: string,
-                listener: (
-                    event: Electron.IpcRendererEvent,
-                    ...args: unknown[]
-                ) => void
+                uuid: string,
+                listener: (event: Electron.IpcRendererEvent, ...args: unknown[]) => void,
             ) => void
-            isListening: (
-                channel: string
+            isListening:(
+                channel: string,
+                uuid: string
             ) => boolean
             logInfo: (
                 message: string

@@ -1,7 +1,28 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { contextBridge, ipcRenderer } from "electron";
 
-const listeners = new Set<string>();
+class ListenerRegistry {
+  private listeners = new Map<string, Set<string>>();
+  add(channel: string, uuid: string) {
+    this.getSetOrNew(channel).add(uuid);
+  }
+  delete(channel: string, uuid: string) {
+    this.getSetOrNew(channel).delete(uuid);
+  }
+  has(channel: string, uuid: string): boolean {
+    return this.getSetOrNew(channel).has(uuid);
+  }
+  private getSetOrNew(channel: string): Set<string> {
+    let set = this.listeners.get(channel);
+    if (set === undefined) {
+      const newSet = new Set<string>();
+      this.listeners.set(channel, newSet);
+      set = newSet;
+    }
+    return set;
+  }
+}
+const listenerRegistry = new ListenerRegistry();
 
 contextBridge.exposeInMainWorld("electronAPI", {
   send: (channel: string, ...args: any[]) => {
@@ -9,9 +30,10 @@ contextBridge.exposeInMainWorld("electronAPI", {
   },
   on: (
     channel: string,
-    listener: (event: Electron.IpcRendererEvent, ...args: any[]) => void
+    uuid: string,
+    listener: (event: Electron.IpcRendererEvent, ...args: any[]) => void,
   ) => {
-    listeners.add(channel);
+    listenerRegistry.add(channel, uuid);
     ipcRenderer.on(channel, listener);
   },
   once: (
@@ -22,10 +44,11 @@ contextBridge.exposeInMainWorld("electronAPI", {
   },
   removeListener: (
     channel: string,
-    listener: (event: Electron.IpcRendererEvent, ...args: any[]) => void
+    uuid: string,
+    listener: (event: Electron.IpcRendererEvent, ...args: any[]) => void,
   ) => {
-    if (listeners.has(channel)) {
-      listeners.delete(channel);
+    if (listenerRegistry.has(channel, uuid)) {
+      listenerRegistry.delete(channel, uuid);
       ipcRenderer.removeListener(channel, listener);
     }
   },
@@ -36,8 +59,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
     return ipcRenderer.invoke(channel, ...args);
   },
   isListening: (
-    channel: string
+    channel: string,
+    uuid: string
   ): boolean => {
-    return listeners.has(channel);
+    return listenerRegistry.has(channel, uuid);
   }
 });

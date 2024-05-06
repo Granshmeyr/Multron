@@ -1,11 +1,13 @@
 import React from "react";
 import { BaseNode } from "../renderer/common/nodeTypes";
 import { ContextOption, Direction } from "./enums";
+import { IpcRendererEvent } from "electron/renderer";
 
 export interface TileProps {
   style?: React.CSSProperties;
   nodeId?: string;
   url?: URL;
+  contextBehavior: (id: string, params: ContextParams) => void;
   resizeBehavior: (id: string, rectangle: Electron.Rectangle) => void;
 }
 export interface RowProps {
@@ -43,4 +45,13 @@ export interface ContextParams {
 export interface ViewData {
   url: string | null,
   rectangle: Electron.Rectangle
+}
+export interface Listener {
+  fn: (_: IpcRendererEvent, ...args: unknown[]) => void
+  uuid: string
+}
+export interface TaskbarBounds {
+  direction: Direction,
+  width: number,
+  height: number
 }

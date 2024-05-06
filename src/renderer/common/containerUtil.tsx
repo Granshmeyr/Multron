@@ -9,26 +9,26 @@ import { resizeTicker } from "./types";
 
 const fileName: string = "containerShared.tsx";
 
-function calculateGrow(
+function calculateBasis(
   index: number,
   nodeArrayLength: number,
   handlePercents: number[]
 ): number {
-  let grow: number;
+  let basis: number;
   if (index >= nodeArrayLength) {
     console.error("Invalid index");
-    grow = -1;
+    basis = -1;
   }
   else if (index === 0) {
-    grow = handlePercents[0];
+    basis = handlePercents[0];
   }
   else if (index === nodeArrayLength - 1) {
-    grow = 1 - handlePercents[index - 1];
+    basis = 1 - handlePercents[index - 1];
   }
   else {
-    grow = handlePercents[index] - handlePercents[index - 1];
+    basis = handlePercents[index] - handlePercents[index - 1];
   }
-  return grow;
+  return basis * 100;
 }
 
 function createElement(
@@ -38,11 +38,11 @@ function createElement(
   handlePercents: number[],
 ): ReactElement {
   const logOptions = { ts: fileName, fn: createElement.name };
-  const flexGrow: number = calculateGrow(index, nodeArrayLength, handlePercents);
+  const basis: number = calculateBasis(index, nodeArrayLength, handlePercents);
   // #region logging
-  log.info(logOptions, `${pre.running}: ${createElement.name} with flexGrow ${flexGrow}`);
+  log.info(logOptions, `${pre.running}: ${createElement.name} with flexBasis ${basis}%`);
   // #endregion
-  baseNode.appendStyle({ flexGrow: flexGrow });
+  baseNode.appendStyle({ flexBasis: `${basis}%` });
   return baseNode.toElement();
 }
 

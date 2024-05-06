@@ -6,6 +6,7 @@ import * as pre from "../../common/logPrefixes";
 import { Column, Row, Tile } from "../src/apps/Tiles";
 import * as log from "./loggerUtil";
 import { BgLoader } from "./types";
+import { ContextOption, Direction } from "../../common/enums";
 
 export const tiles = new Map<string, TileNode>();
 export const containers = new Map<string, ContainerNode>();
@@ -51,15 +52,24 @@ export class TileNode extends BaseNode {
   private _style?: React.CSSProperties;
   private _id: string;
   private _url?: URL;
+  private _contextBehavior: (id: string, params: ContextParams) => void;
   private _resizeBehavior: (id: string, rectangle: Electron.Rectangle) => void;
 
   constructor({
     style: style,
     nodeId: id,
     url: url,
+    contextBehavior: contextBehavior,
     resizeBehavior: resizeBehavior
   }: TileProps = {
     nodeId: uuidv4(),
+    contextBehavior: () => {
+      // #region logging
+      log.info({
+        ts: fileName, fn: `${TileNode.name}.constructor`
+      }, `${pre.missing}: contextBehavior param`);
+      // #endregion
+    },
     resizeBehavior: () => {
       // #region logging
       log.info({
@@ -72,6 +82,7 @@ export class TileNode extends BaseNode {
     this._style = style;
     this._id = id === undefined ? uuidv4() : id;
     this._url = url;
+    this._contextBehavior = contextBehavior;
     this._resizeBehavior = resizeBehavior;
   }
 
@@ -81,6 +92,7 @@ export class TileNode extends BaseNode {
         style={this.style}
         nodeId={this.nodeId}
         url={this.url}
+        contextBehavior={this._contextBehavior}
         resizeBehavior={this._resizeBehavior}
       >
       </Tile>
@@ -100,6 +112,7 @@ export class TileNode extends BaseNode {
     window.electronAPI.send(ich.setViewUrl, this.nodeId, value.toString());
     // #endregion
   }
+  set contextBehavior(value: (id: string, params: ContextParams) => void) { this._contextBehavior = value; }
   set resizeBehavior(value: (id: string, rectangle: Electron.Rectangle) => void) { this._resizeBehavior = value; }
   getRect(): Electron.Rectangle | null {
     if (this.ref === null) {
@@ -115,6 +128,9 @@ export class TileNode extends BaseNode {
   }
   appendStyle(style: React.CSSProperties) {
     this.style = { ...this.style, ...style };
+  }
+  split(id: string, direction: Direction) {
+    this._contextBehavior(id, { option: ContextOption.Split, direction: direction });
   }
   resize(id: string, rectangle: Electron.Rectangle) {
     this._resizeBehavior(id, rectangle);
