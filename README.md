@@ -16,11 +16,18 @@ Utilizes Electron's [WebContentsView](https://www.electronjs.org/docs/latest/api
 **Planned Features:**
 
  - [x] Dynamic layout editor w/ splitting, resizing, deletion
- - [x] Set zoom per view
- - [ ] Modal for setting URL
-	 - [ ] "Speed dial" icons for easy access to favorited URLs
+ - [x] Zoom capability
+ - [ ] Pie menu on right click
+	 - [ ] Load layouts
+	 - [ ] Set URL
+	 - [ ] Split
+	 - [ ] Delete
+	 - [ ] Pop-out
+	 - [ ] Customization functionality
+ - [ ] Modal for setting URL (with speed-dial)
  - [ ] Ability to pop-out a tile into a normal browser window
  - [ ] Drag views between different tiles
+ - [ ] Open URL by dragging in any link source
  - [ ] Support per-view user sessions
  - [ ] Save layout of tiles / URLs
  - [ ] Restore layout from file
