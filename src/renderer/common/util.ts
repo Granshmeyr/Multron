@@ -1,8 +1,27 @@
+import { v4 as uuidv4 } from "uuid";
+import { Direction } from "../../common/enums";
+import { DisplayMetrics, Listener, Vector2 } from "../../common/interfaces";
 import * as ich from "../../common/ipcChannels";
 
 export let editMode: boolean = false;
 export const editMargin: number = -20;
 export const editShrinkMs: number = 250;
+
+const displayMetricsTracker = new class {
+  metrics: DisplayMetrics = {} as DisplayMetrics;
+  private listener: Listener = {
+    channel: ich.displayMetricsChanged,
+    fn: (_, m) => { this.metrics = m as DisplayMetrics;},
+    uuid: uuidv4()
+  };
+  constructor() {
+    (async () => {
+      const m = await window.electronAPI.invoke(ich.getDisplayMetrics) as DisplayMetrics;
+      this.metrics = m;
+    })();
+    registerIpcListener(this.listener);
+  }
+};
 
 export function setEditMode(value: boolean) {
   editMode = value;
@@ -108,4 +127,18 @@ export function compareRects(
   const secondValues: number[] = rectToArray(second);
   return firstValues.every((value, i) => value === secondValues[i]);
 
+}
+export function registerIpcListener(listener: Listener) {
+  if (!window.electronAPI.isListening(listener.channel, listener.uuid)) {
+    window.electronAPI.on(listener.channel, listener.uuid, listener.fn);
+  }
+}
+export function screenToWorkAreaPos(pos: Vector2): Vector2 {
+  const t = displayMetricsTracker.metrics.taskbar;
+  switch (t.direction) {
+  case Direction.Up:    return { x: pos.x, y: pos.y - t.height };
+  case Direction.Down:  return pos;
+  case Direction.Left:  return { x: pos.x - t.width, y: pos.y };
+  case Direction.Right: return pos;
+  }
 }

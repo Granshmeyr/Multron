@@ -1,9 +1,10 @@
 import { BrowserWindow, app, globalShortcut, ipcMain, screen } from "electron";
 import path from "path";
 import * as ich from "../common/ipcChannels";
-import { onCreateViewAsync, onDeleteView, onGetTaskbarBounds, onGetViewData, onLogError, onLogInfo, onResizeCaptureAsync, onSetViewRectangle, onSetViewUrl, onShowOverlay, views } from "../common/listeners";
+import { onCreateViewAsync, onDeleteView, onShowPieMenu, onGetDisplayMetrics, onGetViewData, onLogError, onLogInfo, onResizeCaptureAsync, onSetOverlayIgnore, onSetViewRectangle, onSetViewUrl, views } from "../common/listeners";
 import * as pre from "../common/logPrefixes";
 import { log } from "../common/logger";
+import { fitOverlayToWorkarea, getTaskbarBounds } from "../common/mainUtil";
 
 export let mainWindow: BrowserWindow | null = null;
 export let hideWindow: BrowserWindow | null = null;
@@ -14,7 +15,6 @@ const editShortcut: string = "Control+e";
 let focused: boolean = false;
 
 const fileName: string = "main.ts";
-let display: Electron.Display;
 
 function main(): void {
   // #region events
@@ -59,23 +59,35 @@ function main(): void {
     log.info(logOptions, `${pre.eventReceived}: ${ich.resizeCapture}`);
     return await onResizeCaptureAsync(e, id, rect);
   });
-  log.info(logOptions, `${pre.listeningOn}: ${ich.showOverlay}`);
-  ipcMain.on(ich.showOverlay, (e, pos) => {
-    log.info(logOptions, `${pre.eventReceived}: ${ich.showOverlay}`);
-    onShowOverlay(e, pos);
+  log.info(logOptions, `${pre.listeningOn}: ${ich.showPieMenu}`);
+  ipcMain.on(ich.showPieMenu, (e, nodeId, pos) => {
+    log.info(logOptions, `${pre.eventReceived}: ${ich.showPieMenu}`);
+    onShowPieMenu(e, nodeId, pos);
   });
-  log.info(logOptions, `${pre.listeningOn}: ${ich.getTaskbarBounds}`);
-  ipcMain.handle(ich.getTaskbarBounds, () => {
-    log.info(logOptions, `${pre.eventReceived}: ${ich.getTaskbarBounds}`);
-    return onGetTaskbarBounds();
+  log.info(logOptions, `${pre.listeningOn}: ${ich.getDisplayMetrics}`);
+  ipcMain.handle(ich.getDisplayMetrics, () => {
+    log.info(logOptions, `${pre.eventReceived}: ${ich.getDisplayMetrics}`);
+    return onGetDisplayMetrics();
+  });
+  log.info(logOptions, `${pre.listeningOn}: ${ich.setOverlayIgnore}`);
+  ipcMain.on(ich.setOverlayIgnore, (_, ignoring) => {
+    log.info(logOptions, `${pre.eventReceived}: ${ich.setOverlayIgnore}`);
+    onSetOverlayIgnore(ignoring);
   });
   // #endregion
 
   app.once("ready", () => {
-    display = screen.getPrimaryDisplay();
     createMainWindow();
     createHideWindow();
     createOverlayWindow();
+    screen.on("display-metrics-changed", () => {
+      const taskbarBounds = getTaskbarBounds();
+      overlayWindow!.webContents.send(
+        ich.displayMetricsChanged,
+        onGetDisplayMetrics()
+      );
+      fitOverlayToWorkarea(taskbarBounds);
+    });
     globalShortcut.register("Control+t", () => {
       mainWindow!.webContents.send("debug");
     });
@@ -86,9 +98,10 @@ function main(): void {
 }
 
 function createHideWindow() {
+  const display = screen.getPrimaryDisplay();
   hideWindow = new BrowserWindow({
-    x: display.workArea.x,
-    y: display.workArea.y,
+    x: 0,
+    y: display.workArea.height - 1,
     height: display.workArea.height,
     width: display.workArea.width,
     transparent: true,
@@ -98,7 +111,6 @@ function createHideWindow() {
       zoomFactor: 1.0
     }
   });
-  hideWindow.setPosition(0, display.workArea.height - 1);
   hideWindow.setIgnoreMouseEvents(true);
   hideWindow.setMenu(null);
   registerSharedListeners(hideWindow);
@@ -132,10 +144,6 @@ function createMainWindow() {
 
 function createOverlayWindow() {
   overlayWindow =  new BrowserWindow({
-    x: display.workArea.x,
-    y: display.workArea.y,
-    width: display.workArea.width,
-    height: display.workArea.height,
     transparent: true,
     frame: false,
     skipTaskbar: true,
@@ -149,7 +157,12 @@ function createOverlayWindow() {
   overlayWindow.setMenu(null);
   overlayWindow.loadURL(`${viteURL}/overlay`);
   overlayWindow.webContents.openDevTools({ mode: "detach" });
-  registerSharedListeners(overlayWindow);
+  registerSharedListeners(overlayWindow, {
+    blur: () => {
+      overlayWindow!.webContents.send(ich.overlayBlur);
+      overlayWindow!.setIgnoreMouseEvents(true, { forward: false });
+    }
+  });
 }
 
 function onEdit() {
@@ -181,7 +194,8 @@ function onEdit() {
 
 function registerSharedListeners(window: BrowserWindow, customListeners?: {
   focus?: (...any: unknown[]) => unknown,
-  blur?: (...any: unknown[]) => unknown
+  blur?: (...any: unknown[]) => unknown,
+  resize?: (...any: unknown[]) => unknown
 }) {
   window.on("focus", () => {
     globalShortcut.register("CommandOrControl+0", () => { return; });
@@ -202,6 +216,9 @@ function registerSharedListeners(window: BrowserWindow, customListeners?: {
     customListeners?.blur && customListeners.blur();
   });
   window.on("closed", () => { app.quit(); });
+  window.on("resize",() => {
+    customListeners?.resize && customListeners.resize();
+  });
 }
 
 main();

@@ -1,12 +1,12 @@
-import { BrowserWindow, Menu, WebContentsView, WebContentsViewConstructorOptions, screen } from "electron";
+import { BrowserWindow, Menu, WebContentsView, screen, WebContentsViewConstructorOptions } from "electron";
 import * as ich from "../common/ipcChannels.ts";
 import * as pre from "../common/logPrefixes.ts";
 import { log } from "../common/logger.ts";
 import { mainWindow, overlayWindow } from "../main/main.ts";
 import { ContextOption, Direction } from "./enums.ts";
-import { ContextParams, TaskbarBounds, Vector2, ViewData } from "./interfaces.ts";
+import { ContextParams, DisplayMetrics, Vector2, ViewData } from "./interfaces.ts";
 import { ViewInstance } from "./mainTypes.ts";
-import { cursorViewportPosition } from "./mainUtil.ts";
+import { cursorViewportPosition, getTaskbarBounds } from "./mainUtil.ts";
 
 export const views = new Map<string, ViewInstance>();
 const fileName: string = "listeners.ts";
@@ -172,47 +172,25 @@ export async function onResizeCaptureAsync(
     resolve(image.toJPEG(80));
   });
 }
-export function onShowOverlay(
+export function onShowPieMenu(
   _e: Electron.IpcMainEvent,
+  nodeId: string,
   pos: Vector2
 ) {
-  overlayWindow!.webContents.send(ich.showOverlayResponse, pos);
+  overlayWindow!.setIgnoreMouseEvents(false, { forward: true });
+  overlayWindow!.webContents.send(ich.showPieMenuCC, nodeId, pos);
+  overlayWindow!.focus();
 }
-export function onHideOverlay() {
-  overlayWindow!.webContents.send(ich.hideOverlayResponse);
-}
-export function onGetTaskbarBounds(): TaskbarBounds {
-  const display = screen.getPrimaryDisplay();
-  const bounds = display.bounds;
-  const workArea = display.workArea;
-  const diffW = bounds.width - workArea.width;
-  const diffH = bounds.height - workArea.height;
-  let direction: Direction;
-  let width: number;
-  let height: number;
-  if (diffW !== 0) {
-    if (workArea.x === 0) {
-      direction = Direction.Left;
-    }
-    else {
-      direction = Direction.Right;
-    }
-    width = diffW;
-    height = bounds.height;
-  }
-  else {
-    if (workArea.y === 0) {
-      direction = Direction.Up;
-    }
-    else {
-      direction = Direction.Down;
-    }
-    width = bounds.width;
-    height = diffH;
-  }
+export function onGetDisplayMetrics(): DisplayMetrics {
+  const d = screen.getPrimaryDisplay();
   return {
-    direction: direction,
-    width: width,
-    height: height
+    screen: {
+      bounds: d.bounds,
+      workArea: d.workArea
+    },
+    taskbar: getTaskbarBounds()
   };
+}
+export function onSetOverlayIgnore(ignoring: boolean) {
+  overlayWindow!.setIgnoreMouseEvents(ignoring, { forward: true });
 }

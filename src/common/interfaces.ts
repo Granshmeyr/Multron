@@ -47,6 +47,7 @@ export interface ViewData {
   rectangle: Electron.Rectangle
 }
 export interface Listener {
+  channel: string,
   fn: (_: IpcRendererEvent, ...args: unknown[]) => void
   uuid: string
 }
@@ -54,4 +55,11 @@ export interface TaskbarBounds {
   direction: Direction,
   width: number,
   height: number
+}
+export interface DisplayMetrics {
+  screen: {
+    bounds: Electron.Rectangle,
+    workArea: Electron.Rectangle
+  },
+  taskbar: TaskbarBounds
 }

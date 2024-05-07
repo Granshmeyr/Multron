@@ -7,7 +7,7 @@ import { buildTree, deletion, setUrl } from "../../common/containerUtil.tsx";
 import * as log from "../../common/loggerUtil.ts";
 import { BaseNode, ColumnNode, ContainerNode, RowNode, TileNode, TileTree, containers, recordColumn, recordRow, recordTile, tiles } from "../../common/nodeTypes.jsx";
 import { resizeTicker } from "../../common/types.ts";
-import { setEditMode } from "../../common/util.ts";
+import { registerIpcListener, setEditMode } from "../../common/util.ts";
 import Greeting from "./app-components/TilesGreeting.tsx";
 import { v4 as uuidv4 } from "uuid";
 import { IpcRendererEvent } from "electron";
@@ -36,6 +36,7 @@ export default function Main(): ReactElement {
 
   // #region listeners
   const listener1 = useRef<Listener>({
+    channel: ich.toggleEditMode,
     fn: async (_: IpcRendererEvent, ...args: unknown[]) => {
       // #region logging
       log.info(logOptions, `${pre.eventReceived}: ${ich.toggleEditMode}`);
@@ -55,6 +56,7 @@ export default function Main(): ReactElement {
     uuid: uuidv4()
   });
   const listener2 = useRef<Listener>({
+    channel: ich.mainProcessContextMenu,
     fn: (_, ...args: unknown[]) => {
       // #region logging
       log.info(logOptions, `${pre.eventReceived}: ${ich.mainProcessContextMenu}`);
@@ -96,26 +98,13 @@ export default function Main(): ReactElement {
     uuid: uuidv4()
   });
   const listener3 = useRef<Listener>({
+    channel: "debug",
     fn: () => {
       console.log("debug invoked");
     },
     uuid: uuidv4()
   });
-  if (!window.electronAPI.isListening(ich.toggleEditMode, listener1.current.uuid)) {
-    // #region logging
-    log.info(logOptions, `${pre.listeningOn}: ${ich.toggleEditMode}`);
-    // #endregion
-    window.electronAPI.on(ich.toggleEditMode, listener1.current.uuid, listener1.current.fn);
-  }
-  if (!window.electronAPI.isListening(ich.mainProcessContextMenu, listener2.current.uuid)) {
-    // #region logging
-    log.info(logOptions, `${pre.listeningOn}: ${ich.mainProcessContextMenu}`);
-    // #endregion
-    window.electronAPI.on(ich.mainProcessContextMenu, listener2.current.uuid, listener2.current.fn);
-  }
-  if (!window.electronAPI.isListening("debug", listener3.current.uuid)) {
-    window.electronAPI.on("debug", listener3.current.uuid, listener3.current.fn);
-  }
+  [listener1, listener2, listener3].forEach(v => registerIpcListener(v.current));
   // #endregion
 
   if (resizeTicker.refreshRoot === null) {
@@ -560,44 +549,44 @@ export function Tile({
 
   useEffect(() => {
     const _logOptions = { ts: fileName, fn: `${Tile.name}/${useEffect.name}` };
-  tiles.get(nodeId as string)!.ref = ref;
-  async function createViewOrResizeAsync() {
-    // #region logging
-    log.info(_logOptions, `${pre.invokingEvent}: ${ich.getViewData} for id "${nodeId}"`);
-    // #endregion
-    const viewData = await window.electronAPI.invoke(ich.getViewData) as Map<string, ViewData>;
-    if (!(viewData.has(nodeId as string))) {
+    tiles.get(nodeId as string)!.ref = ref;
+    async function createViewOrResizeAsync() {
       // #region logging
-      log.info(_logOptions, `${pre.invokingEvent}: ${ich.createViewAsync} for id "${nodeId}"`);
+      log.info(_logOptions, `${pre.invokingEvent}: ${ich.getViewData} for id "${nodeId}"`);
       // #endregion
-      await window.electronAPI.invoke(ich.createViewAsync, nodeId, {
-        webPreferences: {
-          disableHtmlFullscreenWindowResize: true,
-          enablePreferredSizeMode: true,
-        }
-      });
-      resizeBehavior(nodeId as string, rectangle.current);
+      const viewData = await window.electronAPI.invoke(ich.getViewData) as Map<string, ViewData>;
+      if (!(viewData.has(nodeId as string))) {
+        // #region logging
+        log.info(_logOptions, `${pre.invokingEvent}: ${ich.createViewAsync} for id "${nodeId}"`);
+        // #endregion
+        await window.electronAPI.invoke(ich.createViewAsync, nodeId, {
+          webPreferences: {
+            disableHtmlFullscreenWindowResize: true,
+            enablePreferredSizeMode: true,
+          }
+        });
+        resizeBehavior(nodeId as string, rectangle.current);
+      }
+      else {
+        resizeBehavior(nodeId as string, rectangle.current);
+      }
     }
-    else {
-      resizeBehavior(nodeId as string, rectangle.current);
-    }
-  }
-  const resizeObserver = new ResizeObserver(async () => {
-    rectangle.current = {
-      height: ref.current?.offsetHeight ?? 100,
-      width: ref.current?.offsetWidth ?? 100,
-      x: ref.current?.offsetLeft ?? 0,
-      y: ref.current?.offsetTop ?? 0
-    };
+    const resizeObserver = new ResizeObserver(async () => {
+      rectangle.current = {
+        height: ref.current?.offsetHeight ?? 100,
+        width: ref.current?.offsetWidth ?? 100,
+        x: ref.current?.offsetLeft ?? 0,
+        y: ref.current?.offsetTop ?? 0
+      };
+      createViewOrResizeAsync();
+    });
     createViewOrResizeAsync();
-  });
-  createViewOrResizeAsync();
-  if (ref.current) {
-    resizeObserver.observe(ref.current);
-  }
-  return () => {
-    resizeObserver.disconnect();
-  };
+    if (ref.current !== null) {
+      resizeObserver.observe(ref.current);
+    }
+    return () => {
+      resizeObserver.disconnect();
+    };
   }, [nodeId, resizeBehavior]);
 
   function element(): ReactElement {
@@ -650,10 +639,11 @@ export function Tile({
           ref={ref}
           className="flex basis-full"
           onContextMenu={(e) => {
-            window.electronAPI.send(ich.showOverlay, {
-              x: e.screenX,
-              y: e.screenY
-            });
+            window.electronAPI.send(
+              ich.showPieMenu,
+              nodeId,
+              { x: e.screenX, y: e.screenY }
+            );
           }}
         >
           <Greeting
