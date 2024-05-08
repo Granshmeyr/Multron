@@ -1,6 +1,5 @@
-import { v4 as uuidv4 } from "uuid";
 import { Direction } from "../../common/enums";
-import { DisplayMetrics, Listener, Vector2 } from "../../common/interfaces";
+import { DisplayMetrics, IpcListener, Vector2 } from "../../common/interfaces";
 import * as ich from "../../common/ipcChannels";
 
 export let editMode: boolean = false;
@@ -9,17 +8,16 @@ export const editShrinkMs: number = 250;
 
 const displayMetricsTracker = new class {
   metrics: DisplayMetrics = {} as DisplayMetrics;
-  private listener: Listener = {
-    channel: ich.displayMetricsChanged,
-    fn: (_, m) => { this.metrics = m as DisplayMetrics;},
-    uuid: uuidv4()
-  };
   constructor() {
     (async () => {
       const m = await window.electronAPI.invoke(ich.getDisplayMetrics) as DisplayMetrics;
       this.metrics = m;
     })();
-    registerIpcListener(this.listener);
+    registerIpcListener({
+      channel: ich.displayMetricsChanged,
+      fn: (_, m) => { this.metrics = m as DisplayMetrics; },
+      uuid: "e9985fbc-8385-42ed-bb0a-af1b7cf09a2e"
+    });
   }
 };
 
@@ -128,11 +126,14 @@ export function compareRects(
   return firstValues.every((value, i) => value === secondValues[i]);
 
 }
-export function registerIpcListener(listener: Listener) {
+export function registerIpcListener(listener: IpcListener) {
   const listening = window.electronAPI.isListening(listener.channel, listener.uuid);
   if (!listening) {
     window.electronAPI.on(listener.channel, listener.uuid, listener.fn);
   }
+}
+export function unregisterIpcListener(listener: IpcListener) {
+  window.electronAPI.removeListener(listener.channel, listener.uuid, listener.fn);
 }
 export function screenToWorkAreaPos(pos: Vector2): Vector2 {
   const t = displayMetricsTracker.metrics.taskbar;
@@ -142,4 +143,29 @@ export function screenToWorkAreaPos(pos: Vector2): Vector2 {
   case Direction.Left:  return { x: pos.x - t.width, y: pos.y };
   case Direction.Right: return pos;
   }
+}
+export function percentAlongRectY(
+  rect: Electron.Rectangle,
+  pos: Vector2
+): number {
+  const windowBorder = (window.outerWidth - window.innerWidth) / 2;
+  const offset = (window.outerHeight - window.innerHeight) - windowBorder;
+  const mousePosition = pos!.y - (rect.y + window.screenTop + offset);
+  return mousePosition / rect.height;
+}
+export function percentAlongRectX(
+  rect: Electron.Rectangle,
+  pos: Vector2
+): number {
+  const windowBorder = (window.outerWidth - window.innerWidth) / 2;
+  const mousePosition = pos!.x - (rect.x + window.screenLeft + windowBorder);
+  return mousePosition / rect.width;
+}
+export function getDivRect(div: HTMLDivElement): Electron.Rectangle {
+  return {
+    x: div.offsetLeft,
+    y: div.offsetTop,
+    width: div.offsetWidth,
+    height: div.offsetHeight
+  };
 }

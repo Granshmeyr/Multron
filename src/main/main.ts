@@ -135,7 +135,7 @@ function createMainWindow() {
   mainWindow.webContents.loadURL(viteURL);
   // This is the production path
   // mainWindow.loadFile(path.join(app.getAppPath(), "out", "renderer", "index.html"));
-  mainWindow.webContents.openDevTools({ mode: "right" });
+  mainWindow.webContents.openDevTools({ mode: "detach" });
   registerSharedListeners(mainWindow, {
     focus: () => {
       focused = true;
@@ -162,7 +162,7 @@ function createOverlayWindow() {
   overlayWindow.setIgnoreMouseEvents(true, { forward: true });
   overlayWindow.setMenu(null);
   overlayWindow.loadURL(`${viteURL}/overlay`);
-  //overlayWindow.webContents.openDevTools({ mode: "detach" });
+  overlayWindow.webContents.openDevTools({ mode: "detach" });
   registerSharedListeners(overlayWindow, {
     blur: () => {
       overlayWindow!.webContents.send(ich.overlayBlur);

@@ -1,9 +1,8 @@
 import { IconButton } from "@mui/material";
 import React, { ReactElement, useEffect, useRef, useState } from "react";
-import { v4 as uuidv4 } from "uuid";
-import { Listener, Vector2 } from "../../../../common/interfaces";
+import { IpcListener, Vector2 } from "../../../../common/interfaces";
 import * as ich from "../../../../common/ipcChannels";
-import { registerIpcListener, screenToWorkAreaPos as screenToOverlayPos } from "../../../common/util";
+import { registerIpcListener, screenToWorkAreaPos as screenToOverlayPos, unregisterIpcListener } from "../../../common/util";
 
 interface ButtonProps {
   icon?: string,
@@ -49,16 +48,13 @@ export default function Main({
   const realPos = useRef<Vector2>({ x: 0, y: 0});
   const pieRef = useRef<HTMLDivElement>(null);
 
-  // #region ipc listeners
-  const listener1 = useRef<Listener>({
-    channel: ich.overlayBlur,
-    fn: () => { hide(); },
-    uuid: uuidv4()
-  });
-  registerIpcListener(listener1.current);
-  // #endregion
-
   useEffect(() => {
+    const listener: IpcListener = {
+      channel: ich.overlayBlur,
+      fn: () => { hide(); },
+      uuid: "08aaeef9-6d6f-446a-8bd1-c8ceb715e4ad"
+    };
+    registerIpcListener(listener);
     if (pos !== undefined) {
       tryPos.current = screenToOverlayPos(pos);
       setWantToShow(true);
@@ -96,8 +92,11 @@ export default function Main({
       } else {
         realPos.current = { x: winW - radX, y: mousePos.y };
       }
-
       setVisible(true);
+
+      return () => {
+        unregisterIpcListener(listener);
+      };
     }
   }, [pos, wantToShow]);
 

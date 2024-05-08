@@ -49,7 +49,7 @@ export interface ViewData {
   url: string | null,
   rectangle: Electron.Rectangle
 }
-export interface Listener {
+export interface IpcListener {
   channel: string,
   fn: (_: IpcRendererEvent, ...args: unknown[]) => void
   uuid: string

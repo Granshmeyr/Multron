@@ -10,7 +10,9 @@ class ListenerRegistry {
     this.getSetOrNew(channel).delete(uuid);
   }
   has(channel: string, uuid: string): boolean {
-    return this.getSetOrNew(channel).has(uuid);
+    if (!this.listeners.has(channel)) return false;
+    if (!this.listeners.get(channel)!.has(uuid)) return false;
+    return true;
   }
   private getSetOrNew(channel: string): Set<string> {
     let set = this.listeners.get(channel);
@@ -33,6 +35,10 @@ contextBridge.exposeInMainWorld("electronAPI", {
     uuid: string,
     listener: (event: Electron.IpcRendererEvent, ...args: any[]) => void,
   ) => {
+    if (listenerRegistry.has(channel, uuid)) {
+      console.error(`Not registering ${channel} for ${uuid}, already registered.`);
+    }
+    console.log(`REGISTERING ${channel} FOR ${uuid}`);
     listenerRegistry.add(channel, uuid);
     ipcRenderer.on(channel, listener);
   },

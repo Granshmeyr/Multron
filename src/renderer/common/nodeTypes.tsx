@@ -44,25 +44,6 @@ export abstract class ContainerNode extends BaseNode {
   abstract set rootContextBehavior(value: ContextBehavior);
   abstract get handlePercents(): number[];
   abstract set handlePercents(value: number[]);
-
-  static splitPercentY(
-    reference: HTMLDivElement | null,
-    pos: Vector2
-  ): number {
-    if (reference === null) return 0.1;
-    const divHeight = reference.offsetHeight;
-    const mousePosition = pos!.y - reference.offsetTop;
-    return mousePosition / divHeight;
-  }
-  static splitPercentX(
-    reference: HTMLDivElement | null,
-    pos: Vector2
-  ): number {
-    if (reference === null) return 0.1;
-    const divWidth = reference.offsetWidth;
-    const mousePosition = pos!.x - reference.offsetLeft;
-    return mousePosition / divWidth;
-  }
 }
 
 export class TileNode extends BaseNode {
