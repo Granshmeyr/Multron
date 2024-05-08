@@ -13,7 +13,6 @@ import { v4 as uuidv4 } from "uuid";
 import { IpcRendererEvent } from "electron";
 
 const fileName: string = "TileApp.tsx";
-let clickedPosition: Vector2;
 
 export default function Main(): ReactElement {
   const logOptions = {
@@ -63,11 +62,10 @@ export default function Main(): ReactElement {
       // #endregion
       const tileId: string = args[0] as string;
       const params = args[1] as ContextParams | null;
-      const position: Vector2 = args[2] as Vector2;
+      const pos: Vector2 = args[2] as Vector2;
       if (params === null) {
         return;
       }
-      clickedPosition = position;
       function split() {
         if (tiles.get(tileId)!.ref === null) {
           // #region logging
@@ -75,7 +73,7 @@ export default function Main(): ReactElement {
           // #endregion
           return;
         }
-        tiles.get(tileId)!.split(tileId, params!.direction as Direction);
+        tiles.get(tileId)!.split(pos, params!.direction as Direction);
       }
       switch (params.option) {
       case ContextOption.Split: split(); break;
@@ -100,40 +98,36 @@ export default function Main(): ReactElement {
   const listener3 = useRef<Listener>({
     channel: "debug",
     fn: () => {
-      console.log("debug invoked");
     },
     uuid: uuidv4()
   });
-  [listener1, listener2, listener3].forEach(v => registerIpcListener(v.current));
+  const listener4 = useRef<Listener>({
+    channel: ich.callTileContextBehaviorCC,
+    fn: (_, ...args: unknown[]) => {
+      const tile = tiles.get(args[0] as string)!;
+      const params = args[1] as ContextParams;
+      const pos = args[2] as Vector2 | undefined;
+      switch (params.option) {
+      case ContextOption.Split: tile.split(pos!, params.direction!); break;
+      case ContextOption.Delete: tile.delete(); break;
+      }
+    },
+    uuid: uuidv4()
+  });
+  [listener1, listener2, listener3, listener4].forEach(v => registerIpcListener(v.current));
   // #endregion
 
   if (resizeTicker.refreshRoot === null) {
     resizeTicker.refreshRoot = refreshRoot;
   }
 
-  useEffect(() => {
-    function onMouseDown(e: MouseEvent) {
-      if (e.button === 2) {
-        clickedPosition = { x: e.clientX, y: e.clientY };
-      }
-    }
-    function onMouseUp(e: MouseEvent) {
-      if (e.button !== 0) {
-        return;
-      }
-    }
-
-    document.addEventListener("mousedown", onMouseDown);
-    document.addEventListener("mouseup", onMouseUp);
-    return () => {
-      document.removeEventListener("mousedown", onMouseDown);
-      document.removeEventListener("mouseup", onMouseUp);
-    };
-  });
-
-  function onContext(tileId: string, params: ContextParams) {
+  function onContext(tileId: string, params: ContextParams, pos?: Vector2) {
     const tile = tiles.get(tileId) as TileNode;
     function split() {
+      console.log("splitting from main!");
+      console.log(tileId);
+      console.log(params);
+      console.log(`${pos?.x}, ${pos?.y}`);
       function splitPercentY(): number {
         if (!ref.current) {
           // #region logging
@@ -142,7 +136,7 @@ export default function Main(): ReactElement {
           return 0.1;
         }
         const divHeight = ref.current.offsetHeight;
-        const mousePosition = clickedPosition.y - ref.current.getBoundingClientRect().top;
+        const mousePosition = pos!.y - ref.current.getBoundingClientRect().top;
         return mousePosition / divHeight;
       }
       function splitPercentX(): number {
@@ -153,7 +147,7 @@ export default function Main(): ReactElement {
           return 0.1;
         }
         const divWidth = ref.current.offsetWidth;
-        const mousePosition = clickedPosition.x - ref.current.getBoundingClientRect().left;
+        const mousePosition = pos!.x - ref.current.getBoundingClientRect().left;
         return mousePosition / divWidth;
       }
       function up() {
@@ -205,6 +199,7 @@ export default function Main(): ReactElement {
     switch (params.option) {
     case ContextOption.Split: split(); break;
     case ContextOption.SetUrl: setUrl(); break;
+    case ContextOption.Delete: console.error("Can't delete root!"); break;
     }
   }
 
@@ -224,7 +219,6 @@ export function Row({
   style,
   nodeId
 }: RowProps): ReactElement {
-  const logOptions = { ts: fileName, fn: Row.name };
   const [currentHandle, setCurrentHandle] = useState<number | null>(null);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -245,7 +239,7 @@ export function Row({
       setCurrentHandle(null);
     }
     function onMouseMove(e: MouseEvent) {
-      if (currentHandle !== null && ref.current) {
+      if (currentHandle !== null && ref.current !== null) {
         const divWidth = ref.current.offsetWidth;
         const mousePosition = e.clientX - ref.current.getBoundingClientRect().left;
         const newPercents = [...handlePercents];
@@ -263,39 +257,20 @@ export function Row({
     };
   });
 
-  function onContext(tileId: string, params: ContextParams) {
+  function onContext(tileId: string, params: ContextParams, pos?: Vector2) {
     function split() {
       const tile = tiles.get(tileId) as TileNode;
       const parent = tile.parent as RowNode;
       const tileRef = tiles.get(tileId)!.ref as React.RefObject<HTMLDivElement>;
-      function splitPercentY(): number {
-        if (tileRef.current === null) {
-          // #region logging
-          log.error(logOptions, `${pre.invalidValue}: TileNode.ref.current is null`);
-          // #endregion
-          return 0.1;
-        }
-        const divHeight = tileRef.current.offsetHeight;
-        const mousePosition = clickedPosition.y - tileRef.current.getBoundingClientRect().top;
-        return mousePosition / divHeight;
-      }
-      function splitPercentX(): number {
-        if (ref.current === null) {
-          // #region logging
-          log.error(logOptions, `${pre.invalidValue}: Row ref is null`);
-          // #endregion
-          return 0.1;
-        }
-        const divWidth = ref.current.offsetWidth;
-        const mousePosition = clickedPosition.x - ref.current.getBoundingClientRect().left;
-        return mousePosition / divWidth;
-      }
       function up() {
         const tileIndex = parent.children.indexOf(tile);
         const splitTile = recordTile();
         const column = recordColumn({
           children: [splitTile, tile],
-          handlePercents: [splitPercentY()],
+          handlePercents: [ContainerNode.splitPercentY(
+            tileRef.current,
+            pos!
+          )],
           refreshRoot: refreshRoot,
           setRoot: setRoot,
           rootContextBehavior: rootContextBehavior
@@ -308,7 +283,10 @@ export function Row({
         const splitTile = recordTile();
         const column = recordColumn({
           children: [tile, splitTile],
-          handlePercents: [splitPercentY()],
+          handlePercents: [ContainerNode.splitPercentY(
+            tileRef.current,
+            pos!
+          )],
           refreshRoot: refreshRoot,
           setRoot: setRoot,
           rootContextBehavior: rootContextBehavior
@@ -322,7 +300,11 @@ export function Row({
         parent.children.splice(tileIndex, 0, splitTile);
         splitTile.parent = parent;
         const newPercents = [...handlePercents];
-        newPercents.splice(tileIndex, 0, splitPercentX());
+        newPercents.splice(
+          tileIndex,
+          0,
+          ContainerNode.splitPercentX(ref.current, pos!)
+        );
         containers.get(nodeId as string)!.handlePercents = newPercents;
       }
       function right() {
@@ -331,7 +313,11 @@ export function Row({
         parent.children.splice(tileIndex + 1, 0, splitTile);
         splitTile.parent = parent;
         const newPercents = [...handlePercents];
-        newPercents.splice(tileIndex, 0, splitPercentX());
+        newPercents.splice(
+          tileIndex,
+          0,
+          ContainerNode.splitPercentX(ref.current, pos!)
+        );
         containers.get(nodeId as string)!.handlePercents = newPercents;
       }
       switch (params.direction) {
@@ -381,7 +367,6 @@ export function Column({
   style,
   nodeId
 }: ColumnProps): ReactElement {
-  const logOptions = { ts: fileName, fn: Column.name };
   const [currentHandle, setCurrentHandle] = useState<number | null>(null);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -419,33 +404,11 @@ export function Column({
     };
   });
 
-  function onContext(tileId: string, params: ContextParams) {
+  function onContext(tileId: string, params: ContextParams, pos?: Vector2) {
     const tile = tiles.get(tileId) as TileNode;
     function split() {
       const parent = tile.parent as ColumnNode;
       const tileRef = tiles.get(tileId)!.ref as React.RefObject<HTMLDivElement>;
-      function splitPercentY(): number {
-        if (ref.current === null) {
-          // #region logging
-          log.error(logOptions, `${pre.invalidValue}: Column ref is null`);
-          // #endregion
-          return 0;
-        }
-        const divHeight = ref.current.offsetHeight;
-        const mousePosition = clickedPosition.y - ref.current.getBoundingClientRect().top;
-        return mousePosition / divHeight;
-      }
-      function splitPercentX(): number {
-        if (tileRef.current === null) {
-          // #region logging
-          log.error(logOptions, `${pre.invalidValue}: TileNode.ref.current is null`);
-          // #endregion
-          return 0;
-        }
-        const divWidth = tileRef.current.offsetWidth;
-        const mousePosition = clickedPosition.x - tileRef.current.getBoundingClientRect().left;
-        return mousePosition / divWidth;
-      }
 
       function up() {
         const tileIndex = parent.children.indexOf(tile);
@@ -453,7 +416,11 @@ export function Column({
         parent.children.splice(tileIndex, 0, splitTile);
         splitTile.parent = parent;
         const newPercents = [...handlePercents];
-        newPercents.splice(tileIndex, 0, splitPercentY());
+        newPercents.splice(
+          tileIndex,
+          0,
+          ContainerNode.splitPercentY(ref.current, pos!)
+        );
         containers.get(nodeId as string)!.handlePercents = newPercents;
       }
       function down() {
@@ -462,7 +429,11 @@ export function Column({
         parent.children.splice(tileIndex + 1, 0, splitTile);
         splitTile.parent = parent;
         const newPercents = [...handlePercents];
-        newPercents.splice(tileIndex, 0, splitPercentY());
+        newPercents.splice(
+          tileIndex,
+          0,
+          ContainerNode.splitPercentY(ref.current, pos!)
+        );
         containers.get(nodeId as string)!.handlePercents = newPercents;
       }
       function left() {
@@ -470,7 +441,10 @@ export function Column({
         const splitTile = recordTile();
         const row = recordRow({
           children: [splitTile, tile],
-          handlePercents: [splitPercentX()],
+          handlePercents: [ContainerNode.splitPercentX(
+            tileRef.current,
+            pos!
+          )],
           refreshRoot: refreshRoot,
           setRoot: setRoot,
           rootContextBehavior: rootContextBehavior
@@ -483,7 +457,10 @@ export function Column({
         const splitTile = recordTile();
         const row = recordRow({
           children: [tile, splitTile],
-          handlePercents: [splitPercentX()],
+          handlePercents: [ContainerNode.splitPercentX(
+            tileRef.current,
+            pos!
+          )],
           refreshRoot: refreshRoot,
           setRoot: setRoot,
           rootContextBehavior: rootContextBehavior
@@ -593,7 +570,7 @@ export function Tile({
     function withImg() {
       return (
         <div
-          className="flex-grow"
+          className="flex"
           style={{
             ...style,
             backgroundRepeat: "round",
@@ -601,47 +578,37 @@ export function Tile({
           }}
           id={nodeId}
           ref={ref}
-          onContextMenu={
-            async () => {
-            // #region logging
-              log.info(logOptions, `${pre.invokingEvent}: ${ich.showContextMenuAsync}`);
-              // #endregion
-              const params = await window.electronAPI.invoke(ich.showContextMenuAsync) as ContextParams | null;
-              if (params === null) {
-              // #region logging
-                log.info(logOptions, `${pre.userInteraction}: selected Nothing (null)`);
-                // #endregion
-                return;
-              }
-              const option: string = (() => {
-                switch (params.option) {
-                case ContextOption.Split: return "Split";
-                case ContextOption.Delete: return "Delete";
-                case ContextOption.SetUrl: return "SetUrl";
-                }
-              })();
-              // #region logging
-              log.info(logOptions, `${pre.userInteraction}: selected ${option}`);
-              // #endregion
-              contextBehavior?.(nodeId as string, params);
-            }
-          }
+          onContextMenu={(e) => {
+            window.electronAPI.send(
+              ich.showPieMenu,
+              nodeId as string,
+              { x: e.screenX, y: e.screenY }
+            );
+          }}
         >
         </div>
       );
     }
+
+    let divClass = "flex";
+    if (style === undefined) {
+      divClass += " basis-full";
+    }
+
     switch (bg !== null) {
     case true:
       return withImg();
     default:
       return (
         <div
+          id={nodeId}
           ref={ref}
-          className="flex basis-full"
+          className={divClass}
+          style={{...style}}
           onContextMenu={(e) => {
             window.electronAPI.send(
               ich.showPieMenu,
-              nodeId,
+              nodeId as string,
               { x: e.screenX, y: e.screenY }
             );
           }}

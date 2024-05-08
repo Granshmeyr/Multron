@@ -1,7 +1,7 @@
 import { BrowserWindow, app, globalShortcut, ipcMain, screen } from "electron";
 import path from "path";
 import * as ich from "../common/ipcChannels";
-import { onCreateViewAsync, onDeleteView, onShowPieMenu, onGetDisplayMetrics, onGetViewData, onLogError, onLogInfo, onResizeCaptureAsync, onSetOverlayIgnore, onSetViewRectangle, onSetViewUrl, views } from "../common/listeners";
+import { onCreateViewAsync, onDeleteView, onShowPieMenu, onGetDisplayMetrics, onGetViewData, onLogError, onLogInfo, onResizeCaptureAsync, onSetOverlayIgnore, onSetViewRectangle, onSetViewUrl, views, onCallTileContextBehavior } from "../common/listeners";
 import * as pre from "../common/logPrefixes";
 import { log } from "../common/logger";
 import { fitOverlayToWorkarea, getTaskbarBounds } from "../common/mainUtil";
@@ -20,29 +20,29 @@ function main(): void {
   // #region events
   const logOptions = { ts: fileName, fn: main.name };
   log.info(logOptions, `${pre.handlingOn}: ${ich.createViewAsync}`);
-  ipcMain.handle(ich.createViewAsync, (e, id, options) => {
+  ipcMain.handle(ich.createViewAsync, (_, id, options) => {
     log.info(logOptions, `${pre.eventReceived}: ${ich.createViewAsync}`);
-    return onCreateViewAsync(e, id, mainWindow as BrowserWindow, options);
+    return onCreateViewAsync(id, mainWindow as BrowserWindow, options);
   });
   log.info(logOptions, `${pre.listeningOn}: ${ich.setViewRectangle}`);
-  ipcMain.on(ich.setViewRectangle, (e, id, rect) => {
+  ipcMain.on(ich.setViewRectangle, (_, id, rect) => {
     log.info(logOptions, `${pre.eventReceived}: ${ich.setViewRectangle}`);
-    onSetViewRectangle(e, id, rect);
+    onSetViewRectangle(id, rect);
   });
   log.info(logOptions, `${pre.listeningOn}: ${ich.setViewUrl}`);
-  ipcMain.on(ich.setViewUrl, (e, id, url) => {
+  ipcMain.on(ich.setViewUrl, (_, id, url) => {
     log.info(logOptions, `${pre.eventReceived}: ${ich.setViewUrl}`);
-    onSetViewUrl(e, id, url);
+    onSetViewUrl(id, url);
   });
   log.info(logOptions, `${pre.listeningOn}: ${ich.logInfo}`);
-  ipcMain.on(ich.logInfo, (e, options, message) => {
+  ipcMain.on(ich.logInfo, (_, options, message) => {
     //log.info(logOptions, `${pre.eventReceived}: ${ch.logInfo}`);
-    onLogInfo(e, options, message);
+    onLogInfo(options, message);
   });
   log.info(logOptions, `${pre.listeningOn}: ${ich.logError}`);
-  ipcMain.on(ich.logError, (e, options, message) => {
+  ipcMain.on(ich.logError, (_, options, message) => {
     log.info(logOptions, `${pre.eventReceived}: ${ich.logError}`);
-    onLogError(e, options, message);
+    onLogError(options, message);
   });
   log.info(logOptions, `${pre.handlingOn}: ${ich.getViewData}`);
   ipcMain.handle(ich.getViewData, () => {
@@ -50,19 +50,19 @@ function main(): void {
     return onGetViewData();
   });
   log.info(logOptions, `${pre.listeningOn}: ${ich.deleteView}`);
-  ipcMain.on(ich.deleteView, (e, id) => {
+  ipcMain.on(ich.deleteView, (_, id) => {
     log.info(logOptions, `${pre.eventReceived}: ${ich.deleteView}`);
-    onDeleteView(e, id);
+    onDeleteView(id);
   });
   log.info(logOptions, `${pre.listeningOn}: ${ich.resizeCapture}`);
-  ipcMain.handle(ich.resizeCapture, async (e, id, rect) => {
+  ipcMain.handle(ich.resizeCapture, async (_, id, rect) => {
     log.info(logOptions, `${pre.eventReceived}: ${ich.resizeCapture}`);
-    return await onResizeCaptureAsync(e, id, rect);
+    return await onResizeCaptureAsync(id, rect);
   });
   log.info(logOptions, `${pre.listeningOn}: ${ich.showPieMenu}`);
-  ipcMain.on(ich.showPieMenu, (e, nodeId, pos) => {
+  ipcMain.on(ich.showPieMenu, (_, nodeId, pos) => {
     log.info(logOptions, `${pre.eventReceived}: ${ich.showPieMenu}`);
-    onShowPieMenu(e, nodeId, pos);
+    onShowPieMenu(nodeId, pos);
   });
   log.info(logOptions, `${pre.listeningOn}: ${ich.getDisplayMetrics}`);
   ipcMain.handle(ich.getDisplayMetrics, () => {
@@ -73,6 +73,11 @@ function main(): void {
   ipcMain.on(ich.setOverlayIgnore, (_, ignoring) => {
     log.info(logOptions, `${pre.eventReceived}: ${ich.setOverlayIgnore}`);
     onSetOverlayIgnore(ignoring);
+  });
+  log.info(logOptions, `${pre.listeningOn}: ${ich.callTileContextBehavior}`);
+  ipcMain.on(ich.callTileContextBehavior, (_, nodeId, params, pos) => {
+    log.info(logOptions, `${pre.eventReceived}: ${ich.callTileContextBehavior}`);
+    onCallTileContextBehavior(nodeId, params, pos);
   });
   // #endregion
 
@@ -123,13 +128,14 @@ function createMainWindow() {
     webPreferences: {
       preload: path.join(app.getAppPath(), "out", "preload", "preload.js"),
       zoomFactor: 1.0,
+      backgroundThrottling: false
     }
   });
   mainWindow.setMenu(null);
   mainWindow.webContents.loadURL(viteURL);
   // This is the production path
   // mainWindow.loadFile(path.join(app.getAppPath(), "out", "renderer", "index.html"));
-  mainWindow.webContents.openDevTools();
+  mainWindow.webContents.openDevTools({ mode: "right" });
   registerSharedListeners(mainWindow, {
     focus: () => {
       focused = true;
@@ -156,7 +162,7 @@ function createOverlayWindow() {
   overlayWindow.setIgnoreMouseEvents(true, { forward: true });
   overlayWindow.setMenu(null);
   overlayWindow.loadURL(`${viteURL}/overlay`);
-  overlayWindow.webContents.openDevTools({ mode: "detach" });
+  //overlayWindow.webContents.openDevTools({ mode: "detach" });
   registerSharedListeners(overlayWindow, {
     blur: () => {
       overlayWindow!.webContents.send(ich.overlayBlur);

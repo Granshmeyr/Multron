@@ -1,12 +1,12 @@
 import { CSSProperties, ReactElement } from "react";
 import { v4 as uuidv4 } from "uuid";
-import { ColumnProps, ContextParams, RowProps, TileProps } from "../../common/interfaces";
+import { ContextOption, Direction } from "../../common/enums";
+import { ColumnProps, ContextBehavior, ResizeBehavior, RowProps, TileProps, Vector2 } from "../../common/interfaces";
 import * as ich from "../../common/ipcChannels";
 import * as pre from "../../common/logPrefixes";
 import { Column, Row, Tile } from "../src/apps/Tiles";
 import * as log from "./loggerUtil";
 import { BgLoader } from "./types";
-import { ContextOption, Direction } from "../../common/enums";
 
 export const tiles = new Map<string, TileNode>();
 export const containers = new Map<string, ContainerNode>();
@@ -40,10 +40,29 @@ export abstract class ContainerNode extends BaseNode {
   abstract set refreshRoot(value: React.DispatchWithoutAction);
   abstract get setRoot(): React.Dispatch<React.SetStateAction<BaseNode>>;
   abstract set setRoot(value: React.Dispatch<React.SetStateAction<BaseNode>>);
-  abstract get rootContextBehavior(): (id: string, params: ContextParams) => void;
-  abstract set rootContextBehavior(value: (id: string, params: ContextParams) => void);
+  abstract get rootContextBehavior(): ContextBehavior;
+  abstract set rootContextBehavior(value: ContextBehavior);
   abstract get handlePercents(): number[];
   abstract set handlePercents(value: number[]);
+
+  static splitPercentY(
+    reference: HTMLDivElement | null,
+    pos: Vector2
+  ): number {
+    if (reference === null) return 0.1;
+    const divHeight = reference.offsetHeight;
+    const mousePosition = pos!.y - reference.offsetTop;
+    return mousePosition / divHeight;
+  }
+  static splitPercentX(
+    reference: HTMLDivElement | null,
+    pos: Vector2
+  ): number {
+    if (reference === null) return 0.1;
+    const divWidth = reference.offsetWidth;
+    const mousePosition = pos!.x - reference.offsetLeft;
+    return mousePosition / divWidth;
+  }
 }
 
 export class TileNode extends BaseNode {
@@ -52,8 +71,8 @@ export class TileNode extends BaseNode {
   private _style?: React.CSSProperties;
   private _id: string;
   private _url?: URL;
-  private _contextBehavior: (id: string, params: ContextParams) => void;
-  private _resizeBehavior: (id: string, rectangle: Electron.Rectangle) => void;
+  private _contextBehavior: ContextBehavior;
+  private _resizeBehavior: ResizeBehavior;
 
   constructor({
     style: style,
@@ -112,7 +131,7 @@ export class TileNode extends BaseNode {
     window.electronAPI.send(ich.setViewUrl, this.nodeId, value.toString());
     // #endregion
   }
-  set contextBehavior(value: (id: string, params: ContextParams) => void) { this._contextBehavior = value; }
+  set contextBehavior(value: ContextBehavior) { this._contextBehavior = value; }
   set resizeBehavior(value: (id: string, rectangle: Electron.Rectangle) => void) { this._resizeBehavior = value; }
   getRect(): Electron.Rectangle | null {
     if (this.ref === null) {
@@ -129,11 +148,14 @@ export class TileNode extends BaseNode {
   appendStyle(style: React.CSSProperties) {
     this.style = { ...this.style, ...style };
   }
-  split(id: string, direction: Direction) {
-    this._contextBehavior(id, { option: ContextOption.Split, direction: direction });
+  split(pos: Vector2, direction: Direction) {
+    this._contextBehavior(this.nodeId, { option: ContextOption.Split, direction: direction }, pos);
   }
-  resize(id: string, rectangle: Electron.Rectangle) {
-    this._resizeBehavior(id, rectangle);
+  resize(rect: Electron.Rectangle) {
+    this._resizeBehavior(this.nodeId, rect);
+  }
+  delete() {
+    this._contextBehavior(this.nodeId, { option: ContextOption.Delete });
   }
 }
 
@@ -141,7 +163,7 @@ export class ColumnNode extends ContainerNode {
   private _children: BaseNode[];
   private _refreshRoot: React.DispatchWithoutAction;
   private _setRoot: React.Dispatch<React.SetStateAction<BaseNode>>;
-  private _rootContextBehavior: (id: string, params: ContextParams) => void;
+  private _rootContextBehavior: ContextBehavior;
   private _id: string;
   private _handlePercents: number[];
   private _style?: React.CSSProperties;
@@ -186,8 +208,8 @@ export class ColumnNode extends ContainerNode {
   set refreshRoot(value: React.DispatchWithoutAction) { this._refreshRoot = value; }
   get setRoot(): React.Dispatch<React.SetStateAction<BaseNode>> { return this._setRoot; }
   set setRoot(value: React.Dispatch<React.SetStateAction<BaseNode>>) { this._setRoot = value; }
-  get rootContextBehavior(): (id: string, params: ContextParams) => void { return this._rootContextBehavior; }
-  set rootContextBehavior(value: (id: string, params: ContextParams) => void) { this._rootContextBehavior = value; }
+  get rootContextBehavior(): ContextBehavior { return this._rootContextBehavior; }
+  set rootContextBehavior(value: ContextBehavior) { this._rootContextBehavior = value; }
   get handlePercents(): number[] { return this._handlePercents; }
   set handlePercents(value: number[]) { this._handlePercents = value; }
   get style(): React.CSSProperties | undefined { return this._style; }
@@ -201,7 +223,7 @@ export class RowNode extends ContainerNode {
   private _children: BaseNode[];
   private _refreshRoot: React.DispatchWithoutAction;
   private _setRoot: React.Dispatch<React.SetStateAction<BaseNode>>;
-  private _rootContextBehavior: (id: string, params: ContextParams) => void;
+  private _rootContextBehavior: ContextBehavior;
   private _id: string;
   private _handlePercents: number[];
   private _style?: React.CSSProperties;
@@ -246,8 +268,8 @@ export class RowNode extends ContainerNode {
   set refreshRoot(value: React.DispatchWithoutAction) { this._refreshRoot = value; }
   get setRoot(): React.Dispatch<React.SetStateAction<BaseNode>> { return this._setRoot; }
   set setRoot(value: React.Dispatch<React.SetStateAction<BaseNode>>) { this._setRoot = value; }
-  get rootContextBehavior(): (id: string, params: ContextParams) => void { return this._rootContextBehavior; }
-  set rootContextBehavior(value: (id: string, params: ContextParams) => void) { this._rootContextBehavior = value; }
+  get rootContextBehavior(): ContextBehavior { return this._rootContextBehavior; }
+  set rootContextBehavior(value: ContextBehavior) { this._rootContextBehavior = value; }
   get handlePercents(): number[] { return this._handlePercents; }
   set handlePercents(value: number[]) { this._handlePercents = value; }
   get style(): React.CSSProperties | undefined { return this._style; }

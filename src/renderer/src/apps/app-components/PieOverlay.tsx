@@ -8,7 +8,12 @@ import { registerIpcListener, screenToWorkAreaPos as screenToOverlayPos } from "
 interface ButtonProps {
   icon?: string,
   opacity?: number,
-  fn?: () => void,
+  listeners?: ButtonListenerProps
+}
+export interface ButtonListenerProps {
+  onClick?: (e: React.MouseEvent) => void,
+  onMouseEnter?: (e: React.MouseEvent) => void,
+  onMouseLeave?: (e: React.MouseEvent) => void,
 }
 export interface PieProps {
   middle?: ButtonProps,
@@ -40,8 +45,8 @@ export default function Main({
 }: PieOverlayProps): React.ReactElement {
   const [wantToShow, setWantToShow] = useState<boolean>(false);
   const [visible, setVisible] = useState<boolean>(false);
-  const click = useRef<Vector2 | null>(null);
-  const origin = useRef<Vector2>({ x: 0, y: 0});
+  const tryPos = useRef<Vector2 | null>(null);
+  const realPos = useRef<Vector2>({ x: 0, y: 0});
   const pieRef = useRef<HTMLDivElement>(null);
 
   // #region ipc listeners
@@ -55,14 +60,14 @@ export default function Main({
 
   useEffect(() => {
     if (pos !== undefined) {
-      click.current = screenToOverlayPos(pos);
+      tryPos.current = screenToOverlayPos(pos);
       setWantToShow(true);
     }
 
     if (wantToShow && pieRef.current !== null) {
       const winH = window.innerHeight;
       const winW = window.innerWidth;
-      const mousePos = click.current!;
+      const mousePos = tryPos.current!;
       const pie = pieRef.current.getBoundingClientRect();
       const radX = pie.width / 2;
       const radY = pie.height / 2;
@@ -73,23 +78,23 @@ export default function Main({
       const right = mousePos.x + radX > winW;
 
       if (!up && !down && !left && !right) {
-        origin.current = mousePos;
+        realPos.current = mousePos;
       } else if (up && left) {
-        origin.current = { x: radX, y: radY };
+        realPos.current = { x: radX, y: radY };
       } else if (up && right) {
-        origin.current = { x: winW - radX, y: radY };
+        realPos.current = { x: winW - radX, y: radY };
       } else if (down && left) {
-        origin.current = { x: radX, y: winH - radY };
+        realPos.current = { x: radX, y: winH - radY };
       } else if (down && right) {
-        origin.current = { x: winW - radX, y: winH - radY };
+        realPos.current = { x: winW - radX, y: winH - radY };
       } else if (up) {
-        origin.current = { x: mousePos.x, y: radY };
+        realPos.current = { x: mousePos.x, y: radY };
       } else if (down) {
-        origin.current = { x: mousePos.x, y: winH - radY };
+        realPos.current = { x: mousePos.x, y: winH - radY };
       } else if (left) {
-        origin.current = { x: radX, y: mousePos.y };
+        realPos.current = { x: radX, y: mousePos.y };
       } else {
-        origin.current = { x: winW - radX, y: mousePos.y };
+        realPos.current = { x: winW - radX, y: mousePos.y };
       }
 
       setVisible(true);
@@ -97,16 +102,13 @@ export default function Main({
   }, [pos, wantToShow]);
 
   function hide() {
-    origin.current = { x: 0, y: 0 };
+    realPos.current = { x: 0, y: 0 };
     setWantToShow(false);
     setVisible(false);
   }
   function onContextMenu(e: React.MouseEvent) {
-    click.current = { x: e.clientX, y: e.clientY };
+    tryPos.current = { x: e.clientX, y: e.clientY };
     setWantToShow(true);
-  }
-  function onMouseDown() {
-    hide();
   }
 
   return (
@@ -115,16 +117,15 @@ export default function Main({
       className={`relative ${className}`}
       style={style}
       onContextMenu={onContextMenu}
-      onMouseDown={onMouseDown}
     >
-      {wantToShow && origin.current !== null && (
+      {wantToShow && realPos.current !== null && (
         <div
           className="flex absolute justify-center items-center"
           ref={pieRef}
           style={{
             visibility: visible ? "visible" : "hidden",
-            left: `${origin.current.x}px`,
-            top: `${origin.current.y}px`,
+            left: `${realPos.current.x}px`,
+            top: `${realPos.current.y}px`,
             transform: `translate(-50%, -50%) ${scale !== undefined ? `scale(${scale})` : ""}`
           }}
         >
@@ -178,19 +179,21 @@ function Pie(props: PieProps): ReactElement {
     );
   }
   function Button({ button }: { button?: ButtonProps }): ReactElement {
+    const l: ButtonListenerProps | undefined = button?.listeners;
     if (button === undefined) {
       return <div></div>;
     }
     return (
       <IconButton
-        onClick={() => {
-          if (button.fn !== undefined) button.fn();
+        onClick={(e) => {
+          e.stopPropagation();
+          if (l?.onClick !== undefined) l.onClick(e);
           else console.log("default button fn");
         }}
         onContextMenu={(e) => { e.stopPropagation(); }}
         onMouseDown={(e) => { e.stopPropagation(); }}
-        onMouseEnter={() => { window.electronAPI.send(ich.setOverlayIgnore, false); }}
-        onMouseLeave={() => { window.electronAPI.send(ich.setOverlayIgnore, true); }}
+        onMouseEnter={(e) => { if (l?.onMouseEnter !== undefined) l.onMouseEnter(e); }}
+        onMouseLeave={(e) => { if (l?.onMouseLeave !== undefined) l.onMouseLeave(e); }}
       >
         <MaterialIcon style={button.opacity !== undefined ? { opacity: button.opacity } : undefined}>
           {button.icon !== undefined ? button.icon : "error"}

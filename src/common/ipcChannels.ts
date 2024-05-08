@@ -15,3 +15,5 @@ export const overlayBlur: string = "overlay-blur";
 export const displayMetricsChanged: string = "display-metrics-changed";
 export const getDisplayMetrics: string = "get-display-metrics";
 export const setOverlayIgnore: string = "set-overlay-ignore";
+export const callTileContextBehavior: string = "call-tile-context-behavior";
+export const callTileContextBehaviorCC: string = "call-tile-context-behavior-cc";

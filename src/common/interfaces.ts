@@ -3,18 +3,21 @@ import { BaseNode } from "../renderer/common/nodeTypes";
 import { ContextOption, Direction } from "./enums";
 import { IpcRendererEvent } from "electron/renderer";
 
+export type ContextBehavior = (nodeId: string, params: ContextParams, pos?: Vector2) => void
+export type ResizeBehavior = (id: string, rectangle: Electron.Rectangle) => void
+
 export interface TileProps {
   style?: React.CSSProperties;
   nodeId?: string;
   url?: URL;
-  contextBehavior: (id: string, params: ContextParams) => void;
-  resizeBehavior: (id: string, rectangle: Electron.Rectangle) => void;
+  contextBehavior: ContextBehavior;
+  resizeBehavior: ResizeBehavior;
 }
 export interface RowProps {
   children: BaseNode[];
   refreshRoot: React.DispatchWithoutAction;
   setRoot: React.Dispatch<React.SetStateAction<BaseNode>>
-  rootContextBehavior: (id: string, params: ContextParams) => void;
+  rootContextBehavior: ContextBehavior;
   handlePercents: number[];
   style?: React.CSSProperties;
   nodeId?: string;
@@ -23,7 +26,7 @@ export interface ColumnProps {
   children: BaseNode[];
   refreshRoot: React.DispatchWithoutAction;
   setRoot: React.Dispatch<React.SetStateAction<BaseNode>>
-  rootContextBehavior: (id: string, params: ContextParams) => void;
+  rootContextBehavior: ContextBehavior;
   handlePercents: number[];
   style?: React.CSSProperties;
   nodeId?: string;

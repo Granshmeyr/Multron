@@ -47,7 +47,6 @@ export async function onShowContextMenuAsync(): Promise<ContextParams | null> {
   });
 }
 export async function onCreateViewAsync(
-  _e: Electron.IpcMainInvokeEvent,
   id: string,
   window: BrowserWindow,
   options?: WebContentsViewConstructorOptions
@@ -59,6 +58,7 @@ export async function onCreateViewAsync(
     view.webContents.on("context-menu", async () => {
       const position: Vector2 = cursorViewportPosition(window);
       const params: ContextParams | null = onShowContextMenuAsync();
+      mainWindow
     });
     view.webContents.on("zoom-changed", (_, zoomDirection) => {
       const currentZoom = view.webContents.getZoomLevel();
@@ -90,7 +90,6 @@ export async function onCreateViewAsync(
   });
 }
 export function onSetViewRectangle(
-  _e: Electron.IpcMainEvent,
   id: string,
   rect: Electron.Rectangle
 ) {
@@ -102,7 +101,6 @@ export function onSetViewRectangle(
   views.get(id)!.rectangle = rect;
 }
 export function onSetViewUrl(
-  _e: Electron.IpcMainEvent,
   id: string,
   url: string
 ) {
@@ -114,14 +112,12 @@ export function onSetViewUrl(
   views.get(id)!.url = url;
 }
 export function onLogInfo(
-  _e: Electron.IpcMainEvent,
   options: unknown,
   message: string
 ) {
   log.info(options, message);
 }
 export function onLogError(
-  _e: Electron.IpcMainEvent,
   options: unknown,
   message: string
 ) {
@@ -137,10 +133,7 @@ export function onGetViewData(): Map<string, ViewData> {
   }
   return data;
 }
-export function onDeleteView(
-  _e: Electron.IpcMainEvent,
-  id: string
-) {
+export function onDeleteView(id: string) {
   const logOptions = { ts: fileName, fn: onDeleteView.name };
   if (!(views.has(id))) {
     // #region logging
@@ -161,7 +154,6 @@ export function onGetViewRectangle(
   return views.get(id)!.view.getBounds();
 }
 export async function onResizeCaptureAsync(
-  _e: Electron.IpcMainInvokeEvent,
   id: string,
   rect: Electron.Rectangle
 ): Promise<Buffer> {
@@ -173,7 +165,6 @@ export async function onResizeCaptureAsync(
   });
 }
 export function onShowPieMenu(
-  _e: Electron.IpcMainEvent,
   nodeId: string,
   pos: Vector2
 ) {
@@ -193,4 +184,11 @@ export function onGetDisplayMetrics(): DisplayMetrics {
 }
 export function onSetOverlayIgnore(ignoring: boolean) {
   overlayWindow!.setIgnoreMouseEvents(ignoring, { forward: true });
+}
+export function onCallTileContextBehavior(
+  nodeId: string,
+  params: ContextParams,
+  pos?: Vector2
+) {
+  mainWindow!.webContents.send(ich.callTileContextBehaviorCC, nodeId, params, pos);
 }

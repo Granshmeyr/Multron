@@ -129,7 +129,8 @@ export function compareRects(
 
 }
 export function registerIpcListener(listener: Listener) {
-  if (!window.electronAPI.isListening(listener.channel, listener.uuid)) {
+  const listening = window.electronAPI.isListening(listener.channel, listener.uuid);
+  if (!listening) {
     window.electronAPI.on(listener.channel, listener.uuid, listener.fn);
   }
 }
