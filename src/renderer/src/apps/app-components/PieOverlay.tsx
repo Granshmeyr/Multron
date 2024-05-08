@@ -47,14 +47,15 @@ export default function Main({
   const tryPos = useRef<Vector2 | null>(null);
   const realPos = useRef<Vector2>({ x: 0, y: 0});
   const pieRef = useRef<HTMLDivElement>(null);
+  const overlayBlurListener = useRef<IpcListener>({
+    uuid: "9de9c9c2-f51d-47bb-9c25-e697a58ba933",
+    fn: () => { hide(); },
+  });
 
   useEffect(() => {
-    const listener: IpcListener = {
-      channel: ich.overlayBlur,
-      fn: () => { hide(); },
-      uuid: "08aaeef9-6d6f-446a-8bd1-c8ceb715e4ad"
-    };
-    registerIpcListener(listener);
+    const listener = overlayBlurListener.current;
+
+    registerIpcListener(ich.overlayBlur, listener);
     if (pos !== undefined) {
       tryPos.current = screenToOverlayPos(pos);
       setWantToShow(true);
@@ -95,7 +96,7 @@ export default function Main({
       setVisible(true);
 
       return () => {
-        unregisterIpcListener(listener);
+        unregisterIpcListener(ich.overlayBlur, listener);
       };
     }
   }, [pos, wantToShow]);

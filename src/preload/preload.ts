@@ -1,61 +1,62 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { contextBridge, ipcRenderer } from "electron";
+import { IpcListener, IpcListenerFunction } from "../common/interfaces";
 
 class ListenerRegistry {
-  private listeners = new Map<string, Set<string>>();
-  add(channel: string, uuid: string) {
-    this.getSetOrNew(channel).add(uuid);
+  private registry = new Map<string, Set<IpcListener>>();
+
+  removeListener(channel: string, listener: IpcListener) {
+    if (!this.registry.has(channel)) this.registry.set(channel, new Set<IpcListener>());
+    this.registry.get(channel)!.delete(listener);
   }
-  delete(channel: string, uuid: string) {
-    this.getSetOrNew(channel).delete(uuid);
+  addListener(channel: string, listener: IpcListener) {
+    if (!this.registry.has(channel)) this.registry.set(channel, new Set<IpcListener>());
+    this.registry.get(channel)!.add(listener);
   }
-  has(channel: string, uuid: string): boolean {
-    if (!this.listeners.has(channel)) return false;
-    if (!this.listeners.get(channel)!.has(uuid)) return false;
-    return true;
+  getChannelListeners(channel: string): Set<IpcListener> {
+    if (!this.registry.has(channel)) this.registry.set(channel, new Set<IpcListener>());
+    return this.registry.get(channel)!;
   }
-  private getSetOrNew(channel: string): Set<string> {
-    let set = this.listeners.get(channel);
-    if (set === undefined) {
-      const newSet = new Set<string>();
-      this.listeners.set(channel, newSet);
-      set = newSet;
+  channelHasListener(channel: string,  listener: IpcListener): boolean {
+    if (!this.registry.has(channel)) this.registry.set(channel, new Set<IpcListener>());
+    for (const l of this.registry.get(channel)!) {
+      if (l.uuid === listener.uuid) {
+        return true;
+      }
     }
-    return set;
+    return false;
   }
 }
-const listenerRegistry = new ListenerRegistry();
+const reg = new ListenerRegistry();
 
 contextBridge.exposeInMainWorld("electronAPI", {
-  send: (channel: string, ...args: any[]) => {
+  send: (
+    channel: string,
+    ...args: any[]
+  ) => {
     ipcRenderer.send(channel, ...args);
   },
   on: (
     channel: string,
-    uuid: string,
-    listener: (event: Electron.IpcRendererEvent, ...args: any[]) => void,
+    listener: IpcListener
   ) => {
-    if (listenerRegistry.has(channel, uuid)) {
-      console.error(`Not registering ${channel} for ${uuid}, already registered.`);
-    }
-    console.log(`REGISTERING ${channel} FOR ${uuid}`);
-    listenerRegistry.add(channel, uuid);
-    ipcRenderer.on(channel, listener);
+    if (reg.channelHasListener(channel, listener)) return;
+    reg.addListener(channel, listener);
+    ipcRenderer.on(channel, listener.fn);
   },
   once: (
     channel: string,
-    listener: (event: Electron.IpcRendererEvent, ...args: any[]) => void
+    listener: IpcListenerFunction
   ) => {
     ipcRenderer.once(channel, listener);
   },
   removeListener: (
     channel: string,
-    uuid: string,
-    listener: (event: Electron.IpcRendererEvent, ...args: any[]) => void,
+    listener: IpcListener
   ) => {
-    if (listenerRegistry.has(channel, uuid)) {
-      listenerRegistry.delete(channel, uuid);
-      ipcRenderer.removeListener(channel, listener);
+    if (reg.channelHasListener(channel, listener)) {
+      reg.getChannelListeners(channel)?.delete(listener);
+      ipcRenderer.removeListener(channel, listener.fn);
     }
   },
   invoke: (
@@ -66,8 +67,11 @@ contextBridge.exposeInMainWorld("electronAPI", {
   },
   isListening: (
     channel: string,
-    uuid: string
+    listener: IpcListener
   ): boolean => {
-    return listenerRegistry.has(channel, uuid);
+    if (reg.channelHasListener(channel, listener)) {
+      return false;
+    }
+    return true;
   }
 });

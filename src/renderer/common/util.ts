@@ -1,3 +1,4 @@
+import { IpcRendererEvent } from "electron";
 import { Direction } from "../../common/enums";
 import { DisplayMetrics, IpcListener, Vector2 } from "../../common/interfaces";
 import * as ich from "../../common/ipcChannels";
@@ -13,11 +14,13 @@ const displayMetricsTracker = new class {
       const m = await window.electronAPI.invoke(ich.getDisplayMetrics) as DisplayMetrics;
       this.metrics = m;
     })();
-    registerIpcListener({
-      channel: ich.displayMetricsChanged,
-      fn: (_, m) => { this.metrics = m as DisplayMetrics; },
-      uuid: "e9985fbc-8385-42ed-bb0a-af1b7cf09a2e"
-    });
+    registerIpcListener(
+      ich.displayMetricsChanged,
+      {
+        uuid: "cf622a4c-60e9-49ca-8f6b-07f142f39637",
+        fn: (_e: IpcRendererEvent, m: DisplayMetrics) => { this.metrics = m; },
+      }
+    );
   }
 };
 
@@ -126,14 +129,11 @@ export function compareRects(
   return firstValues.every((value, i) => value === secondValues[i]);
 
 }
-export function registerIpcListener(listener: IpcListener) {
-  const listening = window.electronAPI.isListening(listener.channel, listener.uuid);
-  if (!listening) {
-    window.electronAPI.on(listener.channel, listener.uuid, listener.fn);
-  }
+export function registerIpcListener(channel: string, listener: IpcListener) {
+  window.electronAPI.on(channel, listener);
 }
-export function unregisterIpcListener(listener: IpcListener) {
-  window.electronAPI.removeListener(listener.channel, listener.uuid, listener.fn);
+export function unregisterIpcListener(channel: string, listener: IpcListener) {
+  window.electronAPI.removeListener(channel, listener);
 }
 export function screenToWorkAreaPos(pos: Vector2): Vector2 {
   const t = displayMetricsTracker.metrics.taskbar;

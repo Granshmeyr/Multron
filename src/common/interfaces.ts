@@ -1,8 +1,9 @@
 import React from "react";
 import { BaseNode } from "../renderer/common/nodeTypes";
 import { ContextOption, Direction } from "./enums";
-import { IpcRendererEvent } from "electron/renderer";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type IpcListenerFunction = (e: Electron.IpcRendererEvent, ...args: any[]) => void;
 export type ContextBehavior = (nodeId: string, params: ContextParams, pos?: Vector2) => void
 export type ResizeBehavior = (id: string, rectangle: Electron.Rectangle) => void
 
@@ -50,9 +51,8 @@ export interface ViewData {
   rectangle: Electron.Rectangle
 }
 export interface IpcListener {
-  channel: string,
-  fn: (_: IpcRendererEvent, ...args: unknown[]) => void
-  uuid: string
+  uuid: string,
+  fn: IpcListenerFunction
 }
 export interface TaskbarBounds {
   direction: Direction,

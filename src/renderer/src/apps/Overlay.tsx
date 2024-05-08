@@ -10,22 +10,22 @@ export default function Main(): ReactElement {
   const [pos, setPos] = useState<Vector2 | undefined>(undefined);
   const idRef = useRef<string | null>(null);
   const lastClick = useRef<Vector2 | null>(null);
+  const showPieMenuCCListener = useRef<IpcListener>({
+    uuid: "3bcd49da-df79-42bd-b6cc-2dc35d07ccfa",
+    fn: (_: IpcRendererEvent, ...args: unknown[]) => {
+      idRef.current = args[0] as string;
+      const newPos = args[1] as Vector2;
+      setPos(newPos);
+      lastClick.current = newPos;
+    },
+  });
 
   useEffect(() => {
-    const listener: IpcListener = {
-      channel: ich.showPieMenuCC,
-      fn: (_: IpcRendererEvent, ...args: unknown[]) => {
-        idRef.current = args[0] as string;
-        const newPos = args[1] as Vector2;
-        setPos(newPos);
-        lastClick.current = newPos;
-      },
-      uuid: "36ddfbb7-1ece-4ab8-8314-950111ea0adb"
-    };
-    registerIpcListener(listener);
+    const listener = showPieMenuCCListener.current;
+    registerIpcListener(ich.showPieMenuCC, listener);
     if (pos !== undefined) setPos(undefined);
     return () => {
-      unregisterIpcListener(listener);
+      unregisterIpcListener(ich.showPieMenuCC, listener);
     };
   }, [pos]);
 

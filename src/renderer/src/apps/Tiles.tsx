@@ -8,7 +8,7 @@ import { buildTree, deletion, setUrl } from "../../common/containerUtil.tsx";
 import * as log from "../../common/loggerUtil.ts";
 import { BaseNode, ColumnNode, ContainerNode, RowNode, TileNode, TileTree, containers, recordColumn, recordRow, recordTile, tiles } from "../../common/nodeTypes.jsx";
 import { resizeTicker } from "../../common/types.ts";
-import { getDivRect, percentAlongRectX, percentAlongRectY, registerIpcListener, setEditMode } from "../../common/util.ts";
+import { getDivRect, percentAlongRectX, percentAlongRectY, registerIpcListener, setEditMode, unregisterIpcListener } from "../../common/util.ts";
 import Greeting from "./app-components/TilesGreeting.tsx";
 
 const fileName: string = "TileApp.tsx";
@@ -31,96 +31,102 @@ export default function Main(): ReactElement {
   );
   const [root, setRoot] = useState<BaseNode>(tileTree.root);
   const [, refreshRoot] = useReducer(x => x + 1, 0);
-
-  const listeners: IpcListener[] = [
-    {
-      channel: ich.toggleEditMode,
-      fn: async (_: IpcRendererEvent, ...args: unknown[]) => {
-        // #region logging
-        log.info(logOptions, `${pre.eventReceived}: ${ich.toggleEditMode}`);
-        // #endregion
-        const enabled = args[0] as boolean;
-        setEditMode(enabled);
-        function enterEditMode() {
-          resizeTicker.tickAsync();
-        }
-        function exitEditMode() {
-        }
-        switch (enabled) {
-        case true: enterEditMode(); break;
-        default: exitEditMode(); break;
-        }
-      },
-      uuid: "016ad894-505e-4de7-ab2f-428a02157cfa"
+  // #region ipc lissteners
+  const toggleEditModeListener = useRef<IpcListener>({
+    uuid: "392c36ba-c095-478c-adc8-735ddeac56e3",
+    fn: async (_: IpcRendererEvent, ...args: unknown[]) => {
+      // #region logging
+      log.info(logOptions, `${pre.eventReceived}: ${ich.toggleEditMode}`);
+      // #endregion
+      const enabled = args[0] as boolean;
+      setEditMode(enabled);
+      function enterEditMode() {
+        resizeTicker.tickAsync();
+      }
+      function exitEditMode() {
+      }
+      switch (enabled) {
+      case true: enterEditMode(); break;
+      default: exitEditMode(); break;
+      }
     },
-    {
-      channel: ich.mainProcessContextMenu,
-      fn: (_, ...args: unknown[]) => {
-        // #region logging
-        log.info(logOptions, `${pre.eventReceived}: ${ich.mainProcessContextMenu}`);
-        // #endregion
-        const tileId: string = args[0] as string;
-        const params = args[1] as ContextParams | null;
-        const pos: Vector2 = args[2] as Vector2;
-        if (params === null) {
+  });
+  const mainProcessContextMenuListener = useRef<IpcListener>({
+    uuid: "67515752-29d6-4a1b-a3a1-3d5eaf94c565",
+    fn: (_, ...args: unknown[]) => {
+      // #region logging
+      log.info(logOptions, `${pre.eventReceived}: ${ich.mainProcessContextMenu}`);
+      // #endregion
+      const tileId: string = args[0] as string;
+      const params = args[1] as ContextParams | null;
+      const pos: Vector2 = args[2] as Vector2;
+      if (params === null) {
+        return;
+      }
+      function split() {
+        if (tiles.get(tileId)!.ref === null) {
+          // #region logging
+          log.error(logOptions, `${pre.invalidValue}: TileNode.ref is null`);
+          // #endregion
           return;
         }
-        function split() {
-          if (tiles.get(tileId)!.ref === null) {
-            // #region logging
-            log.error(logOptions, `${pre.invalidValue}: TileNode.ref is null`);
-            // #endregion
-            return;
-          }
-          tiles.get(tileId)!.split(pos, params!.direction as Direction);
-        }
-        switch (params.option) {
-        case ContextOption.Split: split(); break;
-        case ContextOption.Delete: (
-          () => {
-            const parent = tiles.get(tileId)!.parent as ContainerNode | null;
-            if (parent === null) { return; }
-            deletion(
-              parent.nodeId,
-              tileId,
-              parent.refreshRoot,
-              parent.setRoot,
-              parent.rootContextBehavior
-            );
-          })();
-          break;
-        case ContextOption.SetUrl: setUrl(tileId, params); break;
-        }
-      },
-      uuid: "e4b1dcf9-a791-4b34-91d4-2283ed994119"
+        tiles.get(tileId)!.split(pos, params!.direction as Direction);
+      }
+      switch (params.option) {
+      case ContextOption.Split: split(); break;
+      case ContextOption.Delete: (
+        () => {
+          const parent = tiles.get(tileId)!.parent as ContainerNode | null;
+          if (parent === null) { return; }
+          deletion(
+            parent.nodeId,
+            tileId,
+            parent.refreshRoot,
+            parent.setRoot,
+            parent.rootContextBehavior
+          );
+        })();
+        break;
+      case ContextOption.SetUrl: setUrl(tileId, params); break;
+      }
     },
-    {
-      channel: "debug",
-      fn: () => {
-        const test = window.innerHeight;
-        const test1 = window.outerHeight;
-        console.log(`innerHeight: ${test}, outerHeight: ${test1}`);
-      },
-      uuid: "8d3a4625-6ff2-4774-bb63-00ce6cd25ad9"
+  });
+  const debugListener = useRef<IpcListener>({
+    uuid: "1c1787f8-6651-4695-bec6-a71dd6ad20b1",
+    fn: () => { console.log("debug recieved"); },
+  });
+  const callTileContextBehaviorCCListener = useRef<IpcListener>({
+    uuid: "b6b0774e-9e44-4309-8781-399938ad2deb",
+    fn: (_, ...args: unknown[]) => {
+      const tile = tiles.get(args[0] as string)!;
+      const params = args[1] as ContextParams;
+      const pos = args[2] as Vector2 | undefined;
+      switch (params.option) {
+      case ContextOption.Split:
+        tile.split(pos!, params.direction!);
+        break;
+      case ContextOption.Delete: tile.delete(); break;
+      }
     },
-    {
-      channel: ich.callTileContextBehaviorCC,
-      fn: (_, ...args: unknown[]) => {
-        console.log("recieved context event!!!");
-        const tile = tiles.get(args[0] as string)!;
-        const params = args[1] as ContextParams;
-        const pos = args[2] as Vector2 | undefined;
-        switch (params.option) {
-        case ContextOption.Split:
-          tile.split(pos!, params.direction!);
-          break;
-        case ContextOption.Delete: tile.delete(); break;
-        }
-      },
-      uuid: "3db30ff1-1d25-425b-b4d9-39001a9fd2ab"
-    }
-  ];
-  listeners.forEach((v) => { registerIpcListener(v); });
+  });
+  function registerListeners() {
+    registerIpcListener(ich.toggleEditMode, toggleEditModeListener.current);
+    registerIpcListener(ich.mainProcessContextMenu, mainProcessContextMenuListener.current);
+    registerIpcListener("debug", debugListener.current);
+    registerIpcListener(ich.callTileContextBehaviorCC, callTileContextBehaviorCCListener.current);
+  }
+  function unregisterListeners() {
+    unregisterIpcListener(ich.toggleEditMode, toggleEditModeListener.current);
+    unregisterIpcListener(ich.mainProcessContextMenu, mainProcessContextMenuListener.current);
+    unregisterIpcListener("debug", debugListener.current);
+    unregisterIpcListener(ich.callTileContextBehaviorCC, callTileContextBehaviorCCListener.current);
+  }
+  // #endregion
+
+  useEffect(() => {
+    registerListeners();
+    return () => { unregisterListeners(); };
+  });
 
   if (resizeTicker.refreshRoot === null) {
     resizeTicker.refreshRoot = refreshRoot;
@@ -129,7 +135,6 @@ export default function Main(): ReactElement {
   function onContext(tileId: string, params: ContextParams, pos?: Vector2) {
     const tile = tiles.get(tileId) as TileNode;
     function split() {
-      console.log(`splitting from main: tile id ${tile.nodeId}`);
       function up() {
         const percent = percentAlongRectY(getDivRect(ref.current!), pos!);
         setRoot(recordColumn({
@@ -244,7 +249,6 @@ export function Row({
   function onContext(tileId: string, params: ContextParams, pos?: Vector2) {
     function split() {
       const tile = tiles.get(tileId) as TileNode;
-      console.log(`splitting on tile ${tile.nodeId}`);
       const parent = tile.parent as RowNode;
       const tileRef = tiles.get(tileId)!.ref as React.RefObject<HTMLDivElement>;
       function up() {
@@ -571,7 +575,6 @@ export function Tile({
           className={divClass}
           style={{...style}}
           onContextMenu={(e) => {
-            console.log(`context menu on tile ${nodeId}`);
             window.electronAPI.send(
               ich.showPieMenu,
               nodeId as string,

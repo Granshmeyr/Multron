@@ -1,3 +1,5 @@
+import { IpcListenerFunction } from "../src/common/interfaces";
+
 declare global {
     interface Window {
         electronAPI: {
@@ -7,24 +9,19 @@ declare global {
             ) => void;
             on: (
                 channel: string,
-                uuid: string,
-                listener: (event: Electron.IpcRendererEvent, ...args: unknown[]) => void,
+                listener: IpcListener
             ) => void
             once: (
                 channel: string,
-                listener: (
-                    event: Electron.IpcRendererEvent,
-                    ...args: unknown[]
-                ) => void
+                listener: IpcListenerFunction
             ) => Electron.IpcRenderer;
             removeListener: (
                 channel: string,
-                uuid: string,
-                listener: (event: Electron.IpcRendererEvent, ...args: unknown[]) => void,
+                listener: IpcListener
             ) => void
-            isListening:(
+            isListening: (
                 channel: string,
-                uuid: string
+                listener: IpcListener
             ) => boolean
             logInfo: (
                 message: string
