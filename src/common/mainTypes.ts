@@ -2,8 +2,10 @@ import { WebContentsView } from "electron";
 import { hideWindow, mainWindow } from "../main/main";
 import * as pre from "./logPrefixes";
 import { log } from "./logger";
-import { reparentView } from "./mainUtil";
+import { marginizeRectangle, reparentView } from "./mainUtil";
+import { Chest } from "./interfaces";
 
+export const borderPx: Chest<number> = { item: 0 };
 const fileName: string = "types.ts";
 
 export class ViewInstance {
@@ -26,10 +28,10 @@ export class ViewInstance {
     const logOptions = { ts: fileName, fn: `${ViewInstance.name}.rectangle(set)` };
     log.info(
       logOptions,
-      `${pre.running}: this.${this.updatePosition.name} from rectangle(set)`
+      `${pre.running}: this.${this.updateBounds.name} from rectangle(set)`
     );
     // #endregion
-    this.updatePosition();
+    this.updateBounds();
   }
   get url(): string | null { return this._url; }
   set url(value: string) {
@@ -65,7 +67,7 @@ export class ViewInstance {
     );
     // #endregion
     this._hidden = true;
-    this.updatePosition();
+    this.updateBounds();
   }
   unhide() {
     if (
@@ -82,15 +84,16 @@ export class ViewInstance {
     );
     // #endregion
     this._hidden = false;
-    this.updatePosition();
+    this.updateBounds();
   }
-  updatePosition() {
+  updateBounds() {
     if (this.hidden) {
       reparentView(this.view, mainWindow!, hideWindow!);
     }
     else {
       reparentView(this.view, hideWindow!, mainWindow!);
     }
-    this.view.setBounds(this.rectangle);
+    const b = marginizeRectangle(this.rectangle, -borderPx.item);
+    this.view.setBounds(b);
   }
 }

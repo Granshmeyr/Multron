@@ -52,8 +52,8 @@ export class TileNode extends BaseNode {
   private _style?: React.CSSProperties;
   private _id: string;
   private _url?: URL;
-  private _contextBehavior: ContextBehavior;
-  private _resizeBehavior: ResizeBehavior;
+  private _contextBehavior?: ContextBehavior;
+  private _resizeBehavior?: ResizeBehavior;
 
   constructor({
     style: style,
@@ -61,29 +61,13 @@ export class TileNode extends BaseNode {
     url: url,
     contextBehavior: contextBehavior,
     resizeBehavior: resizeBehavior
-  }: TileProps = {
-    nodeId: uuidv4(),
-    contextBehavior: () => {
-      // #region logging
-      log.info({
-        ts: fileName, fn: `${TileNode.name}.constructor`
-      }, `${pre.missing}: contextBehavior param`);
-      // #endregion
-    },
-    resizeBehavior: () => {
-      // #region logging
-      log.info({
-        ts: fileName, fn: `${TileNode.name}.constructor`
-      }, `${pre.missing}: resizeBehavior param`);
-      // #endregion
-    }
-  }) {
+  }: TileProps) {
     super();
     this._style = style;
     this._id = id === undefined ? uuidv4() : id;
     this._url = url;
-    this._contextBehavior = contextBehavior;
-    this._resizeBehavior = resizeBehavior;
+    this._contextBehavior = contextBehavior!;
+    this._resizeBehavior = resizeBehavior!;
   }
 
   toElement(): ReactElement {
@@ -112,7 +96,15 @@ export class TileNode extends BaseNode {
     window.electronAPI.send(ich.setViewUrl, this.nodeId, value.toString());
     // #endregion
   }
+  get contextBehavior(): ContextBehavior {
+    if (this._contextBehavior === undefined) return () => console.error("no contextbehavior");
+    return this._contextBehavior;
+  }
   set contextBehavior(value: ContextBehavior) { this._contextBehavior = value; }
+  get resizeBehavior(): ResizeBehavior {
+    if (this._resizeBehavior === undefined) return () => console.error("no resizebehavior");
+    return this._resizeBehavior;
+  }
   set resizeBehavior(value: (id: string, rectangle: Electron.Rectangle) => void) { this._resizeBehavior = value; }
   getRect(): Electron.Rectangle | null {
     if (this.ref === null) {
@@ -130,13 +122,13 @@ export class TileNode extends BaseNode {
     this.style = { ...this.style, ...style };
   }
   split(pos: Vector2, direction: Direction) {
-    this._contextBehavior(this.nodeId, { option: ContextOption.Split, direction: direction }, pos);
+    this.contextBehavior(this.nodeId, { option: ContextOption.Split, direction: direction }, pos);
   }
   resize(rect: Electron.Rectangle) {
-    this._resizeBehavior(this.nodeId, rect);
+    this.resizeBehavior(this.nodeId, rect);
   }
   delete() {
-    this._contextBehavior(this.nodeId, { option: ContextOption.Delete });
+    this.contextBehavior(this.nodeId, { option: ContextOption.Delete });
   }
 }
 
@@ -266,7 +258,7 @@ export function recordTile(tileProps?: TileProps): TileNode {
     tileNode = new TileNode(tileProps);
   }
   else {
-    tileNode = new TileNode();
+    tileNode = new TileNode({});
   }
   tiles.set(tileNode.nodeId, tileNode);
   return tileNode;

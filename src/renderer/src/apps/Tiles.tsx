@@ -1,14 +1,15 @@
 import { IpcRendererEvent } from "electron";
-import { ReactElement, useEffect, useReducer, useRef, useState } from "react";
+import { ReactElement, useContext, useEffect, useLayoutEffect, useReducer, useRef, useState } from "react";
 import { ContextOption, Direction } from "../../../common/enums.ts";
 import { ColumnHandleProps, ColumnProps, ContextParams, IpcListener, RowHandleProps, RowProps, TileProps, Vector2, ViewData } from "../../../common/interfaces.ts";
 import * as ich from "../../../common/ipcChannels.ts";
 import * as pre from "../../../common/logPrefixes.ts";
 import { buildTree, deletion, setUrl } from "../../common/containerUtil.tsx";
+import * as Context from "../../common/contextProviders.ts";
 import * as log from "../../common/loggerUtil.ts";
 import { BaseNode, ColumnNode, ContainerNode, RowNode, TileNode, TileTree, containers, recordColumn, recordRow, recordTile, tiles } from "../../common/nodeTypes.jsx";
 import { resizeTicker } from "../../common/types.ts";
-import { getDivRect, percentAlongRectX, percentAlongRectY, registerIpcListener, setEditMode, unregisterIpcListener } from "../../common/util.ts";
+import { getDivRect, percentAlongRectX, percentAlongRectY, registerIpcListener, unregisterIpcListener } from "../../common/util.ts";
 import Greeting from "./app-components/TilesGreeting.tsx";
 
 const fileName: string = "TileApp.tsx";
@@ -19,6 +20,8 @@ export default function Main(): ReactElement {
     fn: Main.name
   };
   const ref = useRef<HTMLDivElement>(null);
+  const oldBorderPxRef = useRef<number>(-1);
+  const [borderPx, setBorderPx] = useState<number>(4);
   const [tileTree] = useState<TileTree>(
     new TileTree(
       recordTile({
@@ -31,25 +34,12 @@ export default function Main(): ReactElement {
   );
   const [root, setRoot] = useState<BaseNode>(tileTree.root);
   const [, refreshRoot] = useReducer(x => x + 1, 0);
-  // #region ipc lissteners
-  const toggleEditModeListener = useRef<IpcListener>({
-    uuid: "392c36ba-c095-478c-adc8-735ddeac56e3",
-    fn: async (_: IpcRendererEvent, ...args: unknown[]) => {
-      // #region logging
-      log.info(logOptions, `${pre.eventReceived}: ${ich.toggleEditMode}`);
-      // #endregion
-      const enabled = args[0] as boolean;
-      setEditMode(enabled);
-      function enterEditMode() {
-        resizeTicker.tickAsync();
-      }
-      function exitEditMode() {
-      }
-      switch (enabled) {
-      case true: enterEditMode(); break;
-      default: exitEditMode(); break;
-      }
-    },
+  // #region ipc listeners
+  const adjustBorderPxListener = useRef<IpcListener>({
+    uuid: "6ff187b9-3427-4d2a-b2cf-c267dc58e78e",
+    fn: (_: IpcRendererEvent, ...args: unknown[]) => {
+      setBorderPx(v => v + (args[0] as number));
+    }
   });
   const mainProcessContextMenuListener = useRef<IpcListener>({
     uuid: "67515752-29d6-4a1b-a3a1-3d5eaf94c565",
@@ -93,7 +83,7 @@ export default function Main(): ReactElement {
   });
   const debugListener = useRef<IpcListener>({
     uuid: "1c1787f8-6651-4695-bec6-a71dd6ad20b1",
-    fn: () => { console.log("debug recieved"); },
+    fn: () => console.log("sup"),
   });
   const callTileContextBehaviorCCListener = useRef<IpcListener>({
     uuid: "b6b0774e-9e44-4309-8781-399938ad2deb",
@@ -110,18 +100,22 @@ export default function Main(): ReactElement {
     },
   });
   function registerListeners() {
-    registerIpcListener(ich.toggleEditMode, toggleEditModeListener.current);
     registerIpcListener(ich.mainProcessContextMenu, mainProcessContextMenuListener.current);
     registerIpcListener("debug", debugListener.current);
     registerIpcListener(ich.callTileContextBehaviorCC, callTileContextBehaviorCCListener.current);
+    registerIpcListener(ich.adjustBorderPx, adjustBorderPxListener.current);
   }
   function unregisterListeners() {
-    unregisterIpcListener(ich.toggleEditMode, toggleEditModeListener.current);
     unregisterIpcListener(ich.mainProcessContextMenu, mainProcessContextMenuListener.current);
     unregisterIpcListener("debug", debugListener.current);
     unregisterIpcListener(ich.callTileContextBehaviorCC, callTileContextBehaviorCCListener.current);
+    unregisterIpcListener(ich.adjustBorderPx, adjustBorderPxListener.current);
   }
   // #endregion
+
+  if (window && oldBorderPxRef.current !== borderPx) {
+    window.electronAPI.send(ich.updateBorderPx, borderPx);
+  }
 
   useEffect(() => {
     registerListeners();
@@ -193,9 +187,11 @@ export default function Main(): ReactElement {
   }
 
   return (
-    <div ref={ref} className="flex w-screen h-screen">
-      {root.toElement()}
-    </div>
+    <Context.BorderPx.Provider value={borderPx}>
+      <div ref={ref} className="flex w-screen h-screen">
+        {root.toElement()}
+      </div>
+    </Context.BorderPx.Provider>
   );
 }
 
@@ -331,6 +327,7 @@ export function Row({
         children,
         handlePercents,
         setCurrentHandle,
+        ref,
         RowHandle
       )}
     </div>
@@ -375,6 +372,7 @@ export function Column({
         refreshRoot();
       }
     }
+
     document.addEventListener("mouseup", onMouseUp);
     document.addEventListener("mousemove", onMouseMove);
     return () => {
@@ -448,11 +446,11 @@ export function Column({
     switch (params.option) {
     case ContextOption.Split: split(); break;
     case ContextOption.Delete: deletion(
-        nodeId as string,
-        tileId,
-        refreshRoot,
-        setRoot,
-        rootContextBehavior
+      nodeId as string,
+      tileId,
+      refreshRoot,
+      setRoot,
+      rootContextBehavior
     ); break;
     case ContextOption.SetUrl: setUrl(tileId, params); break;
     }
@@ -469,6 +467,7 @@ export function Column({
         children,
         handlePercents,
         setCurrentHandle,
+        ref,
         ColumnHandle
       )}
     </div>
@@ -478,10 +477,8 @@ export function Column({
 export function Tile({
   style,
   nodeId,
-  contextBehavior,
   resizeBehavior,
 }: TileProps): ReactElement {
-  const logOptions = { ts: fileName, fn: Tile.name };
   const [bg, setBg] = useState<string | null>(null);
   const ref = useRef<HTMLDivElement>(null);
   const rectangle = useRef<Electron.Rectangle>({
@@ -490,6 +487,7 @@ export function Tile({
     x: 0,
     y: 0
   });
+  const borderPx = useContext(Context.BorderPx);
 
   tiles.get(nodeId as string)!.bgLoader.setter = setBg;
 
@@ -511,10 +509,10 @@ export function Tile({
             enablePreferredSizeMode: true,
           }
         });
-        resizeBehavior(nodeId as string, rectangle.current);
+        resizeBehavior?.(nodeId as string, rectangle.current);
       }
       else {
-        resizeBehavior(nodeId as string, rectangle.current);
+        resizeBehavior?.(nodeId as string, rectangle.current);
       }
     }
     const resizeObserver = new ResizeObserver(async () => {
@@ -543,7 +541,8 @@ export function Tile({
           style={{
             ...style,
             backgroundRepeat: "round",
-            backgroundImage: `url(${bg})`
+            backgroundImage: `url(${bg})`,
+            borderWidth: `${borderPx}px`
           }}
           id={nodeId}
           ref={ref}
@@ -573,7 +572,10 @@ export function Tile({
           id={nodeId}
           ref={ref}
           className={divClass}
-          style={{...style}}
+          style={{
+            ...style,
+            borderWidth: `${borderPx}px`
+          }}
           onContextMenu={(e) => {
             window.electronAPI.send(
               ich.showPieMenu,
@@ -583,7 +585,9 @@ export function Tile({
           }}
         >
           <Greeting
-            fn={(input) => { window.electronAPI.send(ich.setViewUrl, nodeId, input); }}
+            functions={{
+              submit: (input) => { window.electronAPI.send(ich.setViewUrl, nodeId, input); }
+            }}
           >
           </Greeting>
         </div>
@@ -593,26 +597,82 @@ export function Tile({
   return element();
 }
 
-function RowHandle({ onMouseDown, onMouseUp }: RowHandleProps): ReactElement {
+function RowHandle({ onMouseDown, onMouseUp, containerRef }: RowHandleProps): ReactElement {
+  const borderPx = useContext<number>(Context.BorderPx);
+  const [heightPx, setHeightPx] = useState<number>(10);
+
+  useLayoutEffect(() => {
+    const c = containerRef.current;
+
+    function updateHeightPx() {
+      if (c !== null) {
+        setHeightPx(c.offsetHeight - (borderPx * 2));
+      }
+    }
+
+    updateHeightPx();
+    const resizeObserver = new ResizeObserver(() => {
+      if (c !== null) {
+        updateHeightPx();
+      }
+    });
+    if (c !== null) resizeObserver.observe(c);
+    return () => resizeObserver.disconnect();
+  }, [borderPx, containerRef]);
+
   return (
     <div
       className="w-0 relative"
       onMouseDown={onMouseDown}
       onMouseUp={onMouseUp}
     >
-      <div className="handle-row"></div>
+      <div
+        className="handle-row"
+        style={{
+          width: `${borderPx * 2}px`,
+          height: `${heightPx}px`
+        }}
+      />
     </div>
   );
 }
 
-function ColumnHandle({ onMouseDown, onMouseUp }: ColumnHandleProps): ReactElement {
+function ColumnHandle({ onMouseDown, onMouseUp, containerRef }: ColumnHandleProps): ReactElement {
+  const borderPx = useContext<number>(Context.BorderPx);
+  const [widthPx, setWidthPx] = useState<number>(10);
+
+  useLayoutEffect(() => {
+    const c = containerRef.current;
+
+    function updateWidthPx() {
+      if (c !== null) {
+        setWidthPx(c.offsetWidth - (borderPx * 2));
+      }
+    }
+
+    updateWidthPx();
+    const resizeObserver = new ResizeObserver(() => {
+      if (c !== null) {
+        updateWidthPx();
+      }
+    });
+    if (c !== null) resizeObserver.observe(c);
+    return () => resizeObserver.disconnect();
+  }, [borderPx, containerRef]);
+
   return (
     <div
       className="h-0 relative"
       onMouseDown={onMouseDown}
       onMouseUp={onMouseUp}
     >
-      <div className="handle-col"></div>
+      <div
+        className="handle-col"
+        style={{
+          height: `${borderPx * 2}px`,
+          width: `${widthPx}px`
+        }}
+      />
     </div>
   );
 }

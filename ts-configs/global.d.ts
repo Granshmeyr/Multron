@@ -19,16 +19,6 @@ declare global {
                 channel: string,
                 listener: IpcListener
             ) => void
-            isListening: (
-                channel: string,
-                listener: IpcListener
-            ) => boolean
-            logInfo: (
-                message: string
-            ) => void
-            logError: (
-                message: string
-            ) => void
             invoke: (
                 channel: string,
                 ...args: unknown[]

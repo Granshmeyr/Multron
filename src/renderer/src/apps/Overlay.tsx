@@ -3,7 +3,7 @@ import { ContextOption, Direction } from "../../../common/enums";
 import { ContextParams, IpcListener, Vector2 } from "../../../common/interfaces";
 import * as ich from "../../../common/ipcChannels";
 import { registerIpcListener, unregisterIpcListener } from "../../common/util";
-import PieOverlay, { ButtonListenerProps, PieProps } from "./app-components/PieOverlay";
+import PieOverlay, { ButtonListenerProps, ButtonCollectionProps } from "./app-components/PieOverlay";
 import { IpcRendererEvent } from "electron";
 
 export default function Main(): ReactElement {
@@ -13,6 +13,7 @@ export default function Main(): ReactElement {
   const showPieMenuCCListener = useRef<IpcListener>({
     uuid: "3bcd49da-df79-42bd-b6cc-2dc35d07ccfa",
     fn: (_: IpcRendererEvent, ...args: unknown[]) => {
+      console.log(`updating id to ${args[0] as string}`);
       idRef.current = args[0] as string;
       const newPos = args[1] as Vector2;
       setPos(newPos);
@@ -30,20 +31,28 @@ export default function Main(): ReactElement {
   }, [pos]);
 
   const commonListeners: ButtonListenerProps = {
+    onClick: (_, hide) => {
+      window.electronAPI.send(ich.setOverlayIgnore, true);
+      hide();
+    },
     onMouseEnter: () => window.electronAPI.send(ich.setOverlayIgnore, false),
     onMouseLeave: () => window.electronAPI.send(ich.setOverlayIgnore, true)
   };
-  const buttons: PieProps = {
+  const buttons: ButtonCollectionProps = {
     middle: {
       icon: "add_link", opacity: 0.5, listeners: {
         ...commonListeners,
-        onClick: () => { console.log(`selected tile ${idRef.current}`); },
+        onClick: (_, hide) => {
+          commonListeners.onClick?.(_, hide);
+          console.log(`selected tile ${idRef.current}`);
+        },
       }
     },
     up: {
       icon: "splitscreen_top", listeners: {
         ...commonListeners,
-        onClick: () => {
+        onClick: (_, hide) => {
+          commonListeners.onClick?.(_, hide);
           window.electronAPI.send(
             ich.callTileContextBehavior,
             idRef.current,
@@ -56,7 +65,8 @@ export default function Main(): ReactElement {
     down: {
       icon: "splitscreen_bottom", listeners: {
         ...commonListeners,
-        onClick: () => {
+        onClick: (_, hide) => {
+          commonListeners.onClick?.(_, hide);
           window.electronAPI.send(
             ich.callTileContextBehavior,
             idRef.current,
@@ -69,7 +79,8 @@ export default function Main(): ReactElement {
     left: {
       icon: "splitscreen_left", listeners: {
         ...commonListeners,
-        onClick: () => {
+        onClick: (_, hide) => {
+          commonListeners.onClick?.(_, hide);
           window.electronAPI.send(
             ich.callTileContextBehavior,
             idRef.current,
@@ -82,7 +93,8 @@ export default function Main(): ReactElement {
     right: {
       icon: "splitscreen_right", listeners: {
         ...commonListeners,
-        onClick: () => {
+        onClick: (_, hide) => {
+          commonListeners.onClick?.(_, hide);
           window.electronAPI.send(
             ich.callTileContextBehavior,
             idRef.current,
@@ -95,7 +107,8 @@ export default function Main(): ReactElement {
     downRight: {
       icon: "delete", opacity: 0.5, listeners: {
         ...commonListeners,
-        onClick: () => {
+        onClick: (_, hide) => {
+          commonListeners.onClick?.(_, hide);
           window.electronAPI.send(
             ich.callTileContextBehavior,
             idRef.current,

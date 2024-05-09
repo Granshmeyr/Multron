@@ -1,7 +1,7 @@
 import React, { ReactElement } from "react";
 import { v4 as uuidv4 } from "uuid";
-import * as ich from "../../common/ipcChannels";
 import { ColumnHandleProps, ContextParams, RowHandleProps } from "../../common/interfaces";
+import * as ich from "../../common/ipcChannels";
 import * as pre from "../../common/logPrefixes";
 import * as log from "./loggerUtil";
 import { BaseNode, ContainerNode, TileNode, containers, tiles } from "./nodeTypes";
@@ -50,6 +50,7 @@ export function buildTree(
   nodeArray: BaseNode[],
   handlePercents: number[],
   setCurrentHandle: (value: React.SetStateAction<number | null>) => void,
+  containerRef: React.RefObject<HTMLDivElement>,
   Handle: React.ComponentType<RowHandleProps> | React.ComponentType<ColumnHandleProps>
 ): ReactElement[] {
   const logOptions = { ts: fileName, fn: buildTree.name };
@@ -81,6 +82,7 @@ export function buildTree(
             }
           }
           onMouseUp={() => { return; }}
+          containerRef={containerRef}
         ></Handle>
       );
       elementArray.push(handle);

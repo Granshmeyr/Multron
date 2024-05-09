@@ -1,26 +1,31 @@
 import LinkIcon from "@mui/icons-material/Link";
-import { Box, BoxProps, TextField } from "@mui/material";
+import { BoxProps, TextField } from "@mui/material";
 import InputAdornment from "@mui/material/InputAdornment";
 import { forwardRef, useRef } from "react";
 
-interface CustomBoxProps extends BoxProps {
-  fn?: (input: string) => unknown
+interface GreetingFunctions {
+  submit?: (input: string) => unknown
+}
+interface GreetingProps extends BoxProps {
+  className?: string,
+  style?: React.CSSProperties,
+  functions: GreetingFunctions
 }
 
-export const Main = forwardRef<HTMLDivElement, CustomBoxProps>(
-  ({ fn }, ref) => {
+export const Main = forwardRef<HTMLDivElement, GreetingProps>(
+  ({ className, style, functions }, ref) => {
     const input = useRef<string>("");
 
     function onKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
       if (e.key !== "Enter") return;
-      switch (fn === undefined) {
+      switch (functions.submit === undefined) {
       case true: console.log(`submitted: ${input.current}`); break;
-      default: fn!(input.current); break;
+      default: functions.submit!(input.current); break;
       }
     }
 
     return (
-      <Box
+      <div
         className={(() => {
           return [
             "flex",
@@ -28,9 +33,11 @@ export const Main = forwardRef<HTMLDivElement, CustomBoxProps>(
             "h-full",
             "w-full",
             "justify-center",
-            "items-center"
+            "items-center",
+            className
           ].join(" ");
         })()}
+        style={style}
         ref={ref}
       >
         <TextField
@@ -48,7 +55,7 @@ export const Main = forwardRef<HTMLDivElement, CustomBoxProps>(
           }}
         >
         </TextField>
-      </Box>
+      </div>
     );
   }
 );

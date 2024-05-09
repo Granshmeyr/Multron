@@ -10,11 +10,11 @@ interface ButtonProps {
   listeners?: ButtonListenerProps
 }
 export interface ButtonListenerProps {
-  onClick?: (e: React.MouseEvent) => void,
+  onClick?: (e: React.MouseEvent, hide: () => void) => void,
   onMouseEnter?: (e: React.MouseEvent) => void,
   onMouseLeave?: (e: React.MouseEvent) => void,
 }
-export interface PieProps {
+export interface ButtonCollectionProps {
   middle?: ButtonProps,
   up?: ButtonProps,
   down?: ButtonProps,
@@ -25,13 +25,17 @@ export interface PieProps {
   downLeft?: ButtonProps,
   downRight?: ButtonProps,
 }
+interface PieProps {
+  buttons?: ButtonCollectionProps,
+  hide: () => void
+}
 export interface PieOverlayProps {
   id?: string,
   className?: string,
   style?: React.CSSProperties,
   scale?: number,
   pos?: Vector2,
-  buttons?: PieProps,
+  buttons?: ButtonCollectionProps,
 }
 
 export default function Main({
@@ -130,15 +134,18 @@ export default function Main({
           }}
         >
           <Pie
-            middle={buttons?.middle}
-            up={buttons?.up}
-            down={buttons?.down}
-            left={buttons?.left}
-            right={buttons?.right}
-            upLeft={buttons?.upLeft}
-            upRight={buttons?.upRight}
-            downLeft={buttons?.downLeft}
-            downRight={buttons?.downRight}
+            buttons={{
+              middle: buttons?.middle,
+              up: buttons?.up,
+              down: buttons?.down,
+              left: buttons?.left,
+              right: buttons?.right,
+              upLeft: buttons?.upLeft,
+              upRight: buttons?.upRight,
+              downLeft: buttons?.downLeft,
+              downRight: buttons?.downRight
+            }}
+            hide={hide}
           ></Pie>
         </div>
       )}
@@ -146,7 +153,7 @@ export default function Main({
   );
 }
 
-function Pie(props: PieProps): ReactElement {
+function Pie({ buttons, hide }: PieProps): ReactElement {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -179,7 +186,7 @@ function Pie(props: PieProps): ReactElement {
     );
   }
   function Button({ button }: { button?: ButtonProps }): ReactElement {
-    const l: ButtonListenerProps | undefined = button?.listeners;
+    const listeners: ButtonListenerProps | undefined = button?.listeners;
     if (button === undefined) {
       return <div></div>;
     }
@@ -187,13 +194,13 @@ function Pie(props: PieProps): ReactElement {
       <IconButton
         onClick={(e) => {
           e.stopPropagation();
-          if (l?.onClick !== undefined) l.onClick(e);
+          if (listeners?.onClick !== undefined) listeners.onClick(e, hide);
           else console.log("default button fn");
         }}
         onContextMenu={(e) => { e.stopPropagation(); }}
         onMouseDown={(e) => { e.stopPropagation(); }}
-        onMouseEnter={(e) => { if (l?.onMouseEnter !== undefined) l.onMouseEnter(e); }}
-        onMouseLeave={(e) => { if (l?.onMouseLeave !== undefined) l.onMouseLeave(e); }}
+        onMouseEnter={(e) => { if (listeners?.onMouseEnter !== undefined) listeners.onMouseEnter(e); }}
+        onMouseLeave={(e) => { if (listeners?.onMouseLeave !== undefined) listeners.onMouseLeave(e); }}
       >
         <MaterialIcon style={button.opacity !== undefined ? { opacity: button.opacity } : undefined}>
           {button.icon !== undefined ? button.icon : "error"}
@@ -202,15 +209,12 @@ function Pie(props: PieProps): ReactElement {
     );
   }
 
-  if (Object.values(props).every((v) => v === undefined)
-  ) {
-    return <></>;
-  }
+  if (buttons === undefined) return <></>;
   return (
     <div className="pie-grid" ref={ref}>
-      {<Button button={props.upLeft}   />} {<Button button={props.up}     />} {<Button button={props.upRight}   />}
-      {<Button button={props.left}     />} {<Button button={props.middle} />} {<Button button={props.right}     />}
-      {<Button button={props.downLeft} />} {<Button button={props.down}   />} {<Button button={props.downRight} />}
+      {<Button button={buttons.upLeft}   />} {<Button button={buttons.up}     />} {<Button button={buttons.upRight}   />}
+      {<Button button={buttons.left}     />} {<Button button={buttons.middle} />} {<Button button={buttons.right}     />}
+      {<Button button={buttons.downLeft} />} {<Button button={buttons.down}   />} {<Button button={buttons.downRight} />}
     </div>
   );
 }

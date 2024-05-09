@@ -64,14 +64,5 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ...args: any[]
   ): Promise<any> => {
     return ipcRenderer.invoke(channel, ...args);
-  },
-  isListening: (
-    channel: string,
-    listener: IpcListener
-  ): boolean => {
-    if (reg.channelHasListener(channel, listener)) {
-      return false;
-    }
-    return true;
   }
 });

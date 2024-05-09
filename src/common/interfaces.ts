@@ -11,8 +11,8 @@ export interface TileProps {
   style?: React.CSSProperties;
   nodeId?: string;
   url?: URL;
-  contextBehavior: ContextBehavior;
-  resizeBehavior: ResizeBehavior;
+  contextBehavior?: ContextBehavior;
+  resizeBehavior?: ResizeBehavior;
 }
 export interface RowProps {
   children: BaseNode[];
@@ -26,7 +26,7 @@ export interface RowProps {
 export interface ColumnProps {
   children: BaseNode[];
   refreshRoot: React.DispatchWithoutAction;
-  setRoot: React.Dispatch<React.SetStateAction<BaseNode>>
+  setRoot: React.Dispatch<React.SetStateAction<BaseNode>>;
   rootContextBehavior: ContextBehavior;
   handlePercents: number[];
   style?: React.CSSProperties;
@@ -35,34 +35,47 @@ export interface ColumnProps {
 export interface ColumnHandleProps {
   onMouseDown: (e: React.DragEvent<HTMLDivElement>) => void;
   onMouseUp: React.MouseEventHandler<HTMLDivElement>;
+  containerRef: React.RefObject<HTMLDivElement>;
 }
 export interface RowHandleProps {
   onMouseDown: (e: React.DragEvent<HTMLDivElement>) => void;
   onMouseUp: React.MouseEventHandler<HTMLDivElement>;
+  containerRef: React.RefObject<HTMLDivElement>;
 }
 export interface Vector2 { x: number, y: number }
 export interface ContextParams {
-  option: ContextOption,
-  direction?: Direction,
-  url?: string
+  option: ContextOption;
+  direction?: Direction;
+  url?: string;
 }
 export interface ViewData {
-  url: string | null,
-  rectangle: Electron.Rectangle
+  url: string | null;
+  rectangle: Electron.Rectangle;
 }
 export interface IpcListener {
-  uuid: string,
-  fn: IpcListenerFunction
+  uuid: string;
+  fn: IpcListenerFunction;
 }
 export interface TaskbarBounds {
-  direction: Direction,
-  width: number,
-  height: number
+  direction: Direction;
+  width: number;
+  height: number;
 }
 export interface DisplayMetrics {
   screen: {
-    bounds: Electron.Rectangle,
-    workArea: Electron.Rectangle
+    bounds: Electron.Rectangle;
+    workArea: Electron.Rectangle;
   },
   taskbar: TaskbarBounds
+}
+export interface Shortcut {
+  accelerator: string;
+  callback: () => void;
+}
+export interface CustomShortcuts {
+  focus?: Shortcut[];
+  [key: string]: Shortcut[] | undefined;
+}
+export interface Chest<T> {
+  item: T;
 }

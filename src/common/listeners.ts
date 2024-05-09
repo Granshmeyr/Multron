@@ -1,11 +1,11 @@
-import { BrowserWindow, Menu, WebContentsView, screen, WebContentsViewConstructorOptions } from "electron";
+import { BrowserWindow, Menu, WebContentsView, WebContentsViewConstructorOptions, screen } from "electron";
 import * as ich from "../common/ipcChannels.ts";
 import * as pre from "../common/logPrefixes.ts";
 import { log } from "../common/logger.ts";
 import { mainWindow, overlayWindow } from "../main/main.ts";
 import { ContextOption, Direction } from "./enums.ts";
 import { ContextParams, DisplayMetrics, Vector2, ViewData } from "./interfaces.ts";
-import { ViewInstance } from "./mainTypes.ts";
+import { ViewInstance, borderPx } from "./mainTypes.ts";
 import { cursorViewportPosition, getTaskbarBounds } from "./mainUtil.ts";
 
 export const views = new Map<string, ViewInstance>();
@@ -57,8 +57,6 @@ export async function onCreateViewAsync(
     const view = views.get(id)!.view;
     view.webContents.on("context-menu", async () => {
       const position: Vector2 = cursorViewportPosition(window);
-      const params: ContextParams | null = onShowContextMenuAsync();
-      mainWindow
     });
     view.webContents.on("zoom-changed", (_, zoomDirection) => {
       const currentZoom = view.webContents.getZoomLevel();
@@ -191,4 +189,7 @@ export function onCallTileContextBehavior(
   pos?: Vector2
 ) {
   mainWindow!.webContents.send(ich.callTileContextBehaviorCC, nodeId, params, pos);
+}
+export function onUpdateBorderPx(px: number) {
+  borderPx.item = px;
 }

@@ -3,36 +3,30 @@
 @tailwind utilities;
 
 .handle-col {
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(255, 255, 0, 0.584);
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
   height: 10px;
-  width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
   color: white;
   cursor: move;
-  transform: translate(0%, -50%);
+  transform: translate(-50%, -50%);
+  left: 50%;
   z-index: 1;
  }
 
  .handle-row {
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(255, 255, 0, 0.584);
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 100%;
   width: 10px;
   display: flex;
   justify-content: center;
   align-items: center;
   color: white;
   cursor: move;
-  transform: translate(-50%, 0%);
+  transform: translate(-50%, -50%);
+  top: 50%;
   z-index: 1;
  }
 

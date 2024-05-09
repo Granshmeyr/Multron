@@ -1,7 +1,8 @@
 import { BrowserWindow, app, globalShortcut, ipcMain, screen } from "electron";
 import path from "path";
+import { CustomShortcuts, Shortcut } from "../common/interfaces";
 import * as ich from "../common/ipcChannels";
-import { onCreateViewAsync, onDeleteView, onShowPieMenu, onGetDisplayMetrics, onGetViewData, onLogError, onLogInfo, onResizeCaptureAsync, onSetOverlayIgnore, onSetViewRectangle, onSetViewUrl, views, onCallTileContextBehavior } from "../common/listeners";
+import { onCallTileContextBehavior, onCreateViewAsync, onDeleteView, onGetDisplayMetrics, onGetViewData, onLogError, onLogInfo, onResizeCaptureAsync, onSetOverlayIgnore, onSetViewRectangle, onSetViewUrl, onShowPieMenu, onUpdateBorderPx } from "../common/listeners";
 import * as pre from "../common/logPrefixes";
 import { log } from "../common/logger";
 import { fitOverlayToWorkarea, getTaskbarBounds } from "../common/mainUtil";
@@ -9,10 +10,8 @@ import { fitOverlayToWorkarea, getTaskbarBounds } from "../common/mainUtil";
 export let mainWindow: BrowserWindow | null = null;
 export let hideWindow: BrowserWindow | null = null;
 export let overlayWindow: BrowserWindow | null = null;
-export let editModeEnabled: boolean = false;
+export const editModeEnabled: boolean = false;
 export const viteURL: string = "http://localhost:5173";
-const editShortcut: string = "Control+e";
-let focused: boolean = false;
 
 const fileName: string = "main.ts";
 
@@ -79,6 +78,9 @@ function main(): void {
     log.info(logOptions, `${pre.eventReceived}: ${ich.callTileContextBehavior}`);
     onCallTileContextBehavior(nodeId, params, pos);
   });
+  ipcMain.on(ich.updateBorderPx, (_, px) => {
+    onUpdateBorderPx(px);
+  });
   // #endregion
 
   app.once("ready", () => {
@@ -93,7 +95,7 @@ function main(): void {
       );
       fitOverlayToWorkarea(taskbarBounds);
     });
-    globalShortcut.register("Control+t", () => {
+    globalShortcut.register("CommandOrControl+t", () => {
       mainWindow!.webContents.send("debug");
     });
   });
@@ -137,14 +139,16 @@ function createMainWindow() {
   // mainWindow.loadFile(path.join(app.getAppPath(), "out", "renderer", "index.html"));
   mainWindow.webContents.openDevTools({ mode: "detach" });
   registerSharedListeners(mainWindow, {
-    focus: () => {
-      focused = true;
-      globalShortcut.register(editShortcut, onEdit);
-    },
-    blur: () => {
-      focused = false;
-      globalShortcut.unregister(editShortcut);
-    }
+    focus: [
+      {
+        accelerator: "CommandOrControl+=",
+        callback: () => { mainWindow!.webContents.send(ich.adjustBorderPx, 2); }
+      },
+      {
+        accelerator: "CommandOrControl+-",
+        callback: () => { mainWindow!.webContents.send(ich.adjustBorderPx, -2); }
+      }
+    ]
   });
 }
 
@@ -163,67 +167,52 @@ function createOverlayWindow() {
   overlayWindow.setMenu(null);
   overlayWindow.loadURL(`${viteURL}/overlay`);
   overlayWindow.webContents.openDevTools({ mode: "detach" });
-  registerSharedListeners(overlayWindow, {
-    blur: () => {
-      overlayWindow!.webContents.send(ich.overlayBlur);
-      overlayWindow!.setIgnoreMouseEvents(true, { forward: false });
-    }
+  overlayWindow.on("blur", () => {
+    overlayWindow!.webContents.send(ich.overlayBlur);
+    overlayWindow!.setIgnoreMouseEvents(true, { forward: false });
   });
+  registerSharedListeners(overlayWindow);
 }
 
-function onEdit() {
-  const logOptions = { ts: fileName, fn: onEdit.name };
-  if (!focused) {
-    return;
-  }
-  if (editModeEnabled) {
-    // #region logging
-    log.info(logOptions, `${pre.toggling}: Edit Mode on`);
-    // #endregion
-    mainWindow?.webContents.send(ich.toggleEditMode, false);
-    editModeEnabled = false;
-    for (const [, value] of views) {
-      value.unhide();
-    }
-  }
-  else {
-    // #region logging
-    log.info(logOptions, `${pre.toggling}: Edit Mode off`);
-    // #endregion
-    mainWindow?.webContents.send(ich.toggleEditMode, true);
-    editModeEnabled = true;
-    for (const [, value] of views) {
-      value.hide();
-    }
-  }
-}
-
-function registerSharedListeners(window: BrowserWindow, customListeners?: {
-  focus?: (...any: unknown[]) => unknown,
-  blur?: (...any: unknown[]) => unknown,
-  resize?: (...any: unknown[]) => unknown
-}) {
+function registerSharedListeners(
+  window: BrowserWindow,
+  customListeners?: CustomShortcuts
+) {
+  const defaultShortcuts: Shortcut[] = [
+    { accelerator: "CommandOrControl+0",    callback: () => { return; } },
+    { accelerator: "CommandOrControl+plus", callback: () => { return; } },
+    { accelerator: "CommandOrControl+=",    callback: () => { return; }},
+    { accelerator: "CommandOrControl+-",    callback: () => { return; }},
+    { accelerator: "CommandOrControl+_",    callback: () => { return; } },
+    { accelerator: "CommandOrControl+r",    callback: () => { return; } }
+  ];
   window.on("focus", () => {
-    globalShortcut.register("CommandOrControl+0", () => { return; });
-    globalShortcut.register("CommandOrControl+plus", () => { return; });
-    globalShortcut.register("CommandOrControl+=", () => { return; });
-    globalShortcut.register("CommandOrControl+-", () => { return; });
-    globalShortcut.register("CommandOrControl+_", () => { return; });
-    globalShortcut.register("Control+r", () => { return; });
-    customListeners?.focus && customListeners.focus();
-  });
-  window.on("blur", () => {
-    globalShortcut.unregister("CommandOrControl+0");
-    globalShortcut.unregister("CommandOrControl+plus");
-    globalShortcut.unregister("CommandOrControl+=");
-    globalShortcut.unregister("CommandOrControl+-");
-    globalShortcut.unregister("CommandOrControl+_");
-    globalShortcut.unregister("Control+r");
-    customListeners?.blur && customListeners.blur();
+    for (const s of defaultShortcuts) {
+      if (customListeners?.focus === undefined) break;
+      if (customListeners.focus.some(v => v.accelerator === s.accelerator)) {
+        continue;
+      }
+      globalShortcut.register(s.accelerator, s.callback);
+    }
+    if (customListeners?.focus !== undefined) {
+      for (const c of customListeners.focus) {
+        globalShortcut.register(c.accelerator, c.callback);
+      }
+    }
   });
   window.on("closed", () => { app.quit(); });
-  window.on("resize",() => {
-    customListeners?.resize && customListeners.resize();
+  window.on("blur", () => {
+    for (const s of defaultShortcuts) {
+      globalShortcut.unregister(s.accelerator);
+    }
+    if (customListeners !== undefined) {
+      for (const key of Object.keys(customListeners)) {
+        if (customListeners[key] !== undefined) continue;
+        for (const s of customListeners[key]!) {
+          globalShortcut.unregister(s.accelerator);
+        }
+      }
+    }
   });
 }
 
