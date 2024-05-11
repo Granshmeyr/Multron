@@ -1,5 +1,5 @@
 import { IpcRendererEvent } from "electron";
-import { ReactElement, useContext, useEffect, useLayoutEffect, useReducer, useRef, useState } from "react";
+import React, { ReactElement, useContext, useEffect, useLayoutEffect, useReducer, useRef, useState } from "react";
 import { ContextOption, Direction } from "../../../common/enums.ts";
 import { ColumnHandleProps, ColumnProps, ContextParams, IpcListener, RowHandleProps, RowProps, TileProps, Vector2, ViewData } from "../../../common/interfaces.ts";
 import * as ich from "../../../common/ipcChannels.ts";
@@ -7,38 +7,44 @@ import * as pre from "../../../common/logPrefixes.ts";
 import { buildTree, deletion, setUrl } from "../../common/containerUtil.tsx";
 import * as Context from "../../common/contextProviders.ts";
 import * as log from "../../common/loggerUtil.ts";
-import { BaseNode, ColumnNode, ContainerNode, RowNode, TileNode, TileTree, containers, recordColumn, recordRow, recordTile, tiles } from "../../common/nodeTypes.jsx";
-import { resizeTicker } from "../../common/types.ts";
+import { BaseNode, ColumnNode, ContainerNode, RowNode, TileNode, containers, registerColumn, registerRow, registerTile, tiles } from "../../common/nodeTypes.jsx";
+import { viewRectEnforcer } from "../../common/types.ts";
 import { getDivRect, percentAlongRectX, percentAlongRectY, registerIpcListener, unregisterIpcListener } from "../../common/util.ts";
 import Greeting from "./app-components/TilesGreeting.tsx";
 
 const fileName: string = "TileApp.tsx";
 
 export default function Main(): ReactElement {
-  const logOptions = {
-    ts: fileName,
-    fn: Main.name
-  };
+  const logOptions = { ts: fileName, fn: Main.name };
+  const [borderPx, setBorderPx] = useState<number>(60);
+  const [root, setRoot] = useState<BaseNode>(
+    registerTile({
+      contextBehavior: onContext,
+      resizeBehavior: () => {
+        viewRectEnforcer.start();
+      }
+    })
+  );
+  const [, refreshRoot] = useReducer(x => x + 1, 0);
   const ref = useRef<HTMLDivElement>(null);
   const oldBorderPxRef = useRef<number>(-1);
-  const [borderPx, setBorderPx] = useState<number>(4);
-  const [tileTree] = useState<TileTree>(
-    new TileTree(
-      recordTile({
-        contextBehavior: onContext,
-        resizeBehavior: () => {
-          resizeTicker.start();
-        }
-      })
-    )
-  );
-  const [root, setRoot] = useState<BaseNode>(tileTree.root);
-  const [, refreshRoot] = useReducer(x => x + 1, 0);
+
   // #region ipc listeners
   const adjustBorderPxListener = useRef<IpcListener>({
     uuid: "6ff187b9-3427-4d2a-b2cf-c267dc58e78e",
     fn: (_: IpcRendererEvent, ...args: unknown[]) => {
-      setBorderPx(v => v + (args[0] as number));
+      const delta = args[0] as number;
+      let newPx: number;
+      setBorderPx(v => {
+        oldBorderPxRef.current = v;
+        if (v === 0 && delta <= 0) newPx = v;
+        else newPx = v + delta < 0 ? 0 : v + delta;
+        if (newPx !== oldBorderPxRef.current) {
+          window.electronAPI.send(ich.updateBorderPx, newPx!);
+          window.electronAPI.send(ich.refreshAllViewBounds);
+        }
+        return newPx;
+      });
     }
   });
   const mainProcessContextMenuListener = useRef<IpcListener>({
@@ -83,7 +89,10 @@ export default function Main(): ReactElement {
   });
   const debugListener = useRef<IpcListener>({
     uuid: "1c1787f8-6651-4695-bec6-a71dd6ad20b1",
-    fn: () => console.log("sup"),
+    fn: () => {
+      console.log(`Container count: ${containers.size}`);
+      console.log(`Tile count: ${tiles.size}`);
+    }
   });
   const callTileContextBehaviorCCListener = useRef<IpcListener>({
     uuid: "b6b0774e-9e44-4309-8781-399938ad2deb",
@@ -99,6 +108,7 @@ export default function Main(): ReactElement {
       }
     },
   });
+  // #endregion
   function registerListeners() {
     registerIpcListener(ich.mainProcessContextMenu, mainProcessContextMenuListener.current);
     registerIpcListener("debug", debugListener.current);
@@ -111,19 +121,14 @@ export default function Main(): ReactElement {
     unregisterIpcListener(ich.callTileContextBehaviorCC, callTileContextBehaviorCCListener.current);
     unregisterIpcListener(ich.adjustBorderPx, adjustBorderPxListener.current);
   }
-  // #endregion
-
-  if (window && oldBorderPxRef.current !== borderPx) {
-    window.electronAPI.send(ich.updateBorderPx, borderPx);
-  }
 
   useEffect(() => {
     registerListeners();
-    return () => { unregisterListeners(); };
+    return () => unregisterListeners();
   });
 
-  if (resizeTicker.refreshRoot === null) {
-    resizeTicker.refreshRoot = refreshRoot;
+  if (viewRectEnforcer.refreshRoot === null) {
+    viewRectEnforcer.refreshRoot = refreshRoot;
   }
 
   function onContext(tileId: string, params: ContextParams, pos?: Vector2) {
@@ -131,8 +136,8 @@ export default function Main(): ReactElement {
     function split() {
       function up() {
         const percent = percentAlongRectY(getDivRect(ref.current!), pos!);
-        setRoot(recordColumn({
-          children: [recordTile(), tile],
+        setRoot(registerColumn({
+          children: [registerTile(), tile],
           handlePercents: [percent],
           refreshRoot: refreshRoot,
           setRoot: setRoot,
@@ -141,8 +146,8 @@ export default function Main(): ReactElement {
       }
       function down() {
         const percent = percentAlongRectY(getDivRect(ref.current!), pos!);
-        setRoot(recordColumn({
-          children: [tile, recordTile()],
+        setRoot(registerColumn({
+          children: [tile, registerTile()],
           handlePercents: [percent],
           refreshRoot: refreshRoot,
           setRoot: setRoot,
@@ -151,8 +156,8 @@ export default function Main(): ReactElement {
       }
       function left() {
         const percent = percentAlongRectX(getDivRect(ref.current!), pos!);
-        setRoot(recordRow({
-          children: [recordTile(), tile],
+        setRoot(registerRow({
+          children: [registerTile(), tile],
           handlePercents: [percent],
           refreshRoot: refreshRoot,
           setRoot: setRoot,
@@ -161,8 +166,8 @@ export default function Main(): ReactElement {
       }
       function right() {
         const percent = percentAlongRectX(getDivRect(ref.current!), pos!);
-        setRoot(recordRow({
-          children: [tile, recordTile()],
+        setRoot(registerRow({
+          children: [tile, registerTile()],
           handlePercents: [percent],
           refreshRoot: refreshRoot,
           setRoot: setRoot,
@@ -211,7 +216,7 @@ export function Row({
     if (child instanceof TileNode) {
       child.contextBehavior = onContext;
       child.resizeBehavior = () => {
-        resizeTicker.start();
+        viewRectEnforcer.start();
       };
     }
   }
@@ -249,10 +254,9 @@ export function Row({
       const tileRef = tiles.get(tileId)!.ref as React.RefObject<HTMLDivElement>;
       function up() {
         const tileIndex = parent.children.indexOf(tile);
-        const splitTile = recordTile();
         const percent = percentAlongRectY(getDivRect(tileRef.current!), pos!);
-        const column = recordColumn({
-          children: [splitTile, tile],
+        const column = registerColumn({
+          children: [registerTile(), tile],
           handlePercents: [percent],
           refreshRoot: refreshRoot,
           setRoot: setRoot,
@@ -263,10 +267,9 @@ export function Row({
       }
       function down() {
         const tileIndex = parent.children.indexOf(tile);
-        const splitTile = recordTile();
         const percent = percentAlongRectY(getDivRect(tileRef.current!), pos!);
-        const column = recordColumn({
-          children: [tile, splitTile],
+        const column = registerColumn({
+          children: [tile, registerTile()],
           handlePercents: [percent],
           refreshRoot: refreshRoot,
           setRoot: setRoot,
@@ -277,7 +280,7 @@ export function Row({
       }
       function left() {
         const tileIndex = parent.children.indexOf(tile);
-        const splitTile = recordTile();
+        const splitTile = registerTile();
         parent.children.splice(tileIndex, 0, splitTile);
         splitTile.parent = parent;
         const newPercents = [...handlePercents];
@@ -287,7 +290,7 @@ export function Row({
       }
       function right() {
         const tileIndex = parent.children.indexOf(tile);
-        const splitTile = recordTile();
+        const splitTile = registerTile();
         parent.children.splice(tileIndex + 1, 0, splitTile);
         splitTile.parent = parent;
         const newPercents = [...handlePercents];
@@ -306,11 +309,11 @@ export function Row({
     switch (params.option) {
     case ContextOption.Split: split(); break;
     case ContextOption.Delete: deletion(
-        nodeId as string,
-        tileId,
-        refreshRoot,
-        setRoot,
-        rootContextBehavior
+      nodeId as string,
+      tileId,
+      refreshRoot,
+      setRoot,
+      rootContextBehavior
     ); break;
     case ContextOption.SetUrl: setUrl(tileId, params); break;
     }
@@ -350,7 +353,7 @@ export function Column({
     if (child instanceof TileNode) {
       child.contextBehavior = onContext;
       child.resizeBehavior = () => {
-        resizeTicker.start();
+        viewRectEnforcer.start();
       };
     }
   }
@@ -389,7 +392,7 @@ export function Column({
 
       function up() {
         const tileIndex = parent.children.indexOf(tile);
-        const splitTile = recordTile();
+        const splitTile = registerTile();
         parent.children.splice(tileIndex, 0, splitTile);
         splitTile.parent = parent;
         const newPercents = [...handlePercents];
@@ -399,7 +402,7 @@ export function Column({
       }
       function down() {
         const tileIndex = parent.children.indexOf(tile);
-        const splitTile = recordTile();
+        const splitTile = registerTile();
         parent.children.splice(tileIndex + 1, 0, splitTile);
         splitTile.parent = parent;
         const newPercents = [...handlePercents];
@@ -409,10 +412,9 @@ export function Column({
       }
       function left() {
         const tileIndex = parent.children.indexOf(tile);
-        const splitTile = recordTile();
         const percent = percentAlongRectX(getDivRect(tileRef.current!), pos!);
-        const row = recordRow({
-          children: [splitTile, tile],
+        const row = registerRow({
+          children: [registerTile(), tile],
           handlePercents: [percent],
           refreshRoot: refreshRoot,
           setRoot: setRoot,
@@ -423,10 +425,9 @@ export function Column({
       }
       function right() {
         const tileIndex = parent.children.indexOf(tile);
-        const splitTile = recordTile();
         const percent = percentAlongRectX(getDivRect(tileRef.current!), pos!);
-        const row = recordRow({
-          children: [tile, splitTile],
+        const row = registerRow({
+          children: [tile, registerTile()],
           handlePercents: [percent],
           refreshRoot: refreshRoot,
           setRoot: setRoot,
@@ -512,6 +513,7 @@ export function Tile({
         resizeBehavior?.(nodeId as string, rectangle.current);
       }
       else {
+        console.log("tile resized!");
         resizeBehavior?.(nodeId as string, rectangle.current);
       }
     }
@@ -534,15 +536,22 @@ export function Tile({
   }, [nodeId, resizeBehavior]);
 
   function element(): ReactElement {
+    const n = tiles.get(nodeId as string)!.neighbors;
+    const borderSizes = {
+      borderTopWidth: n.top ? borderPx / 2 : borderPx,
+      borderRightWidth: n.right ? borderPx / 2 : borderPx,
+      borderBottomWidth: n.bottom ? borderPx / 2 : borderPx,
+      borderLeftWidth: n.left ? borderPx / 2 : borderPx,
+    };
     function withImg() {
       return (
         <div
           className="flex"
           style={{
             ...style,
+            ...borderSizes,
             backgroundRepeat: "round",
-            backgroundImage: `url(${bg})`,
-            borderWidth: `${borderPx}px`
+            backgroundImage: `url(${bg})`
           }}
           id={nodeId}
           ref={ref}
@@ -574,7 +583,7 @@ export function Tile({
           className={divClass}
           style={{
             ...style,
-            borderWidth: `${borderPx}px`
+            ...borderSizes
           }}
           onContextMenu={(e) => {
             window.electronAPI.send(
@@ -629,7 +638,7 @@ function RowHandle({ onMouseDown, onMouseUp, containerRef }: RowHandleProps): Re
       <div
         className="handle-row"
         style={{
-          width: `${borderPx * 2}px`,
+          width: `${borderPx}px`,
           height: `${heightPx}px`
         }}
       />
@@ -669,7 +678,7 @@ function ColumnHandle({ onMouseDown, onMouseUp, containerRef }: ColumnHandleProp
       <div
         className="handle-col"
         style={{
-          height: `${borderPx * 2}px`,
+          height: `${borderPx}px`,
           width: `${widthPx}px`
         }}
       />

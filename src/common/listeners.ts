@@ -96,7 +96,7 @@ export function onSetViewRectangle(
     `${pre.setting}: rectangle "{ height: ${rect.height}, width: ${rect.width}, x: ${rect.x}, y: ${rect.y} }" to views[${id}]`
   );
   // #endregion
-  views.get(id)!.rectangle = rect;
+  views.get(id)!.rect = rect;
 }
 export function onSetViewUrl(
   id: string,
@@ -126,7 +126,7 @@ export function onGetViewData(): Map<string, ViewData> {
   for (const [id, instance] of views) {
     data.set(id, {
       url: instance.url,
-      rectangle: instance.rectangle
+      rectangle: instance.rect
     });
   }
   return data;
@@ -156,7 +156,7 @@ export async function onResizeCaptureAsync(
   rect: Electron.Rectangle
 ): Promise<Buffer> {
   const instance = views.get(id)!;
-  instance.rectangle = rect;
+  instance.rect = rect;
   const image = await instance.view.webContents.capturePage();
   return new Promise<Buffer>((resolve) => {
     resolve(image.toJPEG(80));
@@ -192,4 +192,10 @@ export function onCallTileContextBehavior(
 }
 export function onUpdateBorderPx(px: number) {
   borderPx.item = px;
+}
+export function onRefreshAllViewBounds() {
+  for (const [, v] of views) v.updateBounds();
+}
+export function onFocusMainWindow() {
+  mainWindow!.focus();
 }

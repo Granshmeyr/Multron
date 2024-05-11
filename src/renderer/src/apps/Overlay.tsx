@@ -3,7 +3,7 @@ import { ContextOption, Direction } from "../../../common/enums";
 import { ContextParams, IpcListener, Vector2 } from "../../../common/interfaces";
 import * as ich from "../../../common/ipcChannels";
 import { registerIpcListener, unregisterIpcListener } from "../../common/util";
-import PieOverlay, { ButtonListenerProps, ButtonCollectionProps } from "./app-components/PieOverlay";
+import PieOverlay, { PieButtonListenerProps, PieButtonColProps } from "./app-components/PieOverlay";
 import { IpcRendererEvent } from "electron";
 
 export default function Main(): ReactElement {
@@ -13,7 +13,6 @@ export default function Main(): ReactElement {
   const showPieMenuCCListener = useRef<IpcListener>({
     uuid: "3bcd49da-df79-42bd-b6cc-2dc35d07ccfa",
     fn: (_: IpcRendererEvent, ...args: unknown[]) => {
-      console.log(`updating id to ${args[0] as string}`);
       idRef.current = args[0] as string;
       const newPos = args[1] as Vector2;
       setPos(newPos);
@@ -30,21 +29,21 @@ export default function Main(): ReactElement {
     };
   }, [pos]);
 
-  const commonListeners: ButtonListenerProps = {
-    onClick: (_, hide) => {
+  const commonListeners: PieButtonListenerProps = {
+    onClick: (_, pieFunctions) => {
       window.electronAPI.send(ich.setOverlayIgnore, true);
-      hide();
+      window.electronAPI.send(ich.focusMainWindow);
+      pieFunctions.hide();
     },
     onMouseEnter: () => window.electronAPI.send(ich.setOverlayIgnore, false),
     onMouseLeave: () => window.electronAPI.send(ich.setOverlayIgnore, true)
   };
-  const buttons: ButtonCollectionProps = {
+  const buttons: PieButtonColProps = {
     middle: {
       icon: "add_link", opacity: 0.5, listeners: {
         ...commonListeners,
         onClick: (_, hide) => {
           commonListeners.onClick?.(_, hide);
-          console.log(`selected tile ${idRef.current}`);
         },
       }
     },

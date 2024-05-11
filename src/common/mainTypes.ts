@@ -1,9 +1,9 @@
 import { WebContentsView } from "electron";
 import { hideWindow, mainWindow } from "../main/main";
+import { Chest } from "./interfaces";
 import * as pre from "./logPrefixes";
 import { log } from "./logger";
-import { marginizeRectangle, reparentView } from "./mainUtil";
-import { Chest } from "./interfaces";
+import { marginizeRect, reparentView } from "./mainUtil";
 
 export const borderPx: Chest<number> = { item: 0 };
 const fileName: string = "types.ts";
@@ -11,7 +11,7 @@ const fileName: string = "types.ts";
 export class ViewInstance {
   view: WebContentsView;
   private _url: string | null = null;
-  private _rectangle: Electron.Rectangle = { height: 0, width: 0, x: 0, y: 0 };
+  private _rect: Electron.Rectangle = { height: 0, width: 0, x: 0, y: 0 };
   private _hidden: boolean = false;
 
   constructor(view: WebContentsView) {
@@ -19,11 +19,11 @@ export class ViewInstance {
     this.hide();
   }
 
-  get rectangle(): Electron.Rectangle {
-    return this._rectangle;
+  get rect(): Electron.Rectangle {
+    return this._rect;
   }
-  set rectangle(value: Electron.Rectangle) {
-    this._rectangle = value;
+  set rect(value: Electron.Rectangle) {
+    this._rect = value;
     // #region logging
     const logOptions = { ts: fileName, fn: `${ViewInstance.name}.rectangle(set)` };
     log.info(
@@ -35,7 +35,7 @@ export class ViewInstance {
   }
   get url(): string | null { return this._url; }
   set url(value: string) {
-    const rect = this.rectangle;
+    const rect = this.rect;
     const unhide: boolean = this.url === null;
     this._url = value;
     this.view.webContents.loadURL(value);
@@ -62,8 +62,8 @@ export class ViewInstance {
     log.info(
       logOptions,
       `${pre.toggling}: hide for view with rectangle ` +
-      `"{ height: ${this.rectangle.height}, width: ${this.rectangle.width}, ` +
-      `x: ${this.rectangle.x}, y: ${this.rectangle.y} }"`
+      `"{ height: ${this.rect.height}, width: ${this.rect.width}, ` +
+      `x: ${this.rect.x}, y: ${this.rect.y} }"`
     );
     // #endregion
     this._hidden = true;
@@ -71,16 +71,15 @@ export class ViewInstance {
   }
   unhide() {
     if (
-      !this._hidden ||
-      this.url === null
+      !this._hidden
     ) {
       return;
     }
     // #region logging
     const logOptions = { ts: fileName, fn: `${ViewInstance.name}.${this.unhide.name}` };
     log.info(logOptions, `${pre.toggling}: unhide for view with rectangle ` +
-      `"{ height: ${this.rectangle.height}, width: ${this.rectangle.width}, ` +
-      `x: ${this.rectangle.x}, y: ${this.rectangle.y} }"`
+      `"{ height: ${this.rect.height}, width: ${this.rect.width}, ` +
+      `x: ${this.rect.x}, y: ${this.rect.y} }"`
     );
     // #endregion
     this._hidden = false;
@@ -93,7 +92,7 @@ export class ViewInstance {
     else {
       reparentView(this.view, hideWindow!, mainWindow!);
     }
-    const b = marginizeRectangle(this.rectangle, -borderPx.item);
+    const b = marginizeRect(this.rect, -borderPx.item);
     this.view.setBounds(b);
   }
 }

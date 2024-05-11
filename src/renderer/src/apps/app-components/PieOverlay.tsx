@@ -2,32 +2,35 @@ import { IconButton } from "@mui/material";
 import React, { ReactElement, useEffect, useRef, useState } from "react";
 import { IpcListener, Vector2 } from "../../../../common/interfaces";
 import * as ich from "../../../../common/ipcChannels";
-import { registerIpcListener, screenToWorkAreaPos as screenToOverlayPos, unregisterIpcListener } from "../../../common/util";
+import { registerIpcListener, unregisterIpcListener } from "../../../common/util";
 
-interface ButtonProps {
+interface PieButtonProps {
   icon?: string,
   opacity?: number,
-  listeners?: ButtonListenerProps
+  listeners?: PieButtonListenerProps
 }
-export interface ButtonListenerProps {
-  onClick?: (e: React.MouseEvent, hide: () => void) => void,
+interface PieFunctions {
+  hide: () => void
+}
+export interface PieButtonListenerProps {
+  onClick?: (e: React.MouseEvent, pieFunctions: PieFunctions) => void,
   onMouseEnter?: (e: React.MouseEvent) => void,
   onMouseLeave?: (e: React.MouseEvent) => void,
 }
-export interface ButtonCollectionProps {
-  middle?: ButtonProps,
-  up?: ButtonProps,
-  down?: ButtonProps,
-  left?: ButtonProps,
-  right?: ButtonProps,
-  upLeft?: ButtonProps,
-  upRight?: ButtonProps,
-  downLeft?: ButtonProps,
-  downRight?: ButtonProps,
+export interface PieButtonColProps {
+  middle?: PieButtonProps,
+  up?: PieButtonProps,
+  down?: PieButtonProps,
+  left?: PieButtonProps,
+  right?: PieButtonProps,
+  upLeft?: PieButtonProps,
+  upRight?: PieButtonProps,
+  downLeft?: PieButtonProps,
+  downRight?: PieButtonProps,
 }
 interface PieProps {
-  buttons?: ButtonCollectionProps,
-  hide: () => void
+  buttons?: PieButtonColProps,
+  pieFunctions: PieFunctions
 }
 export interface PieOverlayProps {
   id?: string,
@@ -35,7 +38,7 @@ export interface PieOverlayProps {
   style?: React.CSSProperties,
   scale?: number,
   pos?: Vector2,
-  buttons?: ButtonCollectionProps,
+  buttons?: PieButtonColProps,
 }
 
 export default function Main({
@@ -61,7 +64,7 @@ export default function Main({
 
     registerIpcListener(ich.overlayBlur, listener);
     if (pos !== undefined) {
-      tryPos.current = screenToOverlayPos(pos);
+      tryPos.current = pos;
       setWantToShow(true);
     }
 
@@ -145,7 +148,7 @@ export default function Main({
               downLeft: buttons?.downLeft,
               downRight: buttons?.downRight
             }}
-            hide={hide}
+            pieFunctions={{ hide: hide }}
           ></Pie>
         </div>
       )}
@@ -153,7 +156,7 @@ export default function Main({
   );
 }
 
-function Pie({ buttons, hide }: PieProps): ReactElement {
+function Pie({ buttons, pieFunctions }: PieProps): ReactElement {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -185,8 +188,8 @@ function Pie({ buttons, hide }: PieProps): ReactElement {
       </span>
     );
   }
-  function Button({ button }: { button?: ButtonProps }): ReactElement {
-    const listeners: ButtonListenerProps | undefined = button?.listeners;
+  function Button({ button }: { button?: PieButtonProps }): ReactElement {
+    const listeners: PieButtonListenerProps | undefined = button?.listeners;
     if (button === undefined) {
       return <div></div>;
     }
@@ -194,7 +197,10 @@ function Pie({ buttons, hide }: PieProps): ReactElement {
       <IconButton
         onClick={(e) => {
           e.stopPropagation();
-          if (listeners?.onClick !== undefined) listeners.onClick(e, hide);
+          if (listeners?.onClick !== undefined) listeners.onClick(
+            e,
+            { hide: pieFunctions.hide }
+          );
           else console.log("default button fn");
         }}
         onContextMenu={(e) => { e.stopPropagation(); }}

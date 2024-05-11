@@ -2,6 +2,7 @@ import { BrowserWindow, WebContentsView, screen } from "electron";
 import { overlayWindow } from "../main/main";
 import { Direction } from "./enums";
 import { TaskbarBounds, Vector2 } from "./interfaces";
+import { views } from "./listeners";
 
 export function cursorViewportPosition(base: BrowserWindow): Vector2 {
   const cursorPosition = screen.getCursorScreenPoint();
@@ -13,7 +14,7 @@ export function cursorViewportPosition(base: BrowserWindow): Vector2 {
   return {x: relativeX, y: relativeY};
 }
 export function rectToString(rectangle: Electron.Rectangle): string {
-  return `{ height: ${rectangle.height}, width: ${rectangle.width},` +
+  return `{ height: ${rectangle.height}, width: ${rectangle.width}, ` +
   `x: ${rectangle.x}, y: ${rectangle.y} }`;
 }
 export function reparentView(
@@ -81,28 +82,38 @@ export function getTaskbarBounds(): TaskbarBounds {
     height: height
   };
 }
-export function isRectangleValid(rectangle: Electron.Rectangle): boolean {
-  const numbers: number[] = [rectangle.height, rectangle.width, rectangle.x, rectangle.y];
-  for (let i = 1; i < numbers.length; i++) {
-    if (!(Number.isInteger(numbers[i]))) {
+export function isRectValid(rect: Electron.Rectangle): boolean {
+  const numbers = Object.values(rect);
+  for (const n of numbers) {
+    if (!(Number.isInteger(n))) {
       console.error("Rectangle contains non-integer.");
       return false;
     }
   }
   return true;
 }
-export function marginizeRectangle(
-  rectangle: Electron.Rectangle,
+export function marginizeRect(
+  rect: Electron.Rectangle,
   margin: number
 ): Electron.Rectangle {
-  if (!isRectangleValid(rectangle)) {
+  if (!isRectValid(rect)) {
     return { height: 100, width: 100, x: 10, y: 10 };
   }
-  const newRect =  {
-    height: rectangle.height + (margin * 2),
-    width: rectangle.width + (margin * 2),
-    x: rectangle.x - margin,
-    y: rectangle.y - margin
+  return {
+    height: Math.ceil(rect.height + (margin * 2)),
+    width: Math.ceil(rect.width + (margin * 2)),
+    x: Math.ceil(rect.x - margin),
+    y: Math.ceil(rect.y - margin)
   };
-  return newRect;
+}
+export function toggleAllViews() {
+  for (const [, v] of views) {
+    if (!v.hidden) {
+      v.hide();
+    }
+    else {
+      v.unhide();
+    }
+    v.updateBounds();
+  }
 }

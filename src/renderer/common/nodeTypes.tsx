@@ -1,7 +1,7 @@
 import { CSSProperties, ReactElement } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { ContextOption, Direction } from "../../common/enums";
-import { ColumnProps, ContextBehavior, ResizeBehavior, RowProps, TileProps, Vector2 } from "../../common/interfaces";
+import { ColumnProps, ContextBehavior, Neighbors, ResizeBehavior, RowProps, TileProps, Vector2 } from "../../common/interfaces";
 import * as ich from "../../common/ipcChannels";
 import * as pre from "../../common/logPrefixes";
 import { Column, Row, Tile } from "../src/apps/Tiles";
@@ -11,17 +11,6 @@ import { BgLoader } from "./types";
 export const tiles = new Map<string, TileNode>();
 export const containers = new Map<string, ContainerNode>();
 const fileName: string = "nodes.tsx";
-
-export class TileTree {
-  root: BaseNode;
-
-  constructor(root: BaseNode) {
-    this.root = root;
-    if (root instanceof TileNode && root.nodeId) {
-      tiles.set(root.nodeId, root);
-    }
-  }
-}
 
 export abstract class BaseNode {
   parent: BaseNode | null = null;
@@ -49,6 +38,7 @@ export abstract class ContainerNode extends BaseNode {
 export class TileNode extends BaseNode {
   ref: React.RefObject<HTMLDivElement> | null = null;
   bgLoader: BgLoader = new BgLoader();
+  neighbors: Neighbors = { top: false, bottom: false, left: false, right: false };
   private _style?: React.CSSProperties;
   private _id: string;
   private _url?: URL;
@@ -81,6 +71,31 @@ export class TileNode extends BaseNode {
       >
       </Tile>
     );
+  }
+  rescanNeighbors() {
+    if (this.parent === null) {
+      this.neighbors = { top: false, bottom: false, left: false, right: false };
+      return;
+    }
+    const n: Neighbors = { top: false, bottom: false, left: false, right: false };
+    function recurse(node: BaseNode) {
+      const p = node.parent;
+      if (p instanceof ColumnNode) {
+        const c = p.children;
+        if (c[0] !== node)            n.top = true;
+        if (c[c.length - 1] !== node) n.bottom = true;
+      }
+      else if (p instanceof RowNode) {
+        const c = p.children;
+        if (c[0] !== node)            n.left = true;
+        if (c[c.length - 1] !== node) n.right = true;
+      }
+      if (Object.values(n).every(v => v === true)) return;
+      if (p === null) return;
+      recurse(p);
+    }
+    recurse(this);
+    this.neighbors = n;
   }
 
   get style(): React.CSSProperties | undefined { return this._style; }
@@ -128,6 +143,7 @@ export class TileNode extends BaseNode {
     this.resizeBehavior(this.nodeId, rect);
   }
   delete() {
+    for (const t of tiles.values()) t.rescanNeighbors();
     this.contextBehavior(this.nodeId, { option: ContextOption.Delete });
   }
 }
@@ -252,7 +268,10 @@ export class RowNode extends ContainerNode {
   appendStyle(style: CSSProperties): void { this.style = { ...this.style, ...style }; }
 }
 
-export function recordTile(tileProps?: TileProps): TileNode {
+export function registerTile(tileProps?: TileProps): TileNode {
+  for (const t of tiles.values()) {
+    t.rescanNeighbors();
+  }
   let tileNode: TileNode;
   if (tileProps !== undefined) {
     tileNode = new TileNode(tileProps);
@@ -264,13 +283,13 @@ export function recordTile(tileProps?: TileProps): TileNode {
   return tileNode;
 }
 
-export function recordRow(rowProps: RowProps): RowNode {
+export function registerRow(rowProps: RowProps): RowNode {
   const rowNode: RowNode = new RowNode(rowProps);
   containers.set(rowNode.nodeId, rowNode);
   return rowNode;
 }
 
-export function recordColumn(columnProps: ColumnProps): ColumnNode {
+export function registerColumn(columnProps: ColumnProps): ColumnNode {
   const columnNode: ColumnNode = new ColumnNode(columnProps);
   containers.set(columnNode.nodeId, columnNode);
   return columnNode;

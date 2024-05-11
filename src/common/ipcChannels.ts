@@ -18,3 +18,5 @@ export const callTileContextBehavior: string = "call-tile-context-behavior";
 export const callTileContextBehaviorCC: string = "call-tile-context-behavior-cc";
 export const adjustBorderPx: string = "adjust-border-px";
 export const updateBorderPx: string = "update-border-px";
+export const refreshAllViewBounds: string = "refresh-all-view-bounds";
+export const focusMainWindow: string = "focus-main-window";

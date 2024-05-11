@@ -2,10 +2,9 @@ import { BrowserWindow, app, globalShortcut, ipcMain, screen } from "electron";
 import path from "path";
 import { CustomShortcuts, Shortcut } from "../common/interfaces";
 import * as ich from "../common/ipcChannels";
-import { onCallTileContextBehavior, onCreateViewAsync, onDeleteView, onGetDisplayMetrics, onGetViewData, onLogError, onLogInfo, onResizeCaptureAsync, onSetOverlayIgnore, onSetViewRectangle, onSetViewUrl, onShowPieMenu, onUpdateBorderPx } from "../common/listeners";
+import { onCallTileContextBehavior, onCreateViewAsync, onDeleteView, onFocusMainWindow, onGetDisplayMetrics, onGetViewData, onLogError, onLogInfo, onRefreshAllViewBounds, onResizeCaptureAsync, onSetOverlayIgnore, onSetViewRectangle, onSetViewUrl, onShowPieMenu, onUpdateBorderPx } from "../common/listeners";
 import * as pre from "../common/logPrefixes";
 import { log } from "../common/logger";
-import { fitOverlayToWorkarea, getTaskbarBounds } from "../common/mainUtil";
 
 export let mainWindow: BrowserWindow | null = null;
 export let hideWindow: BrowserWindow | null = null;
@@ -81,6 +80,12 @@ function main(): void {
   ipcMain.on(ich.updateBorderPx, (_, px) => {
     onUpdateBorderPx(px);
   });
+  ipcMain.on(ich.refreshAllViewBounds, () => {
+    onRefreshAllViewBounds();
+  });
+  ipcMain.on(ich.focusMainWindow, () => {
+    onFocusMainWindow();
+  });
   // #endregion
 
   app.once("ready", () => {
@@ -88,12 +93,10 @@ function main(): void {
     createHideWindow();
     createOverlayWindow();
     screen.on("display-metrics-changed", () => {
-      const taskbarBounds = getTaskbarBounds();
       overlayWindow!.webContents.send(
         ich.displayMetricsChanged,
         onGetDisplayMetrics()
       );
-      fitOverlayToWorkarea(taskbarBounds);
     });
     globalShortcut.register("CommandOrControl+t", () => {
       mainWindow!.webContents.send("debug");
@@ -141,11 +144,11 @@ function createMainWindow() {
   registerSharedListeners(mainWindow, {
     focus: [
       {
-        accelerator: "CommandOrControl+=",
+        accelerator: "CommandOrControl+-",
         callback: () => { mainWindow!.webContents.send(ich.adjustBorderPx, 2); }
       },
       {
-        accelerator: "CommandOrControl+-",
+        accelerator: "CommandOrControl+=",
         callback: () => { mainWindow!.webContents.send(ich.adjustBorderPx, -2); }
       }
     ]
@@ -157,16 +160,22 @@ function createOverlayWindow() {
     transparent: true,
     frame: false,
     skipTaskbar: true,
-    alwaysOnTop: true,
     webPreferences: {
       preload: path.join(app.getAppPath(), "out", "preload", "preload.js"),
       zoomFactor: 1.0
     }
   });
+  overlayWindow.setAlwaysOnTop(true, "pop-up-menu");
+  overlayWindow.setBounds({
+    x: 0,
+    y: 0,
+    width: screen.getPrimaryDisplay().bounds.width,
+    height: screen.getPrimaryDisplay().bounds.height
+  });
   overlayWindow.setIgnoreMouseEvents(true, { forward: true });
   overlayWindow.setMenu(null);
   overlayWindow.loadURL(`${viteURL}/overlay`);
-  overlayWindow.webContents.openDevTools({ mode: "detach" });
+  //overlayWindow.webContents.openDevTools({ mode: "detach" });
   overlayWindow.on("blur", () => {
     overlayWindow!.webContents.send(ich.overlayBlur);
     overlayWindow!.setIgnoreMouseEvents(true, { forward: false });

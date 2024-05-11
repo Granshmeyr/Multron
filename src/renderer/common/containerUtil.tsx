@@ -5,7 +5,7 @@ import * as ich from "../../common/ipcChannels";
 import * as pre from "../../common/logPrefixes";
 import * as log from "./loggerUtil";
 import { BaseNode, ContainerNode, TileNode, containers, tiles } from "./nodeTypes";
-import { resizeTicker } from "./types";
+import { viewRectEnforcer } from "./types";
 
 const fileName: string = "containerShared.tsx";
 
@@ -78,7 +78,7 @@ export function buildTree(
               log.info(logOptions, `${pre.userInteraction}: Dragging handle index "${index}"`);
               // #endregion
               setCurrentHandle(index);
-              resizeTicker.start();
+              viewRectEnforcer.start();
             }
           }
           onMouseUp={() => { return; }}

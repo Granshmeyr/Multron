@@ -1,7 +1,8 @@
-import { ViewData } from "../../common/interfaces";
+import { IpcRendererEvent } from "electron";
+import { DisplayMetrics, ViewData } from "../../common/interfaces";
 import * as ich from "../../common/ipcChannels";
 import { tiles } from "./nodeTypes";
-import { compareRects, fpsToMs } from "./util";
+import { compareRects, fpsToMs, registerIpcListener } from "./util";
 
 export class BgLoader {
   setter: React.Dispatch<React.SetStateAction<string | null>> | null = null;
@@ -15,7 +16,7 @@ export class BgLoader {
     };
   }
 }
-export class ResizeTicker {
+export class ViewRectEnforcer {
   refreshRoot: React.DispatchWithoutAction | null = null;
   private timeout: NodeJS.Timeout | null = null;
   private ms: number;
@@ -28,9 +29,7 @@ export class ResizeTicker {
     for (const [id, tile] of tiles) {
       try {
         const rect = tile.getRect();
-        if (rect === null) {
-          continue;
-        }
+        if (rect === null) continue;
         const buffer = await window.electronAPI.invoke(
           ich.resizeCapture, id, rect
         ) as Buffer;
@@ -46,7 +45,6 @@ export class ResizeTicker {
         console.error(err);
       }
     }
-    this.refreshRoot!();
   }
   start() {
     if (this.timeout !== null) {
@@ -83,5 +81,22 @@ export class ResizeTicker {
     });
   }
 }
+export class DisplayMetricsTracker {
+  metrics = {} as DisplayMetrics;
+  constructor() {
+    (async () => {
+      const m = await window.electronAPI.invoke(ich.getDisplayMetrics) as DisplayMetrics;
+      this.metrics = m;
+    })();
+    registerIpcListener(
+      ich.displayMetricsChanged,
+      {
+        uuid: "cf622a4c-60e9-49ca-8f6b-07f142f39637",
+        fn: (_e: IpcRendererEvent, m: DisplayMetrics) => { this.metrics = m; },
+      }
+    );
+  }
+}
 
-export const resizeTicker = new ResizeTicker(fpsToMs(10));
+export const displayMetricsTracker = new DisplayMetricsTracker();
+export const viewRectEnforcer = new ViewRectEnforcer(fpsToMs(10));

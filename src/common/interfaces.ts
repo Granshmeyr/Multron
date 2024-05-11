@@ -36,11 +36,13 @@ export interface ColumnHandleProps {
   onMouseDown: (e: React.DragEvent<HTMLDivElement>) => void;
   onMouseUp: React.MouseEventHandler<HTMLDivElement>;
   containerRef: React.RefObject<HTMLDivElement>;
+  containerId: string;
 }
 export interface RowHandleProps {
   onMouseDown: (e: React.DragEvent<HTMLDivElement>) => void;
   onMouseUp: React.MouseEventHandler<HTMLDivElement>;
   containerRef: React.RefObject<HTMLDivElement>;
+  containerId: string;
 }
 export interface Vector2 { x: number, y: number }
 export interface ContextParams {
@@ -78,4 +80,10 @@ export interface CustomShortcuts {
 }
 export interface Chest<T> {
   item: T;
+}
+export interface Neighbors {
+  top: boolean;
+  bottom: boolean;
+  left: boolean;
+  right: boolean;
 }
