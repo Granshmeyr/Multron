@@ -1,10 +1,3 @@
-
-
-
-
-
-
-
 # Multron
 
 > A multiboxed browser experience
@@ -17,11 +10,11 @@ Utilizes Electron's [WebContentsView](https://www.electronjs.org/docs/latest/api
 
  - [x] Dynamic layout editor w/ splitting, resizing, deletion
  - [x] Zoom capability
- - [ ] Pie menu on right click
+ - [x] Pie menu on right click
 	 - [ ] Load layouts
 	 - [ ] Set URL
-	 - [ ] Split
-	 - [ ] Delete
+	 - [x] Split
+	 - [x] Delete
 	 - [ ] Pop-out
 	 - [ ] Customization functionality
  - [ ] Modal for setting URL (with speed-dial)
@@ -39,14 +32,6 @@ Utilizes Electron's [WebContentsView](https://www.electronjs.org/docs/latest/api
 
 - `npm install`
 - `npm run dev`
-	- `run-with-logviewplus.ps1` runs [LogViewPlus](https://www.logviewplus.com/) on the side and opens `log.txt` automatically. Requires `LogViewPlus.exe` in path.
-	- `LogViewPlusSettings.xml` is included in the project root with an included parser.
-
----
-
-**Issues:**
-
-The BrowserViews are unresponsive in their geometry updates when resizing a lot at once. Not sure how to fix this currently.
 
 ---
 
@@ -58,4 +43,3 @@ The BrowserViews are unresponsive in their geometry updates when resizing a lot 
 - Tailwind
 - Electron
 - [electron-vite](https://electron-vite.org/)
-- [pino](https://getpino.io/)

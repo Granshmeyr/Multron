@@ -3,25 +3,16 @@ import React, { ReactElement, useContext, useEffect, useLayoutEffect, useReducer
 import { ContextOption, Direction } from "../../../common/enums.ts";
 import { ColumnHandleProps, ColumnProps, ContextParams, IpcListener, RowHandleProps, RowProps, TileProps, Vector2, ViewData } from "../../../common/interfaces.ts";
 import * as ich from "../../../common/ipcChannels.ts";
-import * as pre from "../../../common/logPrefixes.ts";
 import { buildTree, deletion, setUrl } from "../../common/containerUtil.tsx";
 import * as Context from "../../common/contextProviders.ts";
-import * as log from "../../common/loggerUtil.ts";
 import { BaseNode, ColumnNode, ContainerNode, RowNode, TileNode, containers, tiles } from "../../common/nodeTypes.jsx";
-import { viewRectEnforcer } from "../../common/types.ts";
 import { getDivRect, percentAlongRectX, percentAlongRectY, registerIpcListener, unregisterIpcListener } from "../../common/util.ts";
 import Greeting from "./app-components/TilesGreeting.tsx";
 
-const fileName: string = "TileApp.tsx";
-
 export default function Main(): ReactElement {
-  const logOptions = { ts: fileName, fn: Main.name };
   const [borderPx, setBorderPx] = useState<number>(60);
   const [root, setRoot] = useState<BaseNode>(
-    new TileNode({
-      contextBehavior: onContext,
-      resizeBehavior: () => viewRectEnforcer.start()
-    })
+    new TileNode(onContext)
   );
   const [, refreshRoot] = useReducer(x => x + 1, 0);
   const ref = useRef<HTMLDivElement>(null);
@@ -48,9 +39,6 @@ export default function Main(): ReactElement {
   const mainProcessContextMenuListener = useRef<IpcListener>({
     uuid: "67515752-29d6-4a1b-a3a1-3d5eaf94c565",
     fn: (_, ...args: unknown[]) => {
-      // #region logging
-      log.info(logOptions, `${pre.eventReceived}: ${ich.mainProcessContextMenu}`);
-      // #endregion
       const tileId: string = args[0] as string;
       const params = args[1] as ContextParams | null;
       const pos: Vector2 = args[2] as Vector2;
@@ -59,9 +47,6 @@ export default function Main(): ReactElement {
       }
       function split() {
         if (tiles.get(tileId)!.ref === null) {
-          // #region logging
-          log.error(logOptions, `${pre.invalidValue}: TileNode.ref is null`);
-          // #endregion
           return;
         }
         tiles.get(tileId)!.split(pos, params!.direction as Direction);
@@ -87,7 +72,9 @@ export default function Main(): ReactElement {
   });
   const debugListener = useRef<IpcListener>({
     uuid: "1c1787f8-6651-4695-bec6-a71dd6ad20b1",
-    fn: () => {}
+    fn: () => {
+      console.log(`There are ${tiles.size} tiles in ${containers.size} containers`);
+    }
   });
   const callTileContextBehaviorCCListener = useRef<IpcListener>({
     uuid: "b6b0774e-9e44-4309-8781-399938ad2deb",
@@ -121,10 +108,6 @@ export default function Main(): ReactElement {
     registerListeners();
     return () => unregisterListeners();
   });
-
-  if (viewRectEnforcer.refreshRoot === null) {
-    viewRectEnforcer.refreshRoot = refreshRoot;
-  }
 
   function onContext(tileId: string, params: ContextParams, pos?: Vector2) {
     const tile = tiles.get(tileId) as TileNode;
@@ -211,9 +194,6 @@ export function Row({
   for (const child of children) {
     if (child instanceof TileNode) {
       child.contextBehavior = onContext;
-      child.resizeBehavior = () => {
-        viewRectEnforcer.start();
-      };
     }
   }
 
@@ -352,9 +332,6 @@ export function Column({
   for (const child of children) {
     if (child instanceof TileNode) {
       child.contextBehavior = onContext;
-      child.resizeBehavior = () => {
-        viewRectEnforcer.start();
-      };
     }
   }
 
@@ -481,7 +458,6 @@ export function Column({
 export function Tile({
   style,
   nodeId,
-  resizeBehavior,
   thisNode
 }: TileProps): ReactElement {
   const [bg, setBg] = useState<string | null>(null);
@@ -497,29 +473,22 @@ export function Tile({
 
 
   useEffect(() => {
-    const _logOptions = { ts: fileName, fn: `${Tile.name}/${useEffect.name}` };
     tiles.set(nodeId, thisNode);
     thisNode.ref = ref;
     thisNode.bgLoader.setter = setBg;
     async function createViewOrResizeAsync() {
-      // #region logging
-      log.info(_logOptions, `${pre.invokingEvent}: ${ich.getViewData} for id "${nodeId}"`);
-      // #endregion
       const viewData = await window.electronAPI.invoke(ich.getViewData) as Map<string, ViewData>;
       if (!(viewData.has(nodeId))) {
-        // #region logging
-        log.info(_logOptions, `${pre.invokingEvent}: ${ich.createViewAsync} for id "${nodeId}"`);
-        // #endregion
         await window.electronAPI.invoke(ich.createViewAsync, nodeId, {
           webPreferences: {
             disableHtmlFullscreenWindowResize: true,
             enablePreferredSizeMode: true,
           }
         });
-        resizeBehavior?.(nodeId, rectangle.current);
+        thisNode.viewRectEnforcer.start();
       }
       else {
-        resizeBehavior?.(nodeId, rectangle.current);
+        thisNode.viewRectEnforcer.start();
       }
     }
     const resizeObserver = new ResizeObserver(async () => {
@@ -539,7 +508,7 @@ export function Tile({
       tiles.delete(nodeId);
       resizeObserver.disconnect();
     };
-  }, [nodeId, resizeBehavior, thisNode]);
+  }, [nodeId, thisNode]);
 
   function element(): ReactElement {
     const n = thisNode.neighbors;

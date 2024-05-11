@@ -1,7 +1,5 @@
 import { BrowserWindow, Menu, WebContentsView, WebContentsViewConstructorOptions, screen } from "electron";
 import * as ich from "../common/ipcChannels.ts";
-import * as pre from "../common/logPrefixes.ts";
-import { log } from "../common/logger.ts";
 import { mainWindow, overlayWindow } from "../main/main.ts";
 import { ContextOption, Direction } from "./enums.ts";
 import { ContextParams, DisplayMetrics, Vector2, ViewData } from "./interfaces.ts";
@@ -9,7 +7,6 @@ import { ViewInstance, borderPx } from "./mainTypes.ts";
 import { cursorViewportPosition, getTaskbarBounds } from "./mainUtil.ts";
 
 export const views = new Map<string, ViewInstance>();
-const fileName: string = "listeners.ts";
 
 export async function onShowContextMenuAsync(): Promise<ContextParams | null> {
   return new Promise<ContextParams | null>((resolve) => {
@@ -51,7 +48,6 @@ export async function onCreateViewAsync(
   window: BrowserWindow,
   options?: WebContentsViewConstructorOptions
 ): Promise<boolean> {
-  const logOptions = { ts: fileName, fn: onCreateViewAsync.name };
   return new Promise<boolean>((resolve) => {
     views.set(id, new ViewInstance(new WebContentsView(options)));
     const view = views.get(id)!.view;
@@ -71,55 +67,21 @@ export async function onCreateViewAsync(
       case "out": zoomOut(); break;
       }
     });
-    const rect: Electron.Rectangle = view.getBounds();
-    // #region logging
-    log.info({ ts: fileName, fn: onCreateViewAsync.name },
-      `${pre.addingView}: { height: ${rect.height}, width: ${rect.width}, x: ${rect.x}, y: ${rect.y} } under key ${id}`
-    );
-    // #endregion
     window.contentView.addChildView(view);
     resolve(true);
-
-    for (const [key] of views) {
-      // #region logging
-      log.info(logOptions, `${pre.status}: views has id "${key}"`);
-      // #endregion
-    }
   });
 }
 export function onSetViewRectangle(
   id: string,
   rect: Electron.Rectangle
 ) {
-  // #region logging
-  log.info({ ts: fileName, fn: onSetViewRectangle.name },
-    `${pre.setting}: rectangle "{ height: ${rect.height}, width: ${rect.width}, x: ${rect.x}, y: ${rect.y} }" to views[${id}]`
-  );
-  // #endregion
   views.get(id)!.rect = rect;
 }
 export function onSetViewUrl(
   id: string,
   url: string
 ) {
-  // #region logging
-  log.info({ ts: fileName, fn: onSetViewUrl.name },
-    `${pre.setting}: url "${url}" to views[${id}]`
-  );
-  // #endregion
   views.get(id)!.url = url;
-}
-export function onLogInfo(
-  options: unknown,
-  message: string
-) {
-  log.info(options, message);
-}
-export function onLogError(
-  options: unknown,
-  message: string
-) {
-  log.error(options, message);
 }
 export function onGetViewData(): Map<string, ViewData> {
   const data = new Map<string, ViewData>();
@@ -132,16 +94,9 @@ export function onGetViewData(): Map<string, ViewData> {
   return data;
 }
 export function onDeleteView(id: string) {
-  const logOptions = { ts: fileName, fn: onDeleteView.name };
   if (!(views.has(id))) {
-    // #region logging
-    log.error(logOptions, `${pre.missing}: key "${id} does not exist for deletion"`);
-    // #endregion
     return;
   }
-  // #region logging
-  log.info(logOptions, `${pre.deleting}: view for key "${id}"`);
-  // #endregion
   mainWindow?.contentView.removeChildView(views.get(id)!.view);
   views.delete(id);
 }

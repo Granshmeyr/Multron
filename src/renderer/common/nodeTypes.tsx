@@ -1,21 +1,16 @@
 import { ReactElement } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { ContextOption, Direction } from "../../common/enums";
-import { ColumnProps, ContextBehavior, Neighbors, ResizeBehavior, RowProps, TileProps, Vector2 } from "../../common/interfaces";
+import { ColumnProps, ContextBehavior, Neighbors, RowProps, TileProps, Vector2 } from "../../common/interfaces";
 import * as ich from "../../common/ipcChannels";
-import * as pre from "../../common/logPrefixes";
 import { Column, Row, Tile } from "../src/apps/Tiles";
-import * as log from "./loggerUtil";
-import { BgLoader } from "./types";
+import { BgLoader, ViewRectEnforcer } from "./types";
+import { fpsToMs } from "./util";
 
-const fileName: string = "nodes.tsx";
 export const tiles = new Map<string, TileNode>();
 export const containers = new Map<string, ContainerNode>();
+export const rectUpdateMs = fpsToMs(10);
 
-interface TileNodeProps {
-  contextBehavior?: ContextBehavior,
-  resizeBehavior?: ResizeBehavior
-}
 type RowNodeProps = Omit<RowProps, "nodeId" | "style" | "thisNode">
 type ColumnNodeProps = Omit<ColumnProps, "nodeId" | "style" | "thisNode">
 
@@ -41,19 +36,17 @@ export abstract class ContainerNode extends BaseNode {
 
 export class TileNode extends BaseNode {
   ref: React.RefObject<HTMLDivElement> | null = null;
-  bgLoader: BgLoader = new BgLoader();
+  bgLoader = new BgLoader();
+  viewRectEnforcer = new ViewRectEnforcer(this, rectUpdateMs);
   neighbors: Neighbors = { top: false, bottom: false, left: false, right: false };
   private _url?: URL;
   private _contextBehavior: ContextBehavior;
-  private _resizeBehavior: ResizeBehavior;
 
-  constructor(props?: TileNodeProps) {
+  constructor(contextBehavior?: ContextBehavior) {
     super();
     this.nodeId = uuidv4();
-    if (props?.contextBehavior !== undefined) this._contextBehavior = props.contextBehavior;
+    if (contextBehavior !== undefined) this._contextBehavior = contextBehavior;
     else this._contextBehavior = () => console.log("default contextBehavior");
-    if (props?.resizeBehavior !== undefined) this._resizeBehavior = props.resizeBehavior;
-    else this._resizeBehavior = () => console.log("defualt resizeBehavior");
   }
 
   toElement(): ReactElement {
@@ -62,7 +55,6 @@ export class TileNode extends BaseNode {
         style={this.style}
         nodeId={this.nodeId}
         contextBehavior={this._contextBehavior}
-        resizeBehavior={this._resizeBehavior}
         thisNode={this}
       >
       </Tile>
@@ -73,7 +65,6 @@ export class TileNode extends BaseNode {
     if (props.nodeId !== undefined) this.nodeId = props.nodeId;
     if (props.url !== undefined) this._url = props.url;
     if (props.contextBehavior !== undefined) this._contextBehavior = props.contextBehavior;
-    if (props.resizeBehavior !== undefined) this._resizeBehavior = props.resizeBehavior;
   }
   rescanNeighbors() {
     if (this.parent === null) {
@@ -103,11 +94,7 @@ export class TileNode extends BaseNode {
 
   get url(): URL | undefined { return this._url; }
   set url(value: URL) {
-    const logOptions = { ts: fileName, fn: `${TileNode.name}.url(set)` };
     this._url = value;
-    // #region logging
-    log.info(logOptions, `${pre.sendingEvent}: ${ich.setViewUrl} for id "${this.nodeId}"`);
-    // #endregion
     window.electronAPI.send(ich.setViewUrl, this.nodeId, value.toString());
   }
   get contextBehavior(): ContextBehavior {
@@ -115,11 +102,6 @@ export class TileNode extends BaseNode {
     return this._contextBehavior;
   }
   set contextBehavior(value: ContextBehavior) { this._contextBehavior = value; }
-  get resizeBehavior(): ResizeBehavior {
-    if (this._resizeBehavior === undefined) return () => console.error("no resizebehavior");
-    return this._resizeBehavior;
-  }
-  set resizeBehavior(value: (id: string, rectangle: Electron.Rectangle) => void) { this._resizeBehavior = value; }
   getRect(): Electron.Rectangle | null {
     if (this.ref === null) {
       return null;
@@ -134,9 +116,6 @@ export class TileNode extends BaseNode {
   }
   split(pos: Vector2, direction: Direction) {
     this.contextBehavior(this.nodeId, { option: ContextOption.Split, direction: direction }, pos);
-  }
-  resize(rect: Electron.Rectangle) {
-    this.resizeBehavior(this.nodeId, rect);
   }
   delete() {
     this.contextBehavior(this.nodeId, { option: ContextOption.Delete });

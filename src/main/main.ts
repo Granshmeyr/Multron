@@ -2,9 +2,7 @@ import { BrowserWindow, app, globalShortcut, ipcMain, screen } from "electron";
 import path from "path";
 import { CustomShortcuts, Shortcut } from "../common/interfaces";
 import * as ich from "../common/ipcChannels";
-import { onCallTileContextBehavior, onCreateViewAsync, onDeleteView, onFocusMainWindow, onGetDisplayMetrics, onGetViewData, onLogError, onLogInfo, onRefreshAllViewBounds, onResizeCaptureAsync, onSetOverlayIgnore, onSetViewRectangle, onSetViewUrl, onShowPieMenu, onUpdateBorderPx } from "../common/listeners";
-import * as pre from "../common/logPrefixes";
-import { log } from "../common/logger";
+import { onCallTileContextBehavior, onCreateViewAsync, onDeleteView, onFocusMainWindow, onGetDisplayMetrics, onGetViewData, onRefreshAllViewBounds, onResizeCaptureAsync, onSetOverlayIgnore, onSetViewRectangle, onSetViewUrl, onShowPieMenu, onUpdateBorderPx } from "../common/listeners";
 
 export let mainWindow: BrowserWindow | null = null;
 export let hideWindow: BrowserWindow | null = null;
@@ -12,69 +10,36 @@ export let overlayWindow: BrowserWindow | null = null;
 export const editModeEnabled: boolean = false;
 export const viteURL: string = "http://localhost:5173";
 
-const fileName: string = "main.ts";
-
 function main(): void {
   // #region events
-  const logOptions = { ts: fileName, fn: main.name };
-  log.info(logOptions, `${pre.handlingOn}: ${ich.createViewAsync}`);
   ipcMain.handle(ich.createViewAsync, (_, id, options) => {
-    log.info(logOptions, `${pre.eventReceived}: ${ich.createViewAsync}`);
     return onCreateViewAsync(id, mainWindow as BrowserWindow, options);
   });
-  log.info(logOptions, `${pre.listeningOn}: ${ich.setViewRectangle}`);
   ipcMain.on(ich.setViewRectangle, (_, id, rect) => {
-    log.info(logOptions, `${pre.eventReceived}: ${ich.setViewRectangle}`);
     onSetViewRectangle(id, rect);
   });
-  log.info(logOptions, `${pre.listeningOn}: ${ich.setViewUrl}`);
   ipcMain.on(ich.setViewUrl, (_, id, url) => {
-    log.info(logOptions, `${pre.eventReceived}: ${ich.setViewUrl}`);
     onSetViewUrl(id, url);
   });
-  log.info(logOptions, `${pre.listeningOn}: ${ich.logInfo}`);
-  ipcMain.on(ich.logInfo, (_, options, message) => {
-    //log.info(logOptions, `${pre.eventReceived}: ${ch.logInfo}`);
-    onLogInfo(options, message);
-  });
-  log.info(logOptions, `${pre.listeningOn}: ${ich.logError}`);
-  ipcMain.on(ich.logError, (_, options, message) => {
-    log.info(logOptions, `${pre.eventReceived}: ${ich.logError}`);
-    onLogError(options, message);
-  });
-  log.info(logOptions, `${pre.handlingOn}: ${ich.getViewData}`);
   ipcMain.handle(ich.getViewData, () => {
-    log.info(logOptions, `${pre.eventReceived}: ${ich.getViewData}`);
     return onGetViewData();
   });
-  log.info(logOptions, `${pre.listeningOn}: ${ich.deleteView}`);
   ipcMain.on(ich.deleteView, (_, id) => {
-    log.info(logOptions, `${pre.eventReceived}: ${ich.deleteView}`);
     onDeleteView(id);
   });
-  log.info(logOptions, `${pre.listeningOn}: ${ich.resizeCapture}`);
   ipcMain.handle(ich.resizeCapture, async (_, id, rect) => {
-    log.info(logOptions, `${pre.eventReceived}: ${ich.resizeCapture}`);
     return await onResizeCaptureAsync(id, rect);
   });
-  log.info(logOptions, `${pre.listeningOn}: ${ich.showPieMenu}`);
   ipcMain.on(ich.showPieMenu, (_, nodeId, pos) => {
-    log.info(logOptions, `${pre.eventReceived}: ${ich.showPieMenu}`);
     onShowPieMenu(nodeId, pos);
   });
-  log.info(logOptions, `${pre.listeningOn}: ${ich.getDisplayMetrics}`);
   ipcMain.handle(ich.getDisplayMetrics, () => {
-    log.info(logOptions, `${pre.eventReceived}: ${ich.getDisplayMetrics}`);
     return onGetDisplayMetrics();
   });
-  log.info(logOptions, `${pre.listeningOn}: ${ich.setOverlayIgnore}`);
   ipcMain.on(ich.setOverlayIgnore, (_, ignoring) => {
-    log.info(logOptions, `${pre.eventReceived}: ${ich.setOverlayIgnore}`);
     onSetOverlayIgnore(ignoring);
   });
-  log.info(logOptions, `${pre.listeningOn}: ${ich.callTileContextBehavior}`);
   ipcMain.on(ich.callTileContextBehavior, (_, nodeId, params, pos) => {
-    log.info(logOptions, `${pre.eventReceived}: ${ich.callTileContextBehavior}`);
     onCallTileContextBehavior(nodeId, params, pos);
   });
   ipcMain.on(ich.updateBorderPx, (_, px) => {

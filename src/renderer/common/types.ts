@@ -1,8 +1,8 @@
 import { IpcRendererEvent } from "electron";
 import { DisplayMetrics, ViewData } from "../../common/interfaces";
 import * as ich from "../../common/ipcChannels";
-import { tiles } from "./nodeTypes";
-import { compareRects, fpsToMs, registerIpcListener } from "./util";
+import { TileNode } from "./nodeTypes";
+import { compareRects, registerIpcListener } from "./util";
 
 export class BgLoader {
   setter: React.Dispatch<React.SetStateAction<string | null>> | null = null;
@@ -17,33 +17,33 @@ export class BgLoader {
   }
 }
 export class ViewRectEnforcer {
+  tileNode: TileNode;
   refreshRoot: React.DispatchWithoutAction | null = null;
   private timeout: NodeJS.Timeout | null = null;
   private ms: number;
 
-  constructor(ms: number) {
+  constructor(tileNode: TileNode, ms: number) {
+    this.tileNode = tileNode;
     this.ms = ms;
   }
 
   async tickAsync() {
-    for (const [id, tile] of tiles) {
-      try {
-        const rect = tile.getRect();
-        if (rect === null) continue;
-        const buffer = await window.electronAPI.invoke(
-          ich.resizeCapture, id, rect
-        ) as Buffer;
-        if (buffer.length === 0
+    try {
+      const rect = this.tileNode.getRect();
+      if (rect === null) return;
+      const buffer = await window.electronAPI.invoke(
+        ich.resizeCapture, this.tileNode.nodeId, rect
+      ) as Buffer;
+      if (buffer.length === 0
           || buffer.every((byte) => { byte === 255; })
-        ) {
-          continue;
-        }
-        const blob = new Blob([buffer], { type: "image/jpeg" });
-        tiles.get(id)!.bgLoader!.loadUrl(URL.createObjectURL(blob));
+      ) {
+        return;
       }
-      catch (err) {
-        console.error(err);
-      }
+      const blob = new Blob([buffer], { type: "image/jpeg" });
+      this.tileNode.bgLoader.loadUrl(URL.createObjectURL(blob));
+    }
+    catch (err) {
+      console.error(err);
     }
   }
   start() {
@@ -67,15 +67,11 @@ export class ViewRectEnforcer {
   private async integrityCheckAsync(): Promise<boolean> {
     const viewData = await window.electronAPI.invoke(ich.getViewData) as Map<string, ViewData>;
     return new Promise<boolean>((resolve) => {
-      for (const [id, data] of viewData) {
-        const rect = tiles.get(id)!.getRect();
-        if (rect === null) {
-          continue;
-        }
-        if (!compareRects(data.rectangle, rect)) {
-          resolve(false);
-          return;
-        }
+      const rect = this.tileNode.getRect();
+      if (rect === null) return;
+      if (!compareRects(viewData.get(this.tileNode.nodeId)!.rectangle, rect)) {
+        resolve(false);
+        return;
       }
       resolve(true);
     });
@@ -99,4 +95,3 @@ export class DisplayMetricsTracker {
 }
 
 export const displayMetricsTracker = new DisplayMetricsTracker();
-export const viewRectEnforcer = new ViewRectEnforcer(fpsToMs(10));

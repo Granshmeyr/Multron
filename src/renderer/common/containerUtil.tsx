@@ -2,12 +2,7 @@ import React, { ReactElement } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { ColumnHandleProps, ContextParams, RowHandleProps } from "../../common/interfaces";
 import * as ich from "../../common/ipcChannels";
-import * as pre from "../../common/logPrefixes";
-import * as log from "./loggerUtil";
 import { BaseNode, ContainerNode, TileNode, containers, tiles } from "./nodeTypes";
-import { viewRectEnforcer } from "./types";
-
-const fileName: string = "containerShared.tsx";
 
 function calculateBasis(
   index: number,
@@ -37,11 +32,7 @@ function createElement(
   baseNode: BaseNode,
   handlePercents: number[],
 ): ReactElement {
-  const logOptions = { ts: fileName, fn: createElement.name };
   const basis: number = calculateBasis(index, nodeArrayLength, handlePercents);
-  // #region logging
-  log.info(logOptions, `${pre.running}: ${createElement.name} with flexBasis ${basis}%`);
-  // #endregion
   baseNode.style = { ...baseNode.style, flexBasis: `${basis}%` };
   return baseNode.toElement();
 }
@@ -53,7 +44,6 @@ export function buildTree(
   containerRef: React.RefObject<HTMLDivElement>,
   Handle: React.ComponentType<RowHandleProps> | React.ComponentType<ColumnHandleProps>
 ): ReactElement[] {
-  const logOptions = { ts: fileName, fn: buildTree.name };
   const elementArray: ReactElement[] = [];
   const arrayLength: number = nodeArray.length;
   for (let index = 0; index < arrayLength; index++) {
@@ -74,11 +64,7 @@ export function buildTree(
               if (e.button !== 0) {
                 return;
               }
-              // #region logging
-              log.info(logOptions, `${pre.userInteraction}: Dragging handle index "${index}"`);
-              // #endregion
               setCurrentHandle(index);
-              viewRectEnforcer.start();
             }
           }
           onMouseUp={() => { return; }}

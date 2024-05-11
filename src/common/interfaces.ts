@@ -5,14 +5,12 @@ import { ContextOption, Direction } from "./enums";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type IpcListenerFunction = (e: Electron.IpcRendererEvent, ...args: any[]) => void;
 export type ContextBehavior = (nodeId: string, params: ContextParams, pos?: Vector2) => void
-export type ResizeBehavior = (id: string, rectangle: Electron.Rectangle) => void
 
 export interface TileProps {
   style?: React.CSSProperties;
   nodeId: string;
   url?: URL;
   contextBehavior: ContextBehavior;
-  resizeBehavior: ResizeBehavior;
   thisNode: TileNode;
 }
 export interface RowProps {
