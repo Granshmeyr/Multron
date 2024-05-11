@@ -1,5 +1,5 @@
 import React from "react";
-import { BaseNode } from "../renderer/common/nodeTypes";
+import { BaseNode, ColumnNode, RowNode, TileNode } from "../renderer/common/nodeTypes";
 import { ContextOption, Direction } from "./enums";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -9,10 +9,11 @@ export type ResizeBehavior = (id: string, rectangle: Electron.Rectangle) => void
 
 export interface TileProps {
   style?: React.CSSProperties;
-  nodeId?: string;
+  nodeId: string;
   url?: URL;
-  contextBehavior?: ContextBehavior;
-  resizeBehavior?: ResizeBehavior;
+  contextBehavior: ContextBehavior;
+  resizeBehavior: ResizeBehavior;
+  thisNode: TileNode;
 }
 export interface RowProps {
   children: BaseNode[];
@@ -21,7 +22,8 @@ export interface RowProps {
   rootContextBehavior: ContextBehavior;
   handlePercents: number[];
   style?: React.CSSProperties;
-  nodeId?: string;
+  nodeId: string;
+  thisNode: RowNode;
 }
 export interface ColumnProps {
   children: BaseNode[];
@@ -30,7 +32,8 @@ export interface ColumnProps {
   rootContextBehavior: ContextBehavior;
   handlePercents: number[];
   style?: React.CSSProperties;
-  nodeId?: string;
+  nodeId: string;
+  thisNode: ColumnNode;
 }
 export interface ColumnHandleProps {
   onMouseDown: (e: React.DragEvent<HTMLDivElement>) => void;

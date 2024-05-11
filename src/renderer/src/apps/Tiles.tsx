@@ -7,7 +7,7 @@ import * as pre from "../../../common/logPrefixes.ts";
 import { buildTree, deletion, setUrl } from "../../common/containerUtil.tsx";
 import * as Context from "../../common/contextProviders.ts";
 import * as log from "../../common/loggerUtil.ts";
-import { BaseNode, ColumnNode, ContainerNode, RowNode, TileNode, containers, registerColumn, registerRow, registerTile, tiles } from "../../common/nodeTypes.jsx";
+import { BaseNode, ColumnNode, ContainerNode, RowNode, TileNode, containers, tiles } from "../../common/nodeTypes.jsx";
 import { viewRectEnforcer } from "../../common/types.ts";
 import { getDivRect, percentAlongRectX, percentAlongRectY, registerIpcListener, unregisterIpcListener } from "../../common/util.ts";
 import Greeting from "./app-components/TilesGreeting.tsx";
@@ -18,11 +18,9 @@ export default function Main(): ReactElement {
   const logOptions = { ts: fileName, fn: Main.name };
   const [borderPx, setBorderPx] = useState<number>(60);
   const [root, setRoot] = useState<BaseNode>(
-    registerTile({
+    new TileNode({
       contextBehavior: onContext,
-      resizeBehavior: () => {
-        viewRectEnforcer.start();
-      }
+      resizeBehavior: () => viewRectEnforcer.start()
     })
   );
   const [, refreshRoot] = useReducer(x => x + 1, 0);
@@ -89,10 +87,7 @@ export default function Main(): ReactElement {
   });
   const debugListener = useRef<IpcListener>({
     uuid: "1c1787f8-6651-4695-bec6-a71dd6ad20b1",
-    fn: () => {
-      console.log(`Container count: ${containers.size}`);
-      console.log(`Tile count: ${tiles.size}`);
-    }
+    fn: () => {}
   });
   const callTileContextBehaviorCCListener = useRef<IpcListener>({
     uuid: "b6b0774e-9e44-4309-8781-399938ad2deb",
@@ -136,8 +131,8 @@ export default function Main(): ReactElement {
     function split() {
       function up() {
         const percent = percentAlongRectY(getDivRect(ref.current!), pos!);
-        setRoot(registerColumn({
-          children: [registerTile(), tile],
+        setRoot(new ColumnNode({
+          children: [new TileNode(), tile],
           handlePercents: [percent],
           refreshRoot: refreshRoot,
           setRoot: setRoot,
@@ -146,8 +141,8 @@ export default function Main(): ReactElement {
       }
       function down() {
         const percent = percentAlongRectY(getDivRect(ref.current!), pos!);
-        setRoot(registerColumn({
-          children: [tile, registerTile()],
+        setRoot(new ColumnNode({
+          children: [tile, new TileNode()],
           handlePercents: [percent],
           refreshRoot: refreshRoot,
           setRoot: setRoot,
@@ -156,8 +151,8 @@ export default function Main(): ReactElement {
       }
       function left() {
         const percent = percentAlongRectX(getDivRect(ref.current!), pos!);
-        setRoot(registerRow({
-          children: [registerTile(), tile],
+        setRoot(new RowNode({
+          children: [new TileNode(), tile],
           handlePercents: [percent],
           refreshRoot: refreshRoot,
           setRoot: setRoot,
@@ -166,8 +161,8 @@ export default function Main(): ReactElement {
       }
       function right() {
         const percent = percentAlongRectX(getDivRect(ref.current!), pos!);
-        setRoot(registerRow({
-          children: [tile, registerTile()],
+        setRoot(new RowNode({
+          children: [tile, new TileNode()],
           handlePercents: [percent],
           refreshRoot: refreshRoot,
           setRoot: setRoot,
@@ -207,7 +202,8 @@ export function Row({
   rootContextBehavior,
   handlePercents,
   style,
-  nodeId
+  nodeId,
+  thisNode
 }: RowProps): ReactElement {
   const [currentHandle, setCurrentHandle] = useState<number | null>(null);
   const ref = useRef<HTMLDivElement>(null);
@@ -222,6 +218,8 @@ export function Row({
   }
 
   useEffect(() => {
+    containers.set(nodeId, thisNode);
+
     function onMouseUp(e: MouseEvent) {
       if (e.button !== 0) {
         return;
@@ -234,7 +232,7 @@ export function Row({
         const mousePosition = e.clientX - ref.current.getBoundingClientRect().left;
         const newPercents = [...handlePercents];
         newPercents[currentHandle] = mousePosition / divWidth;
-        containers.get(nodeId as string)!.handlePercents = newPercents;
+        thisNode.handlePercents = newPercents;
         refreshRoot();
       }
     }
@@ -242,6 +240,7 @@ export function Row({
     document.addEventListener("mouseup", onMouseUp);
     document.addEventListener("mousemove", onMouseMove);
     return () => {
+      containers.delete(nodeId);
       document.removeEventListener("mouseup", onMouseUp);
       document.removeEventListener("mousemove", onMouseMove);
     };
@@ -255,48 +254,48 @@ export function Row({
       function up() {
         const tileIndex = parent.children.indexOf(tile);
         const percent = percentAlongRectY(getDivRect(tileRef.current!), pos!);
-        const column = registerColumn({
-          children: [registerTile(), tile],
+        const column = new ColumnNode({
+          children: [new TileNode(), tile],
           handlePercents: [percent],
           refreshRoot: refreshRoot,
           setRoot: setRoot,
           rootContextBehavior: rootContextBehavior
         });
-        column.parent = containers.get(nodeId as string)!;
+        column.parent = thisNode;
         parent.children[tileIndex] = column;
       }
       function down() {
         const tileIndex = parent.children.indexOf(tile);
         const percent = percentAlongRectY(getDivRect(tileRef.current!), pos!);
-        const column = registerColumn({
-          children: [tile, registerTile()],
+        const column = new ColumnNode({
+          children: [tile, new TileNode()],
           handlePercents: [percent],
           refreshRoot: refreshRoot,
           setRoot: setRoot,
           rootContextBehavior: rootContextBehavior
         });
-        column.parent = containers.get(nodeId as string)!;
+        column.parent = thisNode;
         parent.children[tileIndex] = column;
       }
       function left() {
         const tileIndex = parent.children.indexOf(tile);
-        const splitTile = registerTile();
+        const splitTile = new TileNode();
         parent.children.splice(tileIndex, 0, splitTile);
         splitTile.parent = parent;
         const newPercents = [...handlePercents];
         const percent = percentAlongRectX(getDivRect(ref.current!), pos!);
         newPercents.splice(tileIndex, 0, percent);
-        containers.get(nodeId as string)!.handlePercents = newPercents;
+        thisNode.handlePercents = newPercents;
       }
       function right() {
         const tileIndex = parent.children.indexOf(tile);
-        const splitTile = registerTile();
+        const splitTile = new TileNode();
         parent.children.splice(tileIndex + 1, 0, splitTile);
         splitTile.parent = parent;
         const newPercents = [...handlePercents];
         const percent = percentAlongRectX(getDivRect(ref.current!), pos!);
         newPercents.splice(tileIndex, 0, percent);
-        containers.get(nodeId as string)!.handlePercents = newPercents;
+        thisNode.handlePercents = newPercents;
       }
       switch (params.direction) {
       case Direction.Up: up(); break;
@@ -344,7 +343,8 @@ export function Column({
   rootContextBehavior,
   handlePercents,
   style,
-  nodeId
+  nodeId,
+  thisNode
 }: ColumnProps): ReactElement {
   const [currentHandle, setCurrentHandle] = useState<number | null>(null);
   const ref = useRef<HTMLDivElement>(null);
@@ -359,6 +359,8 @@ export function Column({
   }
 
   useEffect(() => {
+    containers.set(nodeId, thisNode);
+
     function onMouseUp(e: MouseEvent) {
       if (e.button !== 0) {
         return;
@@ -371,7 +373,7 @@ export function Column({
         const mousePosition = e.clientY - ref.current.getBoundingClientRect().top;
         const newPercents = [...handlePercents];
         newPercents[currentHandle] = mousePosition / divHeight;
-        containers.get(nodeId as string)!.handlePercents = newPercents;
+        thisNode.handlePercents = newPercents;
         refreshRoot();
       }
     }
@@ -379,6 +381,7 @@ export function Column({
     document.addEventListener("mouseup", onMouseUp);
     document.addEventListener("mousemove", onMouseMove);
     return () => {
+      containers.delete(nodeId);
       document.removeEventListener("mouseup", onMouseUp);
       document.removeEventListener("mousemove", onMouseMove);
     };
@@ -392,48 +395,48 @@ export function Column({
 
       function up() {
         const tileIndex = parent.children.indexOf(tile);
-        const splitTile = registerTile();
+        const splitTile = new TileNode();
         parent.children.splice(tileIndex, 0, splitTile);
         splitTile.parent = parent;
         const newPercents = [...handlePercents];
         const percent = percentAlongRectY(getDivRect(ref.current!), pos!);
         newPercents.splice(tileIndex, 0, percent);
-        containers.get(nodeId as string)!.handlePercents = newPercents;
+        thisNode.handlePercents = newPercents;
       }
       function down() {
         const tileIndex = parent.children.indexOf(tile);
-        const splitTile = registerTile();
+        const splitTile = new TileNode();
         parent.children.splice(tileIndex + 1, 0, splitTile);
         splitTile.parent = parent;
         const newPercents = [...handlePercents];
         const percent = percentAlongRectY(getDivRect(ref.current!), pos!);
         newPercents.splice(tileIndex, 0, percent);
-        containers.get(nodeId as string)!.handlePercents = newPercents;
+        thisNode.handlePercents = newPercents;
       }
       function left() {
         const tileIndex = parent.children.indexOf(tile);
         const percent = percentAlongRectX(getDivRect(tileRef.current!), pos!);
-        const row = registerRow({
-          children: [registerTile(), tile],
+        const row = new RowNode({
+          children: [new TileNode(), tile],
           handlePercents: [percent],
           refreshRoot: refreshRoot,
           setRoot: setRoot,
           rootContextBehavior: rootContextBehavior
         });
-        row.parent = containers.get(nodeId as string)!;
+        row.parent = thisNode;
         parent.children[tileIndex] = row;
       }
       function right() {
         const tileIndex = parent.children.indexOf(tile);
         const percent = percentAlongRectX(getDivRect(tileRef.current!), pos!);
-        const row = registerRow({
-          children: [tile, registerTile()],
+        const row = new RowNode({
+          children: [tile, new TileNode()],
           handlePercents: [percent],
           refreshRoot: refreshRoot,
           setRoot: setRoot,
           rootContextBehavior: rootContextBehavior
         });
-        row.parent = containers.get(nodeId as string)!;
+        row.parent = thisNode;
         parent.children[tileIndex] = row;
       }
       switch (params.direction) {
@@ -479,6 +482,7 @@ export function Tile({
   style,
   nodeId,
   resizeBehavior,
+  thisNode
 }: TileProps): ReactElement {
   const [bg, setBg] = useState<string | null>(null);
   const ref = useRef<HTMLDivElement>(null);
@@ -490,17 +494,19 @@ export function Tile({
   });
   const borderPx = useContext(Context.BorderPx);
 
-  tiles.get(nodeId as string)!.bgLoader.setter = setBg;
+
 
   useEffect(() => {
     const _logOptions = { ts: fileName, fn: `${Tile.name}/${useEffect.name}` };
-    tiles.get(nodeId as string)!.ref = ref;
+    tiles.set(nodeId, thisNode);
+    thisNode.ref = ref;
+    thisNode.bgLoader.setter = setBg;
     async function createViewOrResizeAsync() {
       // #region logging
       log.info(_logOptions, `${pre.invokingEvent}: ${ich.getViewData} for id "${nodeId}"`);
       // #endregion
       const viewData = await window.electronAPI.invoke(ich.getViewData) as Map<string, ViewData>;
-      if (!(viewData.has(nodeId as string))) {
+      if (!(viewData.has(nodeId))) {
         // #region logging
         log.info(_logOptions, `${pre.invokingEvent}: ${ich.createViewAsync} for id "${nodeId}"`);
         // #endregion
@@ -510,11 +516,10 @@ export function Tile({
             enablePreferredSizeMode: true,
           }
         });
-        resizeBehavior?.(nodeId as string, rectangle.current);
+        resizeBehavior?.(nodeId, rectangle.current);
       }
       else {
-        console.log("tile resized!");
-        resizeBehavior?.(nodeId as string, rectangle.current);
+        resizeBehavior?.(nodeId, rectangle.current);
       }
     }
     const resizeObserver = new ResizeObserver(async () => {
@@ -531,12 +536,13 @@ export function Tile({
       resizeObserver.observe(ref.current);
     }
     return () => {
+      tiles.delete(nodeId);
       resizeObserver.disconnect();
     };
-  }, [nodeId, resizeBehavior]);
+  }, [nodeId, resizeBehavior, thisNode]);
 
   function element(): ReactElement {
-    const n = tiles.get(nodeId as string)!.neighbors;
+    const n = thisNode.neighbors;
     const borderSizes = {
       borderTopWidth: n.top ? borderPx / 2 : borderPx,
       borderRightWidth: n.right ? borderPx / 2 : borderPx,
@@ -558,7 +564,7 @@ export function Tile({
           onContextMenu={(e) => {
             window.electronAPI.send(
               ich.showPieMenu,
-              nodeId as string,
+              nodeId,
               { x: e.screenX, y: e.screenY }
             );
           }}
@@ -588,7 +594,7 @@ export function Tile({
           onContextMenu={(e) => {
             window.electronAPI.send(
               ich.showPieMenu,
-              nodeId as string,
+              nodeId,
               { x: e.screenX, y: e.screenY }
             );
           }}

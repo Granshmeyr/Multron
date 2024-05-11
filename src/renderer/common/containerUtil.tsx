@@ -42,7 +42,7 @@ function createElement(
   // #region logging
   log.info(logOptions, `${pre.running}: ${createElement.name} with flexBasis ${basis}%`);
   // #endregion
-  baseNode.appendStyle({ flexBasis: `${basis}%` });
+  baseNode.style = { ...baseNode.style, flexBasis: `${basis}%` };
   return baseNode.toElement();
 }
 

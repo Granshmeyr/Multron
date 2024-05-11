@@ -1,4 +1,4 @@
-import { CSSProperties, ReactElement } from "react";
+import { ReactElement } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { ContextOption, Direction } from "../../common/enums";
 import { ColumnProps, ContextBehavior, Neighbors, ResizeBehavior, RowProps, TileProps, Vector2 } from "../../common/interfaces";
@@ -8,18 +8,22 @@ import { Column, Row, Tile } from "../src/apps/Tiles";
 import * as log from "./loggerUtil";
 import { BgLoader } from "./types";
 
+const fileName: string = "nodes.tsx";
 export const tiles = new Map<string, TileNode>();
 export const containers = new Map<string, ContainerNode>();
-const fileName: string = "nodes.tsx";
+
+interface TileNodeProps {
+  contextBehavior?: ContextBehavior,
+  resizeBehavior?: ResizeBehavior
+}
+type RowNodeProps = Omit<RowProps, "nodeId" | "style" | "thisNode">
+type ColumnNodeProps = Omit<ColumnProps, "nodeId" | "style" | "thisNode">
 
 export abstract class BaseNode {
   parent: BaseNode | null = null;
+  nodeId: string = uuidv4();
+  style: React.CSSProperties = {};
   abstract toElement(): ReactElement;
-  abstract appendStyle(style: React.CSSProperties): void;
-  abstract get style(): React.CSSProperties | undefined;
-  abstract set style(value: React.CSSProperties);
-  abstract get nodeId(): string;
-  abstract set nodeId(value: string);
 }
 
 export abstract class ContainerNode extends BaseNode {
@@ -39,25 +43,17 @@ export class TileNode extends BaseNode {
   ref: React.RefObject<HTMLDivElement> | null = null;
   bgLoader: BgLoader = new BgLoader();
   neighbors: Neighbors = { top: false, bottom: false, left: false, right: false };
-  private _style?: React.CSSProperties;
-  private _id: string;
   private _url?: URL;
-  private _contextBehavior?: ContextBehavior;
-  private _resizeBehavior?: ResizeBehavior;
+  private _contextBehavior: ContextBehavior;
+  private _resizeBehavior: ResizeBehavior;
 
-  constructor({
-    style: style,
-    nodeId: id,
-    url: url,
-    contextBehavior: contextBehavior,
-    resizeBehavior: resizeBehavior
-  }: TileProps) {
+  constructor(props?: TileNodeProps) {
     super();
-    this._style = style;
-    this._id = id === undefined ? uuidv4() : id;
-    this._url = url;
-    this._contextBehavior = contextBehavior!;
-    this._resizeBehavior = resizeBehavior!;
+    this.nodeId = uuidv4();
+    if (props?.contextBehavior !== undefined) this._contextBehavior = props.contextBehavior;
+    else this._contextBehavior = () => console.log("default contextBehavior");
+    if (props?.resizeBehavior !== undefined) this._resizeBehavior = props.resizeBehavior;
+    else this._resizeBehavior = () => console.log("defualt resizeBehavior");
   }
 
   toElement(): ReactElement {
@@ -65,12 +61,19 @@ export class TileNode extends BaseNode {
       <Tile
         style={this.style}
         nodeId={this.nodeId}
-        url={this.url}
         contextBehavior={this._contextBehavior}
         resizeBehavior={this._resizeBehavior}
+        thisNode={this}
       >
       </Tile>
     );
+  }
+  setProps(props: TileProps) {
+    if (props.style !== undefined) this.style = props.style;
+    if (props.nodeId !== undefined) this.nodeId = props.nodeId;
+    if (props.url !== undefined) this._url = props.url;
+    if (props.contextBehavior !== undefined) this._contextBehavior = props.contextBehavior;
+    if (props.resizeBehavior !== undefined) this._resizeBehavior = props.resizeBehavior;
   }
   rescanNeighbors() {
     if (this.parent === null) {
@@ -98,18 +101,14 @@ export class TileNode extends BaseNode {
     this.neighbors = n;
   }
 
-  get style(): React.CSSProperties | undefined { return this._style; }
-  set style(value: React.CSSProperties) { this._style = value; }
-  get nodeId(): string { return this._id; }
-  set nodeId(value: string) { this._id = value; }
   get url(): URL | undefined { return this._url; }
   set url(value: URL) {
     const logOptions = { ts: fileName, fn: `${TileNode.name}.url(set)` };
     this._url = value;
     // #region logging
     log.info(logOptions, `${pre.sendingEvent}: ${ich.setViewUrl} for id "${this.nodeId}"`);
-    window.electronAPI.send(ich.setViewUrl, this.nodeId, value.toString());
     // #endregion
+    window.electronAPI.send(ich.setViewUrl, this.nodeId, value.toString());
   }
   get contextBehavior(): ContextBehavior {
     if (this._contextBehavior === undefined) return () => console.error("no contextbehavior");
@@ -133,9 +132,6 @@ export class TileNode extends BaseNode {
       y: element.offsetTop
     };
   }
-  appendStyle(style: React.CSSProperties) {
-    this.style = { ...this.style, ...style };
-  }
   split(pos: Vector2, direction: Direction) {
     this.contextBehavior(this.nodeId, { option: ContextOption.Split, direction: direction }, pos);
   }
@@ -143,7 +139,6 @@ export class TileNode extends BaseNode {
     this.resizeBehavior(this.nodeId, rect);
   }
   delete() {
-    for (const t of tiles.values()) t.rescanNeighbors();
     this.contextBehavior(this.nodeId, { option: ContextOption.Delete });
   }
 }
@@ -153,19 +148,15 @@ export class ColumnNode extends ContainerNode {
   private _refreshRoot: React.DispatchWithoutAction;
   private _setRoot: React.Dispatch<React.SetStateAction<BaseNode>>;
   private _rootContextBehavior: ContextBehavior;
-  private _id: string;
   private _handlePercents: number[];
-  private _style?: React.CSSProperties;
 
   constructor({
     children: children,
     refreshRoot: forceState,
     setRoot: setRoot,
     rootContextBehavior: rootContextBehavior,
-    nodeId: id = uuidv4(),
     handlePercents: handlePercents,
-    style: style
-  }: ColumnProps) {
+  }: ColumnNodeProps) {
     super();
     for (const child of children) {
       child.parent = this;
@@ -175,8 +166,6 @@ export class ColumnNode extends ContainerNode {
     this._setRoot = setRoot;
     this._handlePercents = handlePercents;
     this._rootContextBehavior = rootContextBehavior;
-    this._style = style;
-    this._id = id;
   }
 
   toElement(): ReactElement {
@@ -188,6 +177,7 @@ export class ColumnNode extends ContainerNode {
       handlePercents={this.handlePercents}
       style={this.style}
       nodeId={this.nodeId}
+      thisNode={this}
     ></Column>;
   }
 
@@ -201,11 +191,6 @@ export class ColumnNode extends ContainerNode {
   set rootContextBehavior(value: ContextBehavior) { this._rootContextBehavior = value; }
   get handlePercents(): number[] { return this._handlePercents; }
   set handlePercents(value: number[]) { this._handlePercents = value; }
-  get style(): React.CSSProperties | undefined { return this._style; }
-  set style(value: React.CSSProperties) { this._style = value; }
-  get nodeId(): string { return this._id; }
-  set nodeId(value: string) { this._id = value; }
-  appendStyle(style: CSSProperties): void { this.style = { ...this.style, ...style }; }
 }
 
 export class RowNode extends ContainerNode {
@@ -213,19 +198,15 @@ export class RowNode extends ContainerNode {
   private _refreshRoot: React.DispatchWithoutAction;
   private _setRoot: React.Dispatch<React.SetStateAction<BaseNode>>;
   private _rootContextBehavior: ContextBehavior;
-  private _id: string;
   private _handlePercents: number[];
-  private _style?: React.CSSProperties;
 
   constructor({
     children: children,
     refreshRoot: forceState,
     setRoot: setRoot,
     rootContextBehavior: rootContextBehavior,
-    nodeId: id = uuidv4(),
     handlePercents: handlePercents,
-    style: style
-  }: RowProps) {
+  }: RowNodeProps) {
     super();
     for (const child of children) {
       child.parent = this;
@@ -235,8 +216,6 @@ export class RowNode extends ContainerNode {
     this._setRoot = setRoot;
     this._rootContextBehavior = rootContextBehavior;
     this._handlePercents = handlePercents;
-    this._style = style;
-    this._id = id;
   }
 
   toElement(): ReactElement {
@@ -248,6 +227,7 @@ export class RowNode extends ContainerNode {
       handlePercents={this.handlePercents}
       style={this.style}
       nodeId={this.nodeId}
+      thisNode={this}
     ></Row>;
   }
 
@@ -261,36 +241,4 @@ export class RowNode extends ContainerNode {
   set rootContextBehavior(value: ContextBehavior) { this._rootContextBehavior = value; }
   get handlePercents(): number[] { return this._handlePercents; }
   set handlePercents(value: number[]) { this._handlePercents = value; }
-  get style(): React.CSSProperties | undefined { return this._style; }
-  set style(value: React.CSSProperties) { this._style = value; }
-  get nodeId(): string { return this._id; }
-  set nodeId(value: string) { this._id = value; }
-  appendStyle(style: CSSProperties): void { this.style = { ...this.style, ...style }; }
-}
-
-export function registerTile(tileProps?: TileProps): TileNode {
-  for (const t of tiles.values()) {
-    t.rescanNeighbors();
-  }
-  let tileNode: TileNode;
-  if (tileProps !== undefined) {
-    tileNode = new TileNode(tileProps);
-  }
-  else {
-    tileNode = new TileNode({});
-  }
-  tiles.set(tileNode.nodeId, tileNode);
-  return tileNode;
-}
-
-export function registerRow(rowProps: RowProps): RowNode {
-  const rowNode: RowNode = new RowNode(rowProps);
-  containers.set(rowNode.nodeId, rowNode);
-  return rowNode;
-}
-
-export function registerColumn(columnProps: ColumnProps): ColumnNode {
-  const columnNode: ColumnNode = new ColumnNode(columnProps);
-  containers.set(columnNode.nodeId, columnNode);
-  return columnNode;
 }
