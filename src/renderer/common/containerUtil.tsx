@@ -1,8 +1,8 @@
 import React, { ReactElement } from "react";
 import { v4 as uuidv4 } from "uuid";
-import { ColumnHandleProps, ContextParams, RowHandleProps } from "../../common/interfaces";
-import * as ich from "../../common/ipcChannels";
-import { BaseNode, ContainerNode, TileNode, containers, tiles } from "./nodeTypes";
+import { ColumnHandleProps, ContextParams, RowHandleProps } from "../../common/interfaces.ts";
+import * as ich from "../../common/ipcChannels.ts";
+import { BaseNode, ContainerNode, TileNode, containers, tiles } from "./nodeTypes.tsx";
 
 function calculateBasis(
   index: number,

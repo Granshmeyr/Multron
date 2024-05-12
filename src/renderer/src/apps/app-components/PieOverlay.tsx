@@ -1,8 +1,8 @@
 import { IconButton } from "@mui/material";
 import React, { ReactElement, useEffect, useRef, useState } from "react";
-import { IpcListener, Vector2 } from "../../../../common/interfaces";
-import * as ich from "../../../../common/ipcChannels";
-import { registerIpcListener, unregisterIpcListener } from "../../../common/util";
+import { IpcListener, Vector2 } from "../../../../common/interfaces.ts";
+import * as ich from "../../../../common/ipcChannels.ts";
+import { registerIpcListener, unregisterIpcListener } from "../../../common/util.ts";
 
 interface PieButtonProps {
   icon?: string,

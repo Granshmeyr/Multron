@@ -3,6 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "main": "./out/main/main.js",
+  "type": "module",
   "scripts": {
     "dev": "npx electron-vite dev -w",
     "build": "electron-vite build",

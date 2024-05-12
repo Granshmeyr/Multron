@@ -1,8 +1,8 @@
 import { BrowserWindow, app, globalShortcut, ipcMain, screen } from "electron";
 import path from "path";
-import { CustomShortcuts, Shortcut } from "../common/interfaces";
-import * as ich from "../common/ipcChannels";
-import { onCallTileContextBehavior, onCreateViewAsync, onDeleteView, onFocusMainWindow, onGetDisplayMetrics, onGetViewData, onRefreshAllViewBounds, onResizeCaptureAsync, onSetOverlayIgnore, onSetViewRectangle, onSetViewUrl, onShowPieMenu, onUpdateBorderPx } from "../common/listeners";
+import { CustomShortcuts, Shortcut } from "../common/interfaces.ts";
+import * as ich from "../common/ipcChannels.ts";
+import { onCallTileContextBehavior, onCreateViewAsync, onDeleteView, onFocusMainWindow, onGetDisplayMetrics, onGetViewData, onRefreshAllViewBounds, onResizeCaptureAsync, onSetOverlayIgnore, onSetViewRectangle, onSetViewUrl, onShowPieMenu, onUpdateBorderPx } from "../common/listeners.ts";
 
 export let mainWindow: BrowserWindow | null = null;
 export let hideWindow: BrowserWindow | null = null;
@@ -96,7 +96,8 @@ function createMainWindow() {
     height: 700,
     width: 1400,
     webPreferences: {
-      preload: path.join(app.getAppPath(), "out", "preload", "preload.js"),
+      preload: path.join(app.getAppPath(), "out", "preload", "preload.mjs"),
+      sandbox: false,
       zoomFactor: 1.0,
       backgroundThrottling: false
     }
@@ -126,7 +127,8 @@ function createOverlayWindow() {
     frame: false,
     skipTaskbar: true,
     webPreferences: {
-      preload: path.join(app.getAppPath(), "out", "preload", "preload.js"),
+      preload: path.join(app.getAppPath(), "out", "preload", "preload.mjs"),
+      sandbox: false,
       zoomFactor: 1.0
     }
   });

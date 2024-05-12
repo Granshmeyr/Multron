@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { contextBridge, ipcRenderer } from "electron";
-import { IpcListener, IpcListenerFunction } from "../common/interfaces";
+import { IpcListener, IpcListenerFunction } from "../common/interfaces.ts";
 
 class ListenerRegistry {
   private registry = new Map<string, Set<IpcListener>>();

@@ -1,7 +1,7 @@
 import { WebContentsView } from "electron";
-import { hideWindow, mainWindow } from "../main/main";
-import { Chest } from "./interfaces";
-import { marginizeRect, reparentView } from "./mainUtil";
+import { hideWindow, mainWindow } from "../main/main.ts";
+import { Chest } from "./interfaces.ts";
+import { marginizeRect, reparentView } from "./mainUtil.ts";
 
 export const borderPx: Chest<number> = { item: 0 };
 

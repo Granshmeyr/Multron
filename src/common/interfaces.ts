@@ -1,6 +1,6 @@
 import React from "react";
-import { BaseNode, ColumnNode, RowNode, TileNode } from "../renderer/common/nodeTypes";
-import { ContextOption, Direction } from "./enums";
+import { BaseNode, ColumnNode, RowNode, TileNode } from "../renderer/common/nodeTypes.tsx";
+import { ContextOption, Direction } from "./enums.ts";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type IpcListenerFunction = (e: Electron.IpcRendererEvent, ...args: any[]) => void;

@@ -1,4 +1,5 @@
 import Dialog from "@mui/material/Dialog";
+import { useState } from "react";
 
 export default function Main() {
   const [open, setOpen] = useState<boolean>(false);

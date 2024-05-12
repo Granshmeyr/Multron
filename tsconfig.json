@@ -1,29 +1,30 @@
 {
   "compilerOptions": {
-    "target": "ES2017",
+    "target": "ESNext",
     "useDefineForClassFields": true,
     "lib": [
       "ES2020",
       "DOM",
       "DOM.Iterable"
     ],
-    "module": "CommonJS",
-    "skipLibCheck": true,
     "esModuleInterop": true,
-    /* Bundler mode */
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-    /* Linting */
-    "strict": true,
     "noUnusedLocals": false,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "types": [
       "electron-vite/node"
-    ]
+    ],
+    "composite": true,
+    "skipLibCheck": true,
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "allowSyntheticDefaultImports": true,
+    "strict": true
   },
   "include": [
     "src",
@@ -31,11 +32,5 @@
     "ts-configs/interfaces.d.ts",
     "ts-configs/types.d.ts",
     "ts-configs/global.d.ts",
-    "src/renderer/common/types.ts"
   ],
-  "references": [
-    {
-      "path": "./tsconfig.node.json"
-    }
-  ]
 }

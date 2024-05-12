@@ -6,9 +6,9 @@ import { ScopedCssBaseline, ThemeProvider } from "@mui/material";
 import * as React from "react";
 import * as ReactDOM from "react-dom/client";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
-import * as Themes from "../common/themes";
-import Overlay from "./apps/Overlay";
-import TilesApp from "./apps/Tiles";
+import * as Themes from "../common/themes.ts";
+import Overlay from "./apps/Overlay.tsx";
+import TilesApp from "./apps/Tiles.tsx";
 import "./index.css";
 
 const router = createBrowserRouter([

@@ -1,6 +1,6 @@
-import { Direction } from "../../common/enums";
-import { IpcListener, Vector2 } from "../../common/interfaces";
-import { displayMetricsTracker } from "./types";
+import { Direction } from "../../common/enums.ts";
+import { IpcListener, Vector2 } from "../../common/interfaces.ts";
+import { displayMetricsTracker } from "./types.ts";
 
 export const editMode: boolean = false;
 

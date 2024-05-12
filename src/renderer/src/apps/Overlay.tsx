@@ -1,9 +1,9 @@
 import { ReactElement, useEffect, useRef, useState } from "react";
-import { ContextOption, Direction } from "../../../common/enums";
-import { ContextParams, IpcListener, Vector2 } from "../../../common/interfaces";
-import * as ich from "../../../common/ipcChannels";
-import { registerIpcListener, unregisterIpcListener } from "../../common/util";
-import PieOverlay, { PieButtonListenerProps, PieButtonColProps } from "./app-components/PieOverlay";
+import { ContextOption, Direction } from "../../../common/enums.ts";
+import { ContextParams, IpcListener, Vector2 } from "../../../common/interfaces.ts";
+import * as ich from "../../../common/ipcChannels.ts";
+import { registerIpcListener, unregisterIpcListener } from "../../common/util.ts";
+import PieOverlay, { PieButtonListenerProps, PieButtonColProps } from "./app-components/PieOverlay.tsx";
 import { IpcRendererEvent } from "electron";
 
 export default function Main(): ReactElement {

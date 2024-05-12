@@ -1,11 +1,11 @@
 import { ReactElement } from "react";
 import { v4 as uuidv4 } from "uuid";
-import { ContextOption, Direction } from "../../common/enums";
-import { ColumnProps, ContextBehavior, Neighbors, RowProps, TileProps, Vector2 } from "../../common/interfaces";
-import * as ich from "../../common/ipcChannels";
-import { Column, Row, Tile } from "../src/apps/Tiles";
-import { BgLoader, ViewRectEnforcer } from "./types";
-import { fpsToMs } from "./util";
+import { ContextOption, Direction } from "../../common/enums.ts";
+import { ColumnProps, ContextBehavior, Neighbors, RowProps, TileProps, Vector2 } from "../../common/interfaces.ts";
+import * as ich from "../../common/ipcChannels.ts";
+import { Column, Row, Tile } from "../src/apps/Tiles.tsx";
+import { BgLoader, ViewRectEnforcer } from "./types.ts";
+import { fpsToMs } from "./util.ts";
 
 export const tiles = new Map<string, TileNode>();
 export const containers = new Map<string, ContainerNode>();

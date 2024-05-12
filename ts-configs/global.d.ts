@@ -1,4 +1,4 @@
-import { IpcListenerFunction } from "../src/common/interfaces";
+import { IpcListenerFunction } from "../src/common/interfaces.ts";
 
 declare global {
     interface Window {

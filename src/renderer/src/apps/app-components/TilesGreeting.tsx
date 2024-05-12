@@ -1,6 +1,6 @@
-import LinkIcon from "@mui/icons-material/Link";
+import { Link as LinkIcon } from "@mui/icons-material";
 import { BoxProps, TextField } from "@mui/material";
-import InputAdornment from "@mui/material/InputAdornment";
+import { InputAdornment } from "@mui/material";
 import { forwardRef, useRef } from "react";
 
 interface GreetingFunctions {

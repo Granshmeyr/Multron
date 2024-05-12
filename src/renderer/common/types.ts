@@ -1,8 +1,8 @@
 import { IpcRendererEvent } from "electron";
-import { DisplayMetrics, ViewData } from "../../common/interfaces";
-import * as ich from "../../common/ipcChannels";
-import { TileNode } from "./nodeTypes";
-import { compareRects, registerIpcListener } from "./util";
+import { DisplayMetrics, ViewData } from "../../common/interfaces.ts";
+import * as ich from "../../common/ipcChannels.ts";
+import { TileNode } from "./nodeTypes.tsx";
+import { compareRects, registerIpcListener } from "./util.ts";
 
 export class BgLoader {
   setter: React.Dispatch<React.SetStateAction<string | null>> | null = null;
