@@ -110,11 +110,11 @@ function createMainWindow() {
   registerSharedListeners(mainWindow, {
     focus: [
       {
-        accelerator: "CommandOrControl+-",
+        accelerator: "CommandOrControl+=",
         callback: () => { mainWindow!.webContents.send(ich.adjustBorderPx, 2); }
       },
       {
-        accelerator: "CommandOrControl+=",
+        accelerator: "CommandOrControl+-",
         callback: () => { mainWindow!.webContents.send(ich.adjustBorderPx, -2); }
       }
     ]

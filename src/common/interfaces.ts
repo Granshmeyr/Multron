@@ -1,5 +1,5 @@
 import React from "react";
-import { BaseNode, ColumnNode, RowNode, TileNode } from "../renderer/common/nodeTypes.tsx";
+import { BaseNode, ColumnNode, ContainerNode, RowNode, TileNode } from "../renderer/common/nodeTypes.tsx";
 import { ContextOption, Direction } from "./enums.ts";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -37,13 +37,13 @@ export interface ColumnHandleProps {
   onMouseDown: (e: React.DragEvent<HTMLDivElement>) => void;
   onMouseUp: React.MouseEventHandler<HTMLDivElement>;
   containerRef: React.RefObject<HTMLDivElement>;
-  containerId: string;
+  containerNode: ContainerNode;
 }
 export interface RowHandleProps {
   onMouseDown: (e: React.DragEvent<HTMLDivElement>) => void;
   onMouseUp: React.MouseEventHandler<HTMLDivElement>;
   containerRef: React.RefObject<HTMLDivElement>;
-  containerId: string;
+  containerNode: ContainerNode;
 }
 export interface Vector2 { x: number, y: number }
 export interface ContextParams {
@@ -87,4 +87,13 @@ export interface Neighbors {
   bottom: boolean;
   left: boolean;
   right: boolean;
+}
+export interface HandleDimensions {
+  offset: number;
+  length: number;
+}
+export interface Rgb {
+  r: number;
+  g: number;
+  b: number;
 }

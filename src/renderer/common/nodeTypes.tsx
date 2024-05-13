@@ -15,13 +15,14 @@ type RowNodeProps = Omit<RowProps, "nodeId" | "style" | "thisNode">
 type ColumnNodeProps = Omit<ColumnProps, "nodeId" | "style" | "thisNode">
 
 export abstract class BaseNode {
-  parent: BaseNode | null = null;
+  parent: ContainerNode | null = null;
   nodeId: string = uuidv4();
   style: React.CSSProperties = {};
   abstract toElement(): ReactElement;
 }
 
 export abstract class ContainerNode extends BaseNode {
+  neighbors: Neighbors = { top: false, bottom: false, left: false, right: false };
   abstract get children(): BaseNode[];
   abstract set children(value: BaseNode[]);
   abstract get refreshRoot(): React.DispatchWithoutAction;
@@ -32,13 +33,40 @@ export abstract class ContainerNode extends BaseNode {
   abstract set rootContextBehavior(value: ContextBehavior);
   abstract get handlePercents(): number[];
   abstract set handlePercents(value: number[]);
+  rescanNeighbors() {
+    if (this.parent === null) {
+      this.neighbors = { top: false, bottom: false, left: false, right: false };
+      return;
+    }
+    const n: Neighbors = { top: false, bottom: false, left: false, right: false };
+    function recurse(node: BaseNode) {
+      const p = node.parent;
+      if (!p) return;
+      const c = p.children;
+      const i = c.indexOf(node);
+      if (i !== 0 || i !== c.length) recurse(p);
+      if (p instanceof ColumnNode) {
+        const c = p.children;
+        if (c[0] !== node)            n.top = true;
+        if (c[c.length - 1] !== node) n.bottom = true;
+      }
+      else if (p instanceof RowNode) {
+        const c = p.children;
+        if (c[0] !== node)            n.left = true;
+        if (c[c.length - 1] !== node) n.right = true;
+      }
+      if (Object.values(n).every(v => v === true)) return;
+      recurse(p);
+    }
+    recurse(this);
+    this.neighbors = n;
+  }
 }
 
 export class TileNode extends BaseNode {
-  ref: React.RefObject<HTMLDivElement> | null = null;
   bgLoader = new BgLoader();
   viewRectEnforcer = new ViewRectEnforcer(this, rectUpdateMs);
-  neighbors: Neighbors = { top: false, bottom: false, left: false, right: false };
+  ref: React.RefObject<HTMLDivElement> | null = null;
   private _url?: URL;
   private _contextBehavior: ContextBehavior;
 
@@ -65,31 +93,6 @@ export class TileNode extends BaseNode {
     if (props.nodeId !== undefined) this.nodeId = props.nodeId;
     if (props.url !== undefined) this._url = props.url;
     if (props.contextBehavior !== undefined) this._contextBehavior = props.contextBehavior;
-  }
-  rescanNeighbors() {
-    if (this.parent === null) {
-      this.neighbors = { top: false, bottom: false, left: false, right: false };
-      return;
-    }
-    const n: Neighbors = { top: false, bottom: false, left: false, right: false };
-    function recurse(node: BaseNode) {
-      const p = node.parent;
-      if (p instanceof ColumnNode) {
-        const c = p.children;
-        if (c[0] !== node)            n.top = true;
-        if (c[c.length - 1] !== node) n.bottom = true;
-      }
-      else if (p instanceof RowNode) {
-        const c = p.children;
-        if (c[0] !== node)            n.left = true;
-        if (c[c.length - 1] !== node) n.right = true;
-      }
-      if (Object.values(n).every(v => v === true)) return;
-      if (p === null) return;
-      recurse(p);
-    }
-    recurse(this);
-    this.neighbors = n;
   }
 
   get url(): URL | undefined { return this._url; }
@@ -137,9 +140,7 @@ export class ColumnNode extends ContainerNode {
     handlePercents: handlePercents,
   }: ColumnNodeProps) {
     super();
-    for (const child of children) {
-      child.parent = this;
-    }
+    for (const child of children) child.parent = this;
     this._children = children;
     this._refreshRoot = forceState;
     this._setRoot = setRoot;
@@ -187,9 +188,7 @@ export class RowNode extends ContainerNode {
     handlePercents: handlePercents,
   }: RowNodeProps) {
     super();
-    for (const child of children) {
-      child.parent = this;
-    }
+    for (const child of children) child.parent = this;
     this._children = children;
     this._refreshRoot = forceState;
     this._setRoot = setRoot;

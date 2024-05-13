@@ -1,7 +1,7 @@
 import { IpcRendererEvent } from "electron";
 import React, { ReactElement, useContext, useEffect, useLayoutEffect, useReducer, useRef, useState } from "react";
 import { ContextOption, Direction } from "../../../common/enums.ts";
-import { ColumnHandleProps, ColumnProps, ContextParams, IpcListener, RowHandleProps, RowProps, TileProps, Vector2, ViewData } from "../../../common/interfaces.ts";
+import { ColumnHandleProps, ColumnProps, ContextParams, HandleDimensions, IpcListener, Rgb, RowHandleProps, RowProps, TileProps, Vector2, ViewData } from "../../../common/interfaces.ts";
 import * as ich from "../../../common/ipcChannels.ts";
 import { buildTree, deletion, setUrl } from "../../common/containerUtil.tsx";
 import * as Context from "../../common/contextProviders.ts";
@@ -10,7 +10,8 @@ import { getDivRect, percentAlongRectX, percentAlongRectY, registerIpcListener, 
 import Greeting from "./app-components/TilesGreeting.tsx";
 
 export default function Main(): ReactElement {
-  const [borderPx, setBorderPx] = useState<number>(60);
+  const [borderPx, setBorderPx] = useState<number>(8);
+  const [borderRgb, setBorderRgb] = useState<Rgb>({ r: 230, g: 20, b: 20 });
   const [root, setRoot] = useState<BaseNode>(
     new TileNode(onContext)
   );
@@ -73,7 +74,8 @@ export default function Main(): ReactElement {
   const debugListener = useRef<IpcListener>({
     uuid: "1c1787f8-6651-4695-bec6-a71dd6ad20b1",
     fn: () => {
-      console.log(`There are ${tiles.size} tiles in ${containers.size} containers`);
+      for (const c of containers.values()) c.rescanNeighbors();
+      console.log("rescanned neighbors");
     }
   });
   const callTileContextBehaviorCCListener = useRef<IpcListener>({
@@ -170,11 +172,13 @@ export default function Main(): ReactElement {
   }
 
   return (
-    <Context.BorderPx.Provider value={borderPx}>
-      <div ref={ref} className="flex w-screen h-screen">
-        {root.toElement()}
-      </div>
-    </Context.BorderPx.Provider>
+    <Context.BorderRgb.Provider value={borderRgb}>
+      <Context.BorderPx.Provider value={borderPx}>
+        <div ref={ref} className="flex w-screen h-screen">
+          {root.toElement()}
+        </div>
+      </Context.BorderPx.Provider>
+    </Context.BorderRgb.Provider>
   );
 }
 
@@ -310,6 +314,7 @@ export function Row({
         handlePercents,
         setCurrentHandle,
         ref,
+        thisNode,
         RowHandle
       )}
     </div>
@@ -449,6 +454,7 @@ export function Column({
         handlePercents,
         setCurrentHandle,
         ref,
+        thisNode,
         ColumnHandle
       )}
     </div>
@@ -469,8 +475,7 @@ export function Tile({
     y: 0
   });
   const borderPx = useContext(Context.BorderPx);
-
-
+  const borderRgb = useContext(Context.BorderRgb);
 
   useEffect(() => {
     tiles.set(nodeId, thisNode);
@@ -511,20 +516,53 @@ export function Tile({
   }, [nodeId, thisNode]);
 
   function element(): ReactElement {
-    const n = thisNode.neighbors;
-    const borderSizes = {
-      borderTopWidth: n.top ? borderPx / 2 : borderPx,
-      borderRightWidth: n.right ? borderPx / 2 : borderPx,
-      borderBottomWidth: n.bottom ? borderPx / 2 : borderPx,
-      borderLeftWidth: n.left ? borderPx / 2 : borderPx,
+    let borders: React.CSSProperties = {
+      borderColor: `rgb(${borderRgb.r}, ${borderRgb.g}, ${borderRgb.b})`,
+      borderTopWidth: borderPx,
+      borderRightWidth: borderPx,
+      borderBottomWidth: borderPx,
+      borderLeftWidth: borderPx,
     };
+
+    const p = thisNode.parent;
+    if (p) {
+      const i = p.children.indexOf(thisNode);
+      const n = p.neighbors;
+      if (p instanceof RowNode) {
+        const newBorders = {
+          borderTopWidth: borderPx,
+          borderRightWidth: borderPx / 2,
+          borderBottomWidth: borderPx,
+          borderLeftWidth: borderPx / 2,
+        };
+        if (i === 0 && !n.left) newBorders.borderLeftWidth = borderPx;
+        if (n.top) newBorders.borderTopWidth = borderPx / 2;
+        if (n.bottom) newBorders.borderBottomWidth = borderPx / 2;
+        if (i === p.children.length - 1 && !n.right) newBorders.borderRightWidth = borderPx;
+        borders = { ...borders, ...newBorders };
+      }
+      else if (p instanceof ColumnNode) {
+        const newBorders = {
+          borderTopWidth: borderPx / 2,
+          borderRightWidth: borderPx,
+          borderBottomWidth: borderPx / 2,
+          borderLeftWidth: borderPx,
+        };
+        if (i === 0 && !n.top) newBorders.borderTopWidth = borderPx;
+        if (n.left) newBorders.borderLeftWidth = borderPx / 2;
+        if (n.right) newBorders.borderRightWidth = borderPx / 2;
+        if (i === p.children.length - 1 && !n.bottom) newBorders.borderBottomWidth = borderPx;
+        borders = { ...borders, ...newBorders };
+      }
+    }
+
     function withImg() {
       return (
         <div
           className="flex"
           style={{
             ...style,
-            ...borderSizes,
+            ...borders,
             backgroundRepeat: "round",
             backgroundImage: `url(${bg})`
           }}
@@ -542,9 +580,10 @@ export function Tile({
       );
     }
 
-    let divClass = "flex";
-    if (style === undefined) {
+    let divClass = "flex tile-glow";
+    if (!thisNode.parent) {
       divClass += " basis-full";
+      delete style?.flexBasis;
     }
 
     switch (bg !== null) {
@@ -558,7 +597,7 @@ export function Tile({
           className={divClass}
           style={{
             ...style,
-            ...borderSizes
+            ...borders,
           }}
           onContextMenu={(e) => {
             window.electronAPI.send(
@@ -581,28 +620,30 @@ export function Tile({
   return element();
 }
 
-function RowHandle({ onMouseDown, onMouseUp, containerRef }: RowHandleProps): ReactElement {
+function RowHandle({ onMouseDown, onMouseUp, containerRef, containerNode }: RowHandleProps): ReactElement {
   const borderPx = useContext<number>(Context.BorderPx);
-  const [heightPx, setHeightPx] = useState<number>(10);
+  const [dimensions, setDimensions] = useState({} as HandleDimensions);
 
   useLayoutEffect(() => {
     const c = containerRef.current;
-
-    function updateHeightPx() {
-      if (c !== null) {
-        setHeightPx(c.offsetHeight - (borderPx * 2));
+    function updateWidthPx() {
+      if (!c) return;
+      let offset = 0;
+      let length = c.offsetHeight;
+      const n = containerNode.neighbors;
+      if (n.top && n.bottom) length = length - borderPx;
+      else if (n.top && !n.bottom) {
+        offset = borderPx / 4;
+        length = length - (borderPx / 2);
       }
+      else if (!n.top && n.bottom) {
+        offset = -(borderPx / 4);
+        length = length - (borderPx / 2);
+      }
+      setDimensions({ offset: offset, length: length });
     }
-
-    updateHeightPx();
-    const resizeObserver = new ResizeObserver(() => {
-      if (c !== null) {
-        updateHeightPx();
-      }
-    });
-    if (c !== null) resizeObserver.observe(c);
-    return () => resizeObserver.disconnect();
-  }, [borderPx, containerRef]);
+    updateWidthPx();
+  }, [borderPx, containerNode, containerRef]);
 
   return (
     <div
@@ -614,35 +655,38 @@ function RowHandle({ onMouseDown, onMouseUp, containerRef }: RowHandleProps): Re
         className="handle-row"
         style={{
           width: `${borderPx}px`,
-          height: `${heightPx}px`
+          height: `${dimensions.length}px`,
+          transform: `translate(-50%, -50%) translateY(${dimensions.offset}px)`
         }}
       />
     </div>
   );
 }
 
-function ColumnHandle({ onMouseDown, onMouseUp, containerRef }: ColumnHandleProps): ReactElement {
+function ColumnHandle({ onMouseDown, onMouseUp, containerRef, containerNode }: ColumnHandleProps): ReactElement {
   const borderPx = useContext<number>(Context.BorderPx);
-  const [widthPx, setWidthPx] = useState<number>(10);
+  const [dimensions, setDimensions] = useState({} as HandleDimensions);
 
   useLayoutEffect(() => {
     const c = containerRef.current;
-
     function updateWidthPx() {
-      if (c !== null) {
-        setWidthPx(c.offsetWidth - (borderPx * 2));
+      if (!c) return;
+      let offset = 0;
+      let length = c.offsetWidth;
+      const n = containerNode.neighbors;
+      if (n.left && n.right) length = length - borderPx;
+      else if (n.left && !n.right) {
+        offset = borderPx / 4;
+        length = length - (borderPx / 2);
       }
+      else if (!n.left && n.right) {
+        offset = -(borderPx / 4);
+        length = length - (borderPx / 2);
+      }
+      setDimensions({ offset: offset, length: length });
     }
-
     updateWidthPx();
-    const resizeObserver = new ResizeObserver(() => {
-      if (c !== null) {
-        updateWidthPx();
-      }
-    });
-    if (c !== null) resizeObserver.observe(c);
-    return () => resizeObserver.disconnect();
-  }, [borderPx, containerRef]);
+  }, [borderPx, containerNode, containerRef]);
 
   return (
     <div
@@ -654,7 +698,8 @@ function ColumnHandle({ onMouseDown, onMouseUp, containerRef }: ColumnHandleProp
         className="handle-col"
         style={{
           height: `${borderPx}px`,
-          width: `${widthPx}px`
+          width: `${dimensions.length}px`,
+          transform: `translate(-50%, -50%) translateX(${dimensions.offset}px)`
         }}
       />
     </div>
