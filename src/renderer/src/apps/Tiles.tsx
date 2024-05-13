@@ -6,12 +6,13 @@ import * as ich from "../../../common/ipcChannels.ts";
 import { buildTree, deletion, setUrl } from "../../common/containerUtil.tsx";
 import * as Context from "../../common/contextProviders.ts";
 import { BaseNode, ColumnNode, ContainerNode, RowNode, TileNode, containers, tiles } from "../../common/nodeTypes.jsx";
-import { getDivRect, percentAlongRectX, percentAlongRectY, registerIpcListener, unregisterIpcListener } from "../../common/util.ts";
+import { getDivRect, percentAlongRectX, percentAlongRectY, randomRgb, registerIpcListener, unregisterIpcListener } from "../../common/util.ts";
 import Greeting from "./app-components/TilesGreeting.tsx";
 
 export default function Main(): ReactElement {
   const [borderPx, setBorderPx] = useState<number>(8);
-  const [borderRgb, setBorderRgb] = useState<Rgb>({ r: 230, g: 20, b: 20 });
+  const [borderRgb, setBorderRgb] = useState<Rgb>({ r: 255, g: 255, b: 255 });
+  const [shadowRgb, setShadowRgb] = useState<Rgb>({ r: 255, g: 255, b: 255 });
   const [root, setRoot] = useState<BaseNode>(
     new TileNode(onContext)
   );
@@ -74,8 +75,9 @@ export default function Main(): ReactElement {
   const debugListener = useRef<IpcListener>({
     uuid: "1c1787f8-6651-4695-bec6-a71dd6ad20b1",
     fn: () => {
-      for (const c of containers.values()) c.rescanNeighbors();
-      console.log("rescanned neighbors");
+      const rgb = randomRgb();
+      setBorderRgb(rgb);
+      setShadowRgb(rgb);
     }
   });
   const callTileContextBehaviorCCListener = useRef<IpcListener>({
@@ -108,8 +110,12 @@ export default function Main(): ReactElement {
 
   useEffect(() => {
     registerListeners();
+    document.documentElement.style.setProperty(
+      "--shadow-color",
+      `rgb(${shadowRgb.r}, ${shadowRgb.g}, ${shadowRgb.b})`
+    );
     return () => unregisterListeners();
-  });
+  }, [shadowRgb.b, shadowRgb.g, shadowRgb.r]);
 
   function onContext(tileId: string, params: ContextParams, pos?: Vector2) {
     const tile = tiles.get(tileId) as TileNode;
@@ -174,7 +180,10 @@ export default function Main(): ReactElement {
   return (
     <Context.BorderRgb.Provider value={borderRgb}>
       <Context.BorderPx.Provider value={borderPx}>
-        <div ref={ref} className="flex w-screen h-screen">
+        <div
+          className="flex w-screen h-screen inner-glow"
+          ref={ref}
+        >
           {root.toElement()}
         </div>
       </Context.BorderPx.Provider>
@@ -475,7 +484,6 @@ export function Tile({
     y: 0
   });
   const borderPx = useContext(Context.BorderPx);
-  const borderRgb = useContext(Context.BorderRgb);
 
   useEffect(() => {
     tiles.set(nodeId, thisNode);
@@ -517,7 +525,7 @@ export function Tile({
 
   function element(): ReactElement {
     let borders: React.CSSProperties = {
-      borderColor: `rgb(${borderRgb.r}, ${borderRgb.g}, ${borderRgb.b})`,
+      borderColor: "rgba(0, 0, 0, 0)",
       borderTopWidth: borderPx,
       borderRightWidth: borderPx,
       borderBottomWidth: borderPx,
@@ -580,7 +588,7 @@ export function Tile({
       );
     }
 
-    let divClass = "flex tile-glow";
+    let divClass = "flex";
     if (!thisNode.parent) {
       divClass += " basis-full";
       delete style?.flexBasis;

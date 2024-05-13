@@ -61,7 +61,7 @@
 }
 
 :root {
-  --shadow-color: #000000;
+  --shadow-color: #ffffff;
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
   background-color: #00000000;
@@ -69,17 +69,18 @@
   box-sizing: border-box;
 }
 
-.tile-glow {
+.inner-glow {
   position: relative;
   overflow: hidden;
 }
 
-.tile-glow::before {
+.inner-glow::before {
   content: "";
   position: absolute;
   top: 0px;
   left: 0px;
   right: 0px;
   bottom: 0px;
-  box-shadow: inset 0 0 5px var(--shadow-color), inset 0 0 10px var(--shadow-color);
+  box-shadow: inset 0 0 5px var(--shadow-color), inset 0 0 12px #000;
+  pointer-events: none;
 }
