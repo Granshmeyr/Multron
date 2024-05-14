@@ -4,7 +4,7 @@ import { mainWindow, overlayWindow } from "../main/main.ts";
 import { ContextOption, Direction } from "./enums.ts";
 import { ContextParams, DisplayMetrics, Vector2, ViewData } from "./interfaces.ts";
 import { ViewInstance, borderPx } from "./mainTypes.ts";
-import { cursorViewportPosition, getTaskbarBounds } from "./mainUtil.ts";
+import { getTaskbarBounds } from "./mainUtil.ts";
 
 export const views = new Map<string, ViewInstance>();
 
@@ -44,15 +44,15 @@ export async function onShowContextMenuAsync(): Promise<ContextParams | null> {
   });
 }
 export async function onCreateViewAsync(
-  id: string,
+  nodeId: string,
   window: BrowserWindow,
   options?: WebContentsViewConstructorOptions
 ): Promise<boolean> {
   return new Promise<boolean>((resolve) => {
-    views.set(id, new ViewInstance(new WebContentsView(options)));
-    const view = views.get(id)!.view;
-    view.webContents.on("context-menu", async () => {
-      const position: Vector2 = cursorViewportPosition(window);
+    views.set(nodeId, new ViewInstance(new WebContentsView(options), nodeId));
+    const view = views.get(nodeId)!.view;
+    view.webContents.on("context-menu", () => {
+      onShowPieMenu(nodeId, screen.getCursorScreenPoint());
     });
     view.webContents.on("zoom-changed", (_, zoomDirection) => {
       const currentZoom = view.webContents.getZoomLevel();

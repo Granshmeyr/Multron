@@ -18,7 +18,7 @@ export interface RowProps {
   refreshRoot: React.DispatchWithoutAction;
   setRoot: React.Dispatch<React.SetStateAction<BaseNode>>
   rootContextBehavior: ContextBehavior;
-  handlePositions: number[];
+  handlePercents: number[];
   style?: React.CSSProperties;
   nodeId: string;
   thisNode: RowNode;
@@ -28,7 +28,7 @@ export interface ColumnProps {
   refreshRoot: React.DispatchWithoutAction;
   setRoot: React.Dispatch<React.SetStateAction<BaseNode>>;
   rootContextBehavior: ContextBehavior;
-  handlePositions: number[];
+  handlePercents: number[];
   style?: React.CSSProperties;
   nodeId: string;
   thisNode: ColumnNode;
@@ -41,7 +41,7 @@ export interface RowHandleProps {
   onMouseDown: (e: React.DragEvent<HTMLDivElement>) => void;
   onMouseUp: React.MouseEventHandler<HTMLDivElement>;
 }
-export interface Vector2 { x: number, y: number }
+export interface Vector2 extends Electron.Point {  }
 export interface ContextParams {
   option: ContextOption;
   direction?: Direction;

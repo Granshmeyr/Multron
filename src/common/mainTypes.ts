@@ -7,10 +7,12 @@ export const borderPx: Chest<number> = { item: 0 };
 
 export class ViewInstance {
   view: WebContentsView;
+  nodeId: string;
   private _rect: Electron.Rectangle = { height: 0, width: 0, x: 0, y: 0 };
 
-  constructor(view: WebContentsView) {
+  constructor(view: WebContentsView, nodeId: string) {
     this.view = view;
+    this.nodeId = nodeId;
   }
 
   get rect(): Electron.Rectangle {

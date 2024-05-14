@@ -9,37 +9,39 @@ function calculateBasis(
   borderPx: number,
   nodesLength: number,
   handlePercents: number[]
-): number {
-  let basis: number;
+): string {
+  let value: string;
   if (index >= nodesLength) {
     console.error(`Invalid index for ${calculateBasis.name}`);
-    basis = -1;
+    value = "69px";
   }
   else if (index === 0) {
-    basis = handlePercents[0];
+    value = `calc(${handlePercents[0] * 100}% - ${borderPx / 2}px)`;
   }
   else if (index === nodesLength - 1) {
-    basis = 1 - handlePercents[index - 1];
+    value = `calc(${(1 - handlePercents[index - 1]) * 100}% - ${borderPx / 2}px)`;
   }
   else {
-    basis = handlePercents[index] - handlePercents[index - 1];
+    value = `calc(${(handlePercents[index] - handlePercents[index - 1]) * 100}% - ${borderPx}px)`;
   }
-  return basis * 100;
+  return value;
 }
 
 function createElement(
   index: number,
+  borderPx: number,
   nodeArrayLength: number,
   baseNode: BaseNode,
   handlePercents: number[],
 ): ReactElement {
-  const basis: number = calculateBasis(index, nodeArrayLength, handlePercents);
-  baseNode.style = { ...baseNode.style, flexBasis: `${basis}%` };
+  const basis: string = calculateBasis(index, borderPx, nodeArrayLength, handlePercents);
+  baseNode.style = { ...baseNode.style, flexBasis: basis };
   return baseNode.toElement();
 }
 
 export function buildTree(
   nodes: BaseNode[],
+  borderPx: number,
   handlePercents: number[],
   setCurrentHandle: (value: React.SetStateAction<number | null>) => void,
   Handle: React.ComponentType<RowHandleProps> | React.ComponentType<ColumnHandleProps>
@@ -49,6 +51,7 @@ export function buildTree(
   for (let index = 0; index < nodesLength; index++) {
     const element = createElement(
       index,
+      borderPx,
       nodesLength,
       nodes[index],
       handlePercents,

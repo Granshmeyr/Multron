@@ -204,12 +204,13 @@ export function Row({
   refreshRoot,
   setRoot,
   rootContextBehavior,
-  handlePositions,
+  handlePercents,
   style,
   nodeId,
   thisNode
 }: RowProps): ReactElement {
   const [currentHandle, setCurrentHandle] = useState<number | null>(null);
+  const borderPx = useContext(Context.BorderPx);
   const ref = useRef<HTMLDivElement>(null);
 
   for (const child of children) {
@@ -229,9 +230,9 @@ export function Row({
     }
     function onMouseMove(e: MouseEvent) {
       if (currentHandle !== null && ref.current !== null) {
-        const mousePosition = e.clientX - ref.current.getBoundingClientRect().left;
-        const newPercents = [...handlePositions];
-        newPercents[currentHandle] = mousePosition;
+        const mousePos = e.clientX - ref.current.getBoundingClientRect().left;
+        const newPercents = [...handlePercents];
+        newPercents[currentHandle] = mousePos / ref.current.offsetWidth;
         thisNode.handlePercents = newPercents;
         refreshRoot();
       }
@@ -327,6 +328,7 @@ export function Row({
     >
       {buildTree(
         children,
+        borderPx,
         handlePercents,
         setCurrentHandle,
         RowHandle
@@ -346,6 +348,7 @@ export function Column({
   thisNode
 }: ColumnProps): ReactElement {
   const [currentHandle, setCurrentHandle] = useState<number | null>(null);
+  const borderPx = useContext(Context.BorderPx);
   const ref = useRef<HTMLDivElement>(null);
 
   for (const child of children) {
@@ -365,10 +368,9 @@ export function Column({
     }
     function onMouseMove(e: MouseEvent) {
       if (currentHandle !== null && ref.current) {
-        const divHeight = ref.current.offsetHeight;
-        const mousePosition = e.clientY - ref.current.getBoundingClientRect().top;
+        const mousePos = e.clientY - ref.current.getBoundingClientRect().top;
         const newPercents = [...handlePercents];
-        newPercents[currentHandle] = mousePosition / divHeight;
+        newPercents[currentHandle] = mousePos / ref.current.offsetHeight;
         thisNode.handlePercents = newPercents;
         refreshRoot();
       }
@@ -465,6 +467,7 @@ export function Column({
     >
       {buildTree(
         children,
+        borderPx,
         handlePercents,
         setCurrentHandle,
         ColumnHandle
