@@ -2,32 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-.handle-col {
-  background-color: rgba(255, 255, 255, 1);
-  position: absolute;
-  height: 10px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: white;
-  cursor: move;
-  left: 50%;
-  z-index: 1;
- }
-
- .handle-row {
-  background-color: rgba(255, 255, 255, 1);
-  position: absolute;
-  width: 10px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: white;
-  cursor: move;
-  top: 50%;
-  z-index: 1;
- }
-
  .pie-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -61,7 +35,8 @@
 }
 
 :root {
-  --shadow-color: #ffffff;
+  --border-glow: #00ff00;
+  --handle-glow: #00ff00;
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
   background-color: #00000000;
@@ -69,18 +44,33 @@
   box-sizing: border-box;
 }
 
-.inner-glow {
+.border-glow {
   position: relative;
-  overflow: hidden;
 }
 
-.inner-glow::before {
+.border-glow::before {
   content: "";
   position: absolute;
   top: 0px;
   left: 0px;
   right: 0px;
   bottom: 0px;
-  box-shadow: inset 0 0 5px var(--shadow-color), inset 0 0 12px #000;
+  box-shadow: inset 0 0 5px var(--border-glow), inset 0 0 8px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(0, 0, 0, 0.5);
   pointer-events: none;
+  z-index: 99;
+}
+
+.handle-glow {
+  position: relative;
+}
+
+.handle-glow::after {
+  content: "";
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  bottom: 0px;
+  left: 0px;
+  z-index: -1;
+  box-shadow: 0 0 5px var(--handle-glow), 0 0 8px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 0, 0, 0.5);
 }

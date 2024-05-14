@@ -41,8 +41,6 @@ export function buildTree(
   nodeArray: BaseNode[],
   handlePercents: number[],
   setCurrentHandle: (value: React.SetStateAction<number | null>) => void,
-  containerRef: React.RefObject<HTMLDivElement>,
-  containerNode: ContainerNode,
   Handle: React.ComponentType<RowHandleProps> | React.ComponentType<ColumnHandleProps>
 ): ReactElement[] {
   const elementArray: ReactElement[] = [];
@@ -69,8 +67,6 @@ export function buildTree(
             }
           }
           onMouseUp={() => { return; }}
-          containerRef={containerRef}
-          containerNode={containerNode}
         ></Handle>
       );
       elementArray.push(handle);

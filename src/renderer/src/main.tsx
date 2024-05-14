@@ -2,7 +2,7 @@ import "@fontsource/roboto/300.css";
 import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
-import { ScopedCssBaseline, ThemeProvider } from "@mui/material";
+import { ThemeProvider } from "@mui/material";
 import * as React from "react";
 import * as ReactDOM from "react-dom/client";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
@@ -15,9 +15,7 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: (
-      <ScopedCssBaseline>
-        <TilesApp />
-      </ScopedCssBaseline>
+      <TilesApp />
     )
   },
   {

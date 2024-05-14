@@ -36,14 +36,10 @@ export interface ColumnProps {
 export interface ColumnHandleProps {
   onMouseDown: (e: React.DragEvent<HTMLDivElement>) => void;
   onMouseUp: React.MouseEventHandler<HTMLDivElement>;
-  containerRef: React.RefObject<HTMLDivElement>;
-  containerNode: ContainerNode;
 }
 export interface RowHandleProps {
   onMouseDown: (e: React.DragEvent<HTMLDivElement>) => void;
   onMouseUp: React.MouseEventHandler<HTMLDivElement>;
-  containerRef: React.RefObject<HTMLDivElement>;
-  containerNode: ContainerNode;
 }
 export interface Vector2 { x: number, y: number }
 export interface ContextParams {
@@ -92,8 +88,9 @@ export interface HandleDimensions {
   offset: number;
   length: number;
 }
-export interface Rgb {
+export interface Rgba {
   r: number;
   g: number;
   b: number;
+  a: number;
 }

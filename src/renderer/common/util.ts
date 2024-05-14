@@ -1,5 +1,5 @@
 import { Direction } from "../../common/enums.ts";
-import { IpcListener, Rgb, Vector2 } from "../../common/interfaces.ts";
+import { IpcListener, Rgba, Vector2 } from "../../common/interfaces.ts";
 import { displayMetricsTracker } from "./types.ts";
 
 export const editMode: boolean = false;
@@ -87,11 +87,15 @@ export function getDivRect(div: HTMLDivElement): Electron.Rectangle {
     height: div.offsetHeight
   };
 }
-export function randomRgb(): Rgb {
+export function randomRgba(randomAlpha?: boolean): Rgba {
   function getRandom(): number { return Math.floor(Math.random() * 255) + 1; }
   return {
     r: getRandom(),
     g: getRandom(),
-    b: getRandom()
+    b: getRandom(),
+    a: randomAlpha ? Math.random() : 1
   };
+}
+export function rgbaAsCss(rgba: Rgba): string {
+  return `rgba(${rgba.r}, ${rgba.g}, ${rgba.b}, ${rgba.a})`;
 }

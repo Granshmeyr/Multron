@@ -75,7 +75,6 @@ export class TileNode extends BaseNode {
     this.nodeId = uuidv4();
     if (contextBehavior !== undefined) this._contextBehavior = contextBehavior;
     else this._contextBehavior = () => console.log("default contextBehavior");
-    for (const c of containers.values()) c.rescanNeighbors();
   }
 
   toElement(): ReactElement {
@@ -122,7 +121,6 @@ export class TileNode extends BaseNode {
     this.contextBehavior(this.nodeId, { option: ContextOption.Split, direction: direction }, pos);
   }
   delete() {
-    for (const c of containers.values()) c.rescanNeighbors();
     this.contextBehavior(this.nodeId, { option: ContextOption.Delete });
   }
 }

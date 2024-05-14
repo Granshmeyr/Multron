@@ -1,21 +1,21 @@
 import { IpcRendererEvent } from "electron";
-import React, { ReactElement, useContext, useEffect, useLayoutEffect, useReducer, useRef, useState } from "react";
+import React, { ReactElement, useContext, useEffect, useReducer, useRef, useState } from "react";
 import { ContextOption, Direction } from "../../../common/enums.ts";
-import { ColumnHandleProps, ColumnProps, ContextParams, HandleDimensions, IpcListener, Rgb, RowHandleProps, RowProps, TileProps, Vector2, ViewData } from "../../../common/interfaces.ts";
+import { ColumnHandleProps, ColumnProps, ContextParams, IpcListener, Rgba, RowHandleProps, RowProps, TileProps, Vector2, ViewData } from "../../../common/interfaces.ts";
 import * as ich from "../../../common/ipcChannels.ts";
 import { buildTree, deletion, setUrl } from "../../common/containerUtil.tsx";
 import * as Context from "../../common/contextProviders.ts";
 import { BaseNode, ColumnNode, ContainerNode, RowNode, TileNode, containers, tiles } from "../../common/nodeTypes.jsx";
-import { getDivRect, percentAlongRectX, percentAlongRectY, randomRgb, registerIpcListener, unregisterIpcListener } from "../../common/util.ts";
+import { getDivRect, percentAlongRectX, percentAlongRectY, randomRgba, registerIpcListener, rgbaAsCss, unregisterIpcListener } from "../../common/util.ts";
 import Greeting from "./app-components/TilesGreeting.tsx";
 
 export default function Main(): ReactElement {
   const [borderPx, setBorderPx] = useState<number>(8);
-  const [borderRgb, setBorderRgb] = useState<Rgb>({ r: 255, g: 255, b: 255 });
-  const [shadowRgb, setShadowRgb] = useState<Rgb>({ r: 255, g: 255, b: 255 });
-  const [root, setRoot] = useState<BaseNode>(
-    new TileNode(onContext)
-  );
+  const [borderRgba, setBorderRgba] = useState<Rgba>({ r: 255, g: 0, b: 255, a: 1 });
+  const [borderGlow, setBorderGlow] = useState<Rgba>({ r: 255, g: 0, b: 255, a: 1 });
+  const [handleRgba, setHandleRgba] = useState<Rgba>({ r: 0, g: 255, b: 255, a: 1 });
+  const [handleGlow, setHandleGlow] = useState<Rgba>({ r: 0, g: 255, b: 255, a: 1 });
+  const [root, setRoot] = useState<BaseNode>(new TileNode(onContext));
   const [, refreshRoot] = useReducer(x => x + 1, 0);
   const ref = useRef<HTMLDivElement>(null);
   const oldBorderPxRef = useRef<number>(-1);
@@ -75,9 +75,12 @@ export default function Main(): ReactElement {
   const debugListener = useRef<IpcListener>({
     uuid: "1c1787f8-6651-4695-bec6-a71dd6ad20b1",
     fn: () => {
-      const rgb = randomRgb();
-      setBorderRgb(rgb);
-      setShadowRgb(rgb);
+      const borderRgba = randomRgba();
+      const handleRgba = randomRgba();
+      setBorderRgba(borderRgba);
+      setBorderGlow(borderRgba);
+      setHandleRgba(handleRgba);
+      setHandleGlow(handleRgba);
     }
   });
   const callTileContextBehaviorCCListener = useRef<IpcListener>({
@@ -110,12 +113,10 @@ export default function Main(): ReactElement {
 
   useEffect(() => {
     registerListeners();
-    document.documentElement.style.setProperty(
-      "--shadow-color",
-      `rgb(${shadowRgb.r}, ${shadowRgb.g}, ${shadowRgb.b})`
-    );
+    document.documentElement.style.setProperty("--border-glow", rgbaAsCss(borderGlow));
+    document.documentElement.style.setProperty("--handle-glow", rgbaAsCss(handleGlow));
     return () => unregisterListeners();
-  }, [shadowRgb.b, shadowRgb.g, shadowRgb.r]);
+  }, [borderGlow, handleGlow]);
 
   function onContext(tileId: string, params: ContextParams, pos?: Vector2) {
     const tile = tiles.get(tileId) as TileNode;
@@ -178,16 +179,20 @@ export default function Main(): ReactElement {
   }
 
   return (
-    <Context.BorderRgb.Provider value={borderRgb}>
+    <Context.HandleRgba.Provider value={handleRgba}>
       <Context.BorderPx.Provider value={borderPx}>
         <div
-          className="flex w-screen h-screen inner-glow"
+          className="flex w-screen h-screen border-glow"
+          style={{
+            borderColor: rgbaAsCss(borderRgba),
+            borderWidth: borderPx,
+          }}
           ref={ref}
         >
           {root.toElement()}
         </div>
       </Context.BorderPx.Provider>
-    </Context.BorderRgb.Provider>
+    </Context.HandleRgba.Provider>
   );
 }
 
@@ -322,8 +327,6 @@ export function Row({
         children,
         handlePercents,
         setCurrentHandle,
-        ref,
-        thisNode,
         RowHandle
       )}
     </div>
@@ -462,8 +465,6 @@ export function Column({
         children,
         handlePercents,
         setCurrentHandle,
-        ref,
-        thisNode,
         ColumnHandle
       )}
     </div>
@@ -483,7 +484,6 @@ export function Tile({
     x: 0,
     y: 0
   });
-  const borderPx = useContext(Context.BorderPx);
 
   useEffect(() => {
     tiles.set(nodeId, thisNode);
@@ -524,53 +524,13 @@ export function Tile({
   }, [nodeId, thisNode]);
 
   function element(): ReactElement {
-    let borders: React.CSSProperties = {
-      borderColor: "rgba(0, 0, 0, 0)",
-      borderTopWidth: borderPx,
-      borderRightWidth: borderPx,
-      borderBottomWidth: borderPx,
-      borderLeftWidth: borderPx,
-    };
-
-    const p = thisNode.parent;
-    if (p) {
-      const i = p.children.indexOf(thisNode);
-      const n = p.neighbors;
-      if (p instanceof RowNode) {
-        const newBorders = {
-          borderTopWidth: borderPx,
-          borderRightWidth: borderPx / 2,
-          borderBottomWidth: borderPx,
-          borderLeftWidth: borderPx / 2,
-        };
-        if (i === 0 && !n.left) newBorders.borderLeftWidth = borderPx;
-        if (n.top) newBorders.borderTopWidth = borderPx / 2;
-        if (n.bottom) newBorders.borderBottomWidth = borderPx / 2;
-        if (i === p.children.length - 1 && !n.right) newBorders.borderRightWidth = borderPx;
-        borders = { ...borders, ...newBorders };
-      }
-      else if (p instanceof ColumnNode) {
-        const newBorders = {
-          borderTopWidth: borderPx / 2,
-          borderRightWidth: borderPx,
-          borderBottomWidth: borderPx / 2,
-          borderLeftWidth: borderPx,
-        };
-        if (i === 0 && !n.top) newBorders.borderTopWidth = borderPx;
-        if (n.left) newBorders.borderLeftWidth = borderPx / 2;
-        if (n.right) newBorders.borderRightWidth = borderPx / 2;
-        if (i === p.children.length - 1 && !n.bottom) newBorders.borderBottomWidth = borderPx;
-        borders = { ...borders, ...newBorders };
-      }
-    }
-
     function withImg() {
       return (
         <div
           className="flex"
           style={{
+            zIndex: -2,
             ...style,
-            ...borders,
             backgroundRepeat: "round",
             backgroundImage: `url(${bg})`
           }}
@@ -605,7 +565,6 @@ export function Tile({
           className={divClass}
           style={{
             ...style,
-            ...borders,
           }}
           onContextMenu={(e) => {
             window.electronAPI.send(
@@ -628,88 +587,36 @@ export function Tile({
   return element();
 }
 
-function RowHandle({ onMouseDown, onMouseUp, containerRef, containerNode }: RowHandleProps): ReactElement {
+function RowHandle({ onMouseDown, onMouseUp }: RowHandleProps): ReactElement {
   const borderPx = useContext<number>(Context.BorderPx);
-  const [dimensions, setDimensions] = useState({} as HandleDimensions);
-
-  useLayoutEffect(() => {
-    const c = containerRef.current;
-    function updateWidthPx() {
-      if (!c) return;
-      let offset = 0;
-      let length = c.offsetHeight;
-      const n = containerNode.neighbors;
-      if (n.top && n.bottom) length = length - borderPx;
-      else if (n.top && !n.bottom) {
-        offset = borderPx / 4;
-        length = length - (borderPx / 2);
-      }
-      else if (!n.top && n.bottom) {
-        offset = -(borderPx / 4);
-        length = length - (borderPx / 2);
-      }
-      setDimensions({ offset: offset, length: length });
-    }
-    updateWidthPx();
-  }, [borderPx, containerNode, containerRef]);
+  const handleRgba = useContext<Rgba>(Context.HandleRgba);
 
   return (
     <div
-      className="w-0 relative"
+      className="handle-glow"
       onMouseDown={onMouseDown}
       onMouseUp={onMouseUp}
-    >
-      <div
-        className="handle-row"
-        style={{
-          width: `${borderPx}px`,
-          height: `${dimensions.length}px`,
-          transform: `translate(-50%, -50%) translateY(${dimensions.offset}px)`
-        }}
-      />
-    </div>
+      style={{
+        width: `${borderPx}px`,
+        backgroundColor: rgbaAsCss(handleRgba),
+      }}
+    />
   );
 }
 
-function ColumnHandle({ onMouseDown, onMouseUp, containerRef, containerNode }: ColumnHandleProps): ReactElement {
+function ColumnHandle({ onMouseDown, onMouseUp }: ColumnHandleProps): ReactElement {
   const borderPx = useContext<number>(Context.BorderPx);
-  const [dimensions, setDimensions] = useState({} as HandleDimensions);
-
-  useLayoutEffect(() => {
-    const c = containerRef.current;
-    function updateWidthPx() {
-      if (!c) return;
-      let offset = 0;
-      let length = c.offsetWidth;
-      const n = containerNode.neighbors;
-      if (n.left && n.right) length = length - borderPx;
-      else if (n.left && !n.right) {
-        offset = borderPx / 4;
-        length = length - (borderPx / 2);
-      }
-      else if (!n.left && n.right) {
-        offset = -(borderPx / 4);
-        length = length - (borderPx / 2);
-      }
-      setDimensions({ offset: offset, length: length });
-    }
-    updateWidthPx();
-  }, [borderPx, containerNode, containerRef]);
+  const handleRgba = useContext<Rgba>(Context.HandleRgba);
 
   return (
     <div
-      className="h-0 relative"
+      className="handle-glow"
       onMouseDown={onMouseDown}
       onMouseUp={onMouseUp}
-    >
-      <div
-        className="handle-col"
-        style={{
-          height: `${borderPx}px`,
-          width: `${dimensions.length}px`,
-          transform: `translate(-50%, -50%) translateX(${dimensions.offset}px)`
-        }}
-      />
-    </div>
+      style={{
+        height: `${borderPx}px`,
+        backgroundColor: rgbaAsCss(handleRgba),
+      }}
+    />
   );
 }
