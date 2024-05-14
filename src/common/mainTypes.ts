@@ -1,19 +1,16 @@
 import { WebContentsView } from "electron";
 import { hideWindow, mainWindow } from "../main/main.ts";
 import { Chest } from "./interfaces.ts";
-import { marginizeRect, reparentView } from "./mainUtil.ts";
+import { reparentView } from "./mainUtil.ts";
 
 export const borderPx: Chest<number> = { item: 0 };
 
 export class ViewInstance {
   view: WebContentsView;
-  private _url: string | null = null;
   private _rect: Electron.Rectangle = { height: 0, width: 0, x: 0, y: 0 };
-  private _hidden: boolean = false;
 
   constructor(view: WebContentsView) {
     this.view = view;
-    this.hide();
   }
 
   get rect(): Electron.Rectangle {
@@ -23,40 +20,28 @@ export class ViewInstance {
     this._rect = value;
     this.updateBounds();
   }
-  get url(): string | null { return this._url; }
+  get url(): string { return this.view.webContents.getURL(); }
   set url(value: string) {
-    const unhide: boolean = this.url === null;
-    this._url = value;
     this.view.webContents.loadURL(value);
-    if (unhide) {
-      this.unhide();
-    }
+    if (this.isHidden()) this.unhide();
   }
-  get hidden(): boolean { return this._hidden; }
+  isHidden(): boolean {
+    return hideWindow!.contentView.children.includes(this.view);
+  }
   hide() {
-    if (this._hidden) {
-      return;
-    }
-    this._hidden = true;
+    reparentView(this.view, mainWindow!, hideWindow!);
     this.updateBounds();
   }
   unhide() {
-    if (
-      !this._hidden
-    ) {
-      return;
-    }
-    this._hidden = false;
+    if (this.url === "") return;
+    reparentView(this.view, hideWindow!, mainWindow!);
     this.updateBounds();
   }
   updateBounds() {
-    if (this.hidden) {
-      reparentView(this.view, mainWindow!, hideWindow!);
-    }
-    else {
-      reparentView(this.view, hideWindow!, mainWindow!);
-    }
-    const b = marginizeRect(this.rect, -borderPx.item);
-    this.view.setBounds(b);
+    this.view.setBounds({
+      ...this.rect,
+      x: this.rect.x + borderPx.item,
+      y: this.rect.y + borderPx.item
+    });
   }
 }

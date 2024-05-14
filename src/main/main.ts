@@ -2,7 +2,7 @@ import { BrowserWindow, app, globalShortcut, ipcMain, screen } from "electron";
 import path from "path";
 import { CustomShortcuts, Shortcut } from "../common/interfaces.ts";
 import * as ich from "../common/ipcChannels.ts";
-import { onCallTileContextBehavior, onCreateViewAsync, onDeleteView, onFocusMainWindow, onGetDisplayMetrics, onGetViewData, onRefreshAllViewBounds, onResizeCaptureAsync, onSetOverlayIgnore, onSetViewRectangle, onSetViewUrl, onShowPieMenu, onUpdateBorderPx } from "../common/listeners.ts";
+import { onCallTileContextBehavior, onCreateViewAsync, onDeleteView, onFocusMainWindow, onGetDisplayMetrics, onGetViewData, onHideAllViews, onRefreshAllViewBounds, onResizeCaptureAsync, onSetOverlayIgnore, onSetViewRectangle, onSetViewUrl, onShowPieMenu, onUnhideAllViews, onUpdateBorderPx } from "../common/listeners.ts";
 
 export let mainWindow: BrowserWindow | null = null;
 export let hideWindow: BrowserWindow | null = null;
@@ -13,7 +13,7 @@ export const viteURL: string = "http://localhost:5173";
 function main(): void {
   // #region events
   ipcMain.handle(ich.createViewAsync, (_, id, options) => {
-    return onCreateViewAsync(id, mainWindow as BrowserWindow, options);
+    return onCreateViewAsync(id, hideWindow!, options);
   });
   ipcMain.on(ich.setViewRectangle, (_, id, rect) => {
     onSetViewRectangle(id, rect);
@@ -51,6 +51,8 @@ function main(): void {
   ipcMain.on(ich.focusMainWindow, () => {
     onFocusMainWindow();
   });
+  ipcMain.on(ich.hideAllViews, () => onHideAllViews());
+  ipcMain.on(ich.unhideAllViews, () => onUnhideAllViews());
   // #endregion
 
   app.once("ready", () => {
@@ -93,6 +95,7 @@ function createHideWindow() {
 
 function createMainWindow() {
   mainWindow = new BrowserWindow({
+    title: "Multron",
     height: 700,
     width: 1400,
     webPreferences: {
@@ -106,6 +109,8 @@ function createMainWindow() {
   mainWindow.webContents.loadURL(viteURL);
   // This is the production path
   // mainWindow.loadFile(path.join(app.getAppPath(), "out", "renderer", "index.html"));
+  const rdtPath: string = "C:\\Users\\Grindle\\AppData\\Local\\Chromium\\User Data\\Default\\Extensions\\fmkadmapgofadopljbjfkapdkoienihi\\5.2.0_0";
+  mainWindow.webContents.session.loadExtension(rdtPath);
   mainWindow.webContents.openDevTools({ mode: "detach" });
   registerSharedListeners(mainWindow, {
     focus: [
@@ -142,6 +147,7 @@ function createOverlayWindow() {
   overlayWindow.setIgnoreMouseEvents(true, { forward: true });
   overlayWindow.setMenu(null);
   overlayWindow.loadURL(`${viteURL}/overlay`);
+  overlayWindow.webContents.executeJavaScript("window.windowType = \"ignore\"");
   //overlayWindow.webContents.openDevTools({ mode: "detach" });
   overlayWindow.on("blur", () => {
     overlayWindow!.webContents.send(ich.overlayBlur);

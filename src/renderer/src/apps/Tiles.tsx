@@ -15,6 +15,7 @@ export default function Main(): ReactElement {
   const [borderGlow, setBorderGlow] = useState<Rgba>({ r: 255, g: 0, b: 255, a: 1 });
   const [handleRgba, setHandleRgba] = useState<Rgba>({ r: 0, g: 255, b: 255, a: 1 });
   const [handleGlow, setHandleGlow] = useState<Rgba>({ r: 0, g: 255, b: 255, a: 1 });
+  const [abyssRgba, setAbyssRgba] = useState<Rgba>({ r: 62, g: 60, b: 52, a: 1 });
   const [root, setRoot] = useState<BaseNode>(new TileNode(onContext));
   const [, refreshRoot] = useReducer(x => x + 1, 0);
   const ref = useRef<HTMLDivElement>(null);
@@ -30,10 +31,6 @@ export default function Main(): ReactElement {
         oldBorderPxRef.current = v;
         if (v === 0 && delta <= 0) newPx = v;
         else newPx = v + delta < 0 ? 0 : v + delta;
-        if (newPx !== oldBorderPxRef.current) {
-          window.electronAPI.send(ich.updateBorderPx, newPx!);
-          window.electronAPI.send(ich.refreshAllViewBounds);
-        }
         return newPx;
       });
     }
@@ -113,10 +110,14 @@ export default function Main(): ReactElement {
 
   useEffect(() => {
     registerListeners();
-    document.documentElement.style.setProperty("--border-glow", rgbaAsCss(borderGlow));
-    document.documentElement.style.setProperty("--handle-glow", rgbaAsCss(handleGlow));
+    window.electronAPI.send(ich.updateBorderPx, borderPx);
+    window.electronAPI.send(ich.refreshAllViewBounds);
+    const s = document.documentElement.style;
+    s.setProperty("--border-glow", rgbaAsCss(borderGlow));
+    s.setProperty("--handle-glow", rgbaAsCss(handleGlow));
+    s.setProperty("--abyss-color", rgbaAsCss(abyssRgba));
     return () => unregisterListeners();
-  }, [borderGlow, handleGlow]);
+  }, [abyssRgba, borderGlow, borderPx, handleGlow]);
 
   function onContext(tileId: string, params: ContextParams, pos?: Vector2) {
     const tile = tiles.get(tileId) as TileNode;
@@ -181,15 +182,17 @@ export default function Main(): ReactElement {
   return (
     <Context.HandleRgba.Provider value={handleRgba}>
       <Context.BorderPx.Provider value={borderPx}>
-        <div
-          className="flex w-screen h-screen border-glow"
-          style={{
-            borderColor: rgbaAsCss(borderRgba),
-            borderWidth: borderPx,
-          }}
-          ref={ref}
-        >
-          {root.toElement()}
+        <div className="abyss">
+          <div
+            className="flex w-screen h-screen border-glow"
+            style={{
+              borderColor: rgbaAsCss(borderRgba),
+              borderWidth: borderPx,
+            }}
+            ref={ref}
+          >
+            {root.toElement()}
+          </div>
         </div>
       </Context.BorderPx.Provider>
     </Context.HandleRgba.Provider>
@@ -201,7 +204,7 @@ export function Row({
   refreshRoot,
   setRoot,
   rootContextBehavior,
-  handlePercents,
+  handlePositions,
   style,
   nodeId,
   thisNode
@@ -226,10 +229,9 @@ export function Row({
     }
     function onMouseMove(e: MouseEvent) {
       if (currentHandle !== null && ref.current !== null) {
-        const divWidth = ref.current.offsetWidth;
         const mousePosition = e.clientX - ref.current.getBoundingClientRect().left;
-        const newPercents = [...handlePercents];
-        newPercents[currentHandle] = mousePosition / divWidth;
+        const newPercents = [...handlePositions];
+        newPercents[currentHandle] = mousePosition;
         thisNode.handlePercents = newPercents;
         refreshRoot();
       }

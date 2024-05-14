@@ -2,7 +2,6 @@ import { BrowserWindow, WebContentsView, screen } from "electron";
 import { overlayWindow } from "../main/main.ts";
 import { Direction } from "./enums.ts";
 import { TaskbarBounds, Vector2 } from "./interfaces.ts";
-import { views } from "./listeners.ts";
 
 export function cursorViewportPosition(base: BrowserWindow): Vector2 {
   const cursorPosition = screen.getCursorScreenPoint();
@@ -105,15 +104,4 @@ export function marginizeRect(
     x: Math.ceil(rect.x - margin),
     y: Math.ceil(rect.y - margin)
   };
-}
-export function toggleAllViews() {
-  for (const [, v] of views) {
-    if (!v.hidden) {
-      v.hide();
-    }
-    else {
-      v.unhide();
-    }
-    v.updateBounds();
-  }
 }

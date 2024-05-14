@@ -18,3 +18,5 @@ export const adjustBorderPx: string = "adjust-border-px";
 export const updateBorderPx: string = "update-border-px";
 export const refreshAllViewBounds: string = "refresh-all-view-bounds";
 export const focusMainWindow: string = "focus-main-window";
+export const hideAllViews: string = "hide-all-views";
+export const unhideAllViews: string = "unhide-all-views";

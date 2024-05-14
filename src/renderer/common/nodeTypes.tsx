@@ -1,7 +1,7 @@
 import { ReactElement } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { ContextOption, Direction } from "../../common/enums.ts";
-import { ColumnProps, ContextBehavior, Neighbors, RowProps, TileProps, Vector2 } from "../../common/interfaces.ts";
+import { ColumnProps, ContextBehavior, RowProps, TileProps, Vector2 } from "../../common/interfaces.ts";
 import * as ich from "../../common/ipcChannels.ts";
 import { Column, Row, Tile } from "../src/apps/Tiles.tsx";
 import { BgLoader, ViewRectEnforcer } from "./types.ts";
@@ -9,7 +9,6 @@ import { fpsToMs } from "./util.ts";
 
 export const tiles = new Map<string, TileNode>();
 export const containers = new Map<string, ContainerNode>();
-export const rectUpdateMs = fpsToMs(10);
 
 type RowNodeProps = Omit<RowProps, "nodeId" | "style" | "thisNode">
 type ColumnNodeProps = Omit<ColumnProps, "nodeId" | "style" | "thisNode">
@@ -22,7 +21,6 @@ export abstract class BaseNode {
 }
 
 export abstract class ContainerNode extends BaseNode {
-  neighbors: Neighbors = { top: false, bottom: false, left: false, right: false };
   abstract get children(): BaseNode[];
   abstract set children(value: BaseNode[]);
   abstract get refreshRoot(): React.DispatchWithoutAction;
@@ -33,39 +31,11 @@ export abstract class ContainerNode extends BaseNode {
   abstract set rootContextBehavior(value: ContextBehavior);
   abstract get handlePercents(): number[];
   abstract set handlePercents(value: number[]);
-  rescanNeighbors() {
-    if (this.parent === null) {
-      this.neighbors = { top: false, bottom: false, left: false, right: false };
-      return;
-    }
-    const n: Neighbors = { top: false, bottom: false, left: false, right: false };
-    function recurse(node: BaseNode) {
-      const p = node.parent;
-      if (!p) return;
-      const c = p.children;
-      const i = c.indexOf(node);
-      if (i !== 0 || i !== c.length) recurse(p);
-      if (p instanceof ColumnNode) {
-        const c = p.children;
-        if (c[0] !== node)            n.top = true;
-        if (c[c.length - 1] !== node) n.bottom = true;
-      }
-      else if (p instanceof RowNode) {
-        const c = p.children;
-        if (c[0] !== node)            n.left = true;
-        if (c[c.length - 1] !== node) n.right = true;
-      }
-      if (Object.values(n).every(v => v === true)) return;
-      recurse(p);
-    }
-    recurse(this);
-    this.neighbors = n;
-  }
 }
 
 export class TileNode extends BaseNode {
   bgLoader = new BgLoader();
-  viewRectEnforcer = new ViewRectEnforcer(this, rectUpdateMs);
+  viewRectEnforcer = new ViewRectEnforcer(this, fpsToMs(5));
   ref: React.RefObject<HTMLDivElement> | null = null;
   private _url?: URL;
   private _contextBehavior: ContextBehavior;

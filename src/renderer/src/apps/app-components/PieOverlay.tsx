@@ -81,25 +81,16 @@ export default function Main({
       const left = mousePos.x < radX;
       const right = mousePos.x + radX > winW;
 
-      if (!up && !down && !left && !right) {
-        realPos.current = mousePos;
-      } else if (up && left) {
-        realPos.current = { x: radX, y: radY };
-      } else if (up && right) {
-        realPos.current = { x: winW - radX, y: radY };
-      } else if (down && left) {
-        realPos.current = { x: radX, y: winH - radY };
-      } else if (down && right) {
-        realPos.current = { x: winW - radX, y: winH - radY };
-      } else if (up) {
-        realPos.current = { x: mousePos.x, y: radY };
-      } else if (down) {
-        realPos.current = { x: mousePos.x, y: winH - radY };
-      } else if (left) {
-        realPos.current = { x: radX, y: mousePos.y };
-      } else {
-        realPos.current = { x: winW - radX, y: mousePos.y };
-      }
+      if (!up && !down && !left && !right) realPos.current = mousePos;
+      else if (up && left)                 realPos.current = { x: radX, y: radY };
+      else if (up && right)                realPos.current = { x: winW - radX, y: radY };
+      else if (down && left)               realPos.current = { x: radX, y: winH - radY };
+      else if (down && right)              realPos.current = { x: winW - radX, y: winH - radY };
+      else if (up)                         realPos.current = { x: mousePos.x, y: radY };
+      else if (down)                       realPos.current = { x: mousePos.x, y: winH - radY };
+      else if (left)                       realPos.current = { x: radX, y: mousePos.y };
+      else                                 realPos.current = { x: winW - radX, y: mousePos.y };
+
       setVisible(true);
 
       return () => {

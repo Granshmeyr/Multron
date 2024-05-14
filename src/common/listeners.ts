@@ -149,8 +149,14 @@ export function onUpdateBorderPx(px: number) {
   borderPx.item = px;
 }
 export function onRefreshAllViewBounds() {
-  for (const [, v] of views) v.updateBounds();
+  for (const v of views.values()) v.updateBounds();
 }
 export function onFocusMainWindow() {
   mainWindow!.focus();
+}
+export function onHideAllViews() {
+  for (const v of views.values()) v.hide();
+}
+export function onUnhideAllViews() {
+  for (const v of views.values()) v.unhide();
 }

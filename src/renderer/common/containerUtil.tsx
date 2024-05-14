@@ -6,18 +6,19 @@ import { BaseNode, ContainerNode, TileNode, containers, tiles } from "./nodeType
 
 function calculateBasis(
   index: number,
-  nodeArrayLength: number,
+  borderPx: number,
+  nodesLength: number,
   handlePercents: number[]
 ): number {
   let basis: number;
-  if (index >= nodeArrayLength) {
-    console.error("Invalid index");
+  if (index >= nodesLength) {
+    console.error(`Invalid index for ${calculateBasis.name}`);
     basis = -1;
   }
   else if (index === 0) {
     basis = handlePercents[0];
   }
-  else if (index === nodeArrayLength - 1) {
+  else if (index === nodesLength - 1) {
     basis = 1 - handlePercents[index - 1];
   }
   else {
@@ -38,23 +39,23 @@ function createElement(
 }
 
 export function buildTree(
-  nodeArray: BaseNode[],
+  nodes: BaseNode[],
   handlePercents: number[],
   setCurrentHandle: (value: React.SetStateAction<number | null>) => void,
   Handle: React.ComponentType<RowHandleProps> | React.ComponentType<ColumnHandleProps>
 ): ReactElement[] {
-  const elementArray: ReactElement[] = [];
-  const arrayLength: number = nodeArray.length;
-  for (let index = 0; index < arrayLength; index++) {
+  const elements: ReactElement[] = [];
+  const nodesLength: number = nodes.length;
+  for (let index = 0; index < nodesLength; index++) {
     const element = createElement(
       index,
-      arrayLength,
-      nodeArray[index],
+      nodesLength,
+      nodes[index],
       handlePercents,
     );
-    elementArray.push(element);
+    elements.push(element);
 
-    if (index !== arrayLength - 1) {
+    if (index !== nodesLength - 1) {
       const handle: ReactElement = (
         <Handle
           key={uuidv4()}
@@ -64,15 +65,16 @@ export function buildTree(
                 return;
               }
               setCurrentHandle(index);
+              window.electronAPI.send(ich.hideAllViews);
             }
           }
-          onMouseUp={() => { return; }}
+          onMouseUp={() => window.electronAPI.send(ich.unhideAllViews)}
         ></Handle>
       );
-      elementArray.push(handle);
+      elements.push(handle);
     }
   }
-  return elementArray;
+  return elements;
 }
 
 export function deletion(

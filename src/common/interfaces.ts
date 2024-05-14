@@ -1,5 +1,5 @@
 import React from "react";
-import { BaseNode, ColumnNode, ContainerNode, RowNode, TileNode } from "../renderer/common/nodeTypes.tsx";
+import { BaseNode, ColumnNode, RowNode, TileNode } from "../renderer/common/nodeTypes.tsx";
 import { ContextOption, Direction } from "./enums.ts";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -18,7 +18,7 @@ export interface RowProps {
   refreshRoot: React.DispatchWithoutAction;
   setRoot: React.Dispatch<React.SetStateAction<BaseNode>>
   rootContextBehavior: ContextBehavior;
-  handlePercents: number[];
+  handlePositions: number[];
   style?: React.CSSProperties;
   nodeId: string;
   thisNode: RowNode;
@@ -28,7 +28,7 @@ export interface ColumnProps {
   refreshRoot: React.DispatchWithoutAction;
   setRoot: React.Dispatch<React.SetStateAction<BaseNode>>;
   rootContextBehavior: ContextBehavior;
-  handlePercents: number[];
+  handlePositions: number[];
   style?: React.CSSProperties;
   nodeId: string;
   thisNode: ColumnNode;
@@ -77,12 +77,6 @@ export interface CustomShortcuts {
 }
 export interface Chest<T> {
   item: T;
-}
-export interface Neighbors {
-  top: boolean;
-  bottom: boolean;
-  left: boolean;
-  right: boolean;
 }
 export interface HandleDimensions {
   offset: number;
