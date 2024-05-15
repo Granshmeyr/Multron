@@ -18,10 +18,8 @@ export const Main = forwardRef<HTMLDivElement, GreetingProps>(
 
     function onKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
       if (e.key !== "Enter") return;
-      switch (functions.submit === undefined) {
-      case true: console.log(`submitted: ${input.current}`); break;
-      default: functions.submit!(input.current); break;
-      }
+      if (!functions.submit) console.log(`submitted: ${input.current}`);
+      else functions.submit!(input.current);
     }
 
     return (

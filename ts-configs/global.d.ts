@@ -23,6 +23,9 @@ declare global {
                 channel: string,
                 ...args: unknown[]
             ) => Promise<unknown>;
+            setTitlebarBg: (
+                hex: string
+            ) => void;
         };
     }
 }

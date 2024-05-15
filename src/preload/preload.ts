@@ -1,21 +1,30 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { Titlebar, TitlebarColor } from "custom-electron-titlebar";
 import { contextBridge, ipcRenderer } from "electron";
 import { IpcListener, IpcListenerFunction } from "../common/interfaces.ts";
-import { Titlebar } from "custom-electron-titlebar";
+import * as ich from "../common/ipcChannels.ts";
 
 let titlebar: Titlebar | null = null;
 
 if (window.location.href === "http://localhost:5173/") {
   window.addEventListener("DOMContentLoaded", () => {
     titlebar = new Titlebar({
-
+      backgroundColor: TitlebarColor.fromHex("#0A84D0")
     });
-    const e = document.querySelector(".cet-titlebar") as HTMLElement | null;
     const container = titlebar.containerElement;
-    if (e) {
-      e.style.pointerEvents = "all";
-      container.style.display = "flex";
-    }
+    const element = titlebar.titlebarElement;
+    const menu = document.querySelector(".cet-menubar") as HTMLElement;
+    menu.style.display = "none";
+    element.style.pointerEvents = "all";
+    container.style.display = "flex";
+    ipcRenderer.send(ich.updateTitlebarPx, titlebar!.titlebarElement.offsetHeight);
+
+    element.addEventListener("resize", () => {
+      ipcRenderer.send(ich.updateTitlebarPx, titlebar!.titlebarElement.offsetHeight);
+    });
+    element.addEventListener("mouseup", () => {
+      ipcRenderer.send(ich.releaseHandles);
+    });
   });
 }
 
@@ -82,4 +91,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
   ): Promise<any> => {
     return ipcRenderer.invoke(channel, ...args);
   },
+  setTitlebarBg: (
+    hex: string
+  ) => {
+    titlebar!.updateBackground(TitlebarColor.fromHex(hex));
+  }
 });

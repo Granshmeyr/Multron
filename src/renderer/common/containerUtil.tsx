@@ -71,7 +71,7 @@ export function buildTree(
               window.electronAPI.send(ich.hideAllViews);
             }
           }
-          onMouseUp={() => window.electronAPI.send(ich.unhideAllViews)}
+          onMouseUp={() => { return; }}
         ></Handle>
       );
       elements.push(handle);

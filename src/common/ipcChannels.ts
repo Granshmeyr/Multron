@@ -20,3 +20,6 @@ export const refreshAllViewBounds: string = "refresh-all-view-bounds";
 export const focusMainWindow: string = "focus-main-window";
 export const hideAllViews: string = "hide-all-views";
 export const unhideAllViews: string = "unhide-all-views";
+export const updateTitlebarPx: string = "update-titlebar-px";
+export const releaseHandlesCC: string = "release-handles-cc";
+export const releaseHandles: string = "release-handles";

@@ -3,7 +3,7 @@ import { BrowserWindow, app, globalShortcut, ipcMain, screen } from "electron";
 import path from "path";
 import { CustomShortcuts, Shortcut } from "../common/interfaces.ts";
 import * as ich from "../common/ipcChannels.ts";
-import { onCallTileContextBehavior, onCreateViewAsync, onDeleteView, onFocusMainWindow, onGetDisplayMetrics, onGetViewData, onHideAllViews, onRefreshAllViewBounds, onResizeCaptureAsync, onSetOverlayIgnore, onSetViewRectangle, onSetViewUrl, onShowPieMenu, onUnhideAllViews, onUpdateBorderPx } from "../common/listeners.ts";
+import { onCallTileContextBehavior, onCreateViewAsync, onDeleteView, onFocusMainWindow, onGetDisplayMetrics, onGetViewData, onHideAllViews, onRefreshAllViewBounds, onReleaseHandles, onResizeCaptureAsync, onSetOverlayIgnore, onSetViewRectangle, onSetViewUrl, onShowPieMenu, onUnhideAllViews, onUpdateBorderPx, onUpdateTitlebarPx } from "../common/listeners.ts";
 
 export let mainWindow: BrowserWindow | null = null;
 export let hideWindow: BrowserWindow | null = null;
@@ -56,6 +56,8 @@ function main(): void {
   });
   ipcMain.on(ich.hideAllViews, () => onHideAllViews());
   ipcMain.on(ich.unhideAllViews, () => onUnhideAllViews());
+  ipcMain.on(ich.updateTitlebarPx, (_, px) => onUpdateTitlebarPx(px));
+  ipcMain.on(ich.releaseHandles, () => onReleaseHandles());
   // #endregion
 
   app.once("ready", () => {

@@ -105,3 +105,24 @@ export function marginizeRect(
     y: Math.ceil(rect.y - margin)
   };
 }
+export function normalizeUrl(inputUrl: string): string {
+  if (!/^https?:\/\//i.test(inputUrl)) {
+    inputUrl = "http://" + inputUrl;
+  }
+
+  let url: URL;
+  try {
+    url = new URL(inputUrl);
+  } catch (e) {
+    throw new Error("Invalid URL");
+  }
+
+  if (!/^www\./i.test(url.hostname)) {
+    url.hostname = "www." + url.hostname;
+  }
+  if (!url.pathname.endsWith("/")) {
+    url.pathname += "/";
+  }
+
+  return url.toString();
+}

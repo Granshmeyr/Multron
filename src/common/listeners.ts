@@ -3,7 +3,7 @@ import * as ich from "../common/ipcChannels.ts";
 import { hideWindow, mainWindow, overlayWindow } from "../main/main.ts";
 import { ContextOption, Direction } from "./enums.ts";
 import { ContextParams, DisplayMetrics, Vector2, ViewData } from "./interfaces.ts";
-import { ViewInstance, borderPx } from "./mainTypes.ts";
+import { ViewInstance, borderPx, titlebarPx } from "./mainTypes.ts";
 import { getTaskbarBounds } from "./mainUtil.ts";
 
 export const views = new Map<string, ViewInstance>();
@@ -65,6 +65,11 @@ export async function onCreateViewAsync(
       switch (zoomDirection) {
       case "in": zoomIn(); break;
       case "out": zoomOut(); break;
+      }
+    });
+    view.webContents.on("input-event", (_, i) => {
+      if (i.type !== "mouseMove") {
+        mainWindow!.webContents.send(ich.releaseHandlesCC);
       }
     });
     window.contentView.addChildView(view);
@@ -163,4 +168,10 @@ export function onHideAllViews() {
 }
 export function onUnhideAllViews() {
   for (const v of views.values()) v.unhide();
+}
+export function onUpdateTitlebarPx(px: number) {
+  titlebarPx.item = px;
+}
+export function onReleaseHandles() {
+  mainWindow!.webContents.send(ich.releaseHandlesCC);
 }

@@ -1,9 +1,10 @@
 import { WebContentsView } from "electron";
 import { hideWindow, mainWindow } from "../main/main.ts";
 import { Chest } from "./interfaces.ts";
-import { reparentView } from "./mainUtil.ts";
+import { normalizeUrl, reparentView } from "./mainUtil.ts";
 
 export const borderPx: Chest<number> = { item: 0 };
+export const titlebarPx: Chest<number> = { item: 0 };
 
 export class ViewInstance {
   view: WebContentsView;
@@ -24,7 +25,8 @@ export class ViewInstance {
   }
   get url(): string { return this.view.webContents.getURL(); }
   set url(value: string) {
-    this.view.webContents.loadURL(value);
+    const url = normalizeUrl(value);
+    this.view.webContents.loadURL(url);
     if (this.isHidden()) this.unhide();
   }
   isHidden(): boolean {
@@ -43,7 +45,7 @@ export class ViewInstance {
     this.view.setBounds({
       ...this.rect,
       x: this.rect.x + borderPx.item,
-      y: this.rect.y + borderPx.item
+      y: this.rect.y + titlebarPx.item
     });
   }
 }

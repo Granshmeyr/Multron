@@ -7,22 +7,32 @@ import * as ich from "../../../common/ipcChannels.ts";
 import { buildTree, deletion, setUrl } from "../../common/containerUtil.tsx";
 import * as Context from "../../common/contextProviders.ts";
 import { BaseNode, ColumnNode, ContainerNode, RowNode, TileNode, containers, tiles } from "../../common/nodeTypes.jsx";
-import { getDivRect, percentAlongRectX, percentAlongRectY, randomRgba, registerIpcListener, rgbaAsCss, unregisterIpcListener } from "../../common/util.ts";
+import { getDivRect, percentAlongRectX, percentAlongRectY, randomRgba, registerIpcListener, rgbaAsCss, rgbaToHexa, unregisterIpcListener } from "../../common/util.ts";
 import Greeting from "./app-components/TilesGreeting.tsx";
 
 const colors = new Map<string, Rgba>();
 
 export default function Main(): ReactElement {
   const [borderPx, setBorderPx] = useState<number>(8);
-  const [borderRgba, setBorderRgba] = useState<Rgba>({ r: 255, g: 0, b: 255, a: 1 });
-  const [borderGlow, setBorderGlow] = useState<Rgba>({ r: 255, g: 0, b: 255, a: 1 });
-  const [handleRgba, setHandleRgba] = useState<Rgba>({ r: 0, g: 255, b: 255, a: 1 });
-  const [handleGlow, setHandleGlow] = useState<Rgba>({ r: 0, g: 255, b: 255, a: 1 });
+  const [borderRgba, setBorderRgba] = useState<Rgba>({ r: 10, g: 132, b: 208, a: 1 });
+  const [borderGlow, setBorderGlow] = useState<Rgba>({ r: 10, g: 132, b: 208, a: 1 });
+  const [handleRgba, setHandleRgba] = useState<Rgba>({ r: 61, g: 245, b: 245, a: 1 });
+  const [handleGlow, setHandleGlow] = useState<Rgba>({ r: 61, g: 245, b: 245, a: 1 });
   const [abyssRgba, setAbyssRgba] = useState<Rgba>({ r: 62, g: 60, b: 52, a: 1 });
   const [root, setRoot] = useState<BaseNode>(new TileNode(onContext));
   const [, refreshRoot] = useReducer(x => x + 1, 0);
   const ref = useRef<HTMLDivElement>(null);
   const oldBorderPxRef = useRef<number>(-1);
+
+  function randomizeColors() {
+    const borderRgba = randomRgba();
+    const handleRgba = randomRgba();
+    setBorderRgba(borderRgba);
+    setBorderGlow(borderRgba);
+    setHandleRgba(handleRgba);
+    setHandleGlow(handleRgba);
+    window.electronAPI.setTitlebarBg(rgbaToHexa(borderRgba));
+  }
 
   // #region ipc listeners
   const adjustBorderPxListener = useRef<IpcListener>({
@@ -74,14 +84,7 @@ export default function Main(): ReactElement {
   });
   const debugListener = useRef<IpcListener>({
     uuid: "1c1787f8-6651-4695-bec6-a71dd6ad20b1",
-    fn: () => {
-      const borderRgba = randomRgba();
-      const handleRgba = randomRgba();
-      setBorderRgba(borderRgba);
-      setBorderGlow(borderRgba);
-      setHandleRgba(handleRgba);
-      setHandleGlow(handleRgba);
-    }
+    fn: () => randomizeColors()
   });
   const callTileContextBehaviorCCListener = useRef<IpcListener>({
     uuid: "b6b0774e-9e44-4309-8781-399938ad2deb",
@@ -112,14 +115,31 @@ export default function Main(): ReactElement {
   }
 
   useEffect(() => {
+    function handleMouseUp(e: MouseEvent) {
+      if (e.button !== 0) return;
+      window.electronAPI.send(ich.releaseHandles);
+      window.electronAPI.send(ich.unhideAllViews);
+    }
+    function handleBlur() {
+      window.electronAPI.send(ich.releaseHandles);
+      window.electronAPI.send(ich.unhideAllViews);
+    }
     registerListeners();
     window.electronAPI.send(ich.updateBorderPx, borderPx);
     window.electronAPI.send(ich.refreshAllViewBounds);
+    //window.addEventListener("mouseout", releaseHandles);
+    window.addEventListener("mouseup", handleMouseUp);
+    window.addEventListener("blur", handleBlur);
     const s = document.documentElement.style;
     s.setProperty("--border-glow", rgbaAsCss(borderGlow));
     s.setProperty("--handle-glow", rgbaAsCss(handleGlow));
     s.setProperty("--abyss-color", rgbaAsCss(abyssRgba));
-    return () => unregisterListeners();
+    return () => {
+      //window.removeEventListener("mouseout", releaseHandles);
+      window.removeEventListener("mouseup", handleMouseUp);
+      window.removeEventListener("blur", handleBlur);
+      unregisterListeners();
+    };
   }, [abyssRgba, borderGlow, borderPx, handleGlow]);
 
   function onContext(tileId: string, params: ContextParams, pos?: Vector2) {
@@ -192,7 +212,9 @@ export default function Main(): ReactElement {
             className="flex w-full h-full border-glow"
             style={{
               borderColor: rgbaAsCss(borderRgba),
-              borderWidth: borderPx,
+              borderLeftWidth: borderPx,
+              borderRightWidth: borderPx,
+              borderBottomWidth: borderPx,
             }}
             ref={ref}
           >
@@ -218,6 +240,15 @@ export function Row({
   const borderPx = useContext(Context.BorderPx);
   const ref = useRef<HTMLDivElement>(null);
 
+  function releaseHandles() {
+    setCurrentHandle(null);
+  }
+
+  const releaseListener = useRef<IpcListener>({
+    uuid: uuidv4(),
+    fn: () => releaseHandles()
+  });
+
   for (const child of children) {
     if (child instanceof TileNode) {
       child.contextBehavior = onContext;
@@ -225,14 +256,9 @@ export function Row({
   }
 
   useEffect(() => {
-    containers.set(nodeId, thisNode);
+    const listener1 = releaseListener.current;
 
-    function onMouseUp(e: MouseEvent) {
-      if (e.button !== 0) {
-        return;
-      }
-      setCurrentHandle(null);
-    }
+    containers.set(nodeId, thisNode);
     function onMouseMove(e: MouseEvent) {
       if (currentHandle !== null && ref.current !== null) {
         const mousePos = e.clientX - ref.current.getBoundingClientRect().left;
@@ -243,11 +269,11 @@ export function Row({
       }
     }
 
-    document.addEventListener("mouseup", onMouseUp);
+    registerIpcListener(ich.releaseHandlesCC, listener1);
     document.addEventListener("mousemove", onMouseMove);
     return () => {
       containers.delete(nodeId);
-      document.removeEventListener("mouseup", onMouseUp);
+      unregisterIpcListener(ich.releaseHandlesCC, listener1);
       document.removeEventListener("mousemove", onMouseMove);
     };
   });
@@ -356,6 +382,15 @@ export function Column({
   const borderPx = useContext(Context.BorderPx);
   const ref = useRef<HTMLDivElement>(null);
 
+  function releaseHandles() {
+    setCurrentHandle(null);
+  }
+
+  const releaseListener = useRef<IpcListener>({
+    uuid: uuidv4(),
+    fn: () => releaseHandles()
+  });
+
   for (const child of children) {
     if (child instanceof TileNode) {
       child.contextBehavior = onContext;
@@ -363,14 +398,10 @@ export function Column({
   }
 
   useEffect(() => {
+    const listener1 = releaseListener.current;
+
     containers.set(nodeId, thisNode);
 
-    function onMouseUp(e: MouseEvent) {
-      if (e.button !== 0) {
-        return;
-      }
-      setCurrentHandle(null);
-    }
     function onMouseMove(e: MouseEvent) {
       if (currentHandle !== null && ref.current) {
         const mousePos = e.clientY - ref.current.getBoundingClientRect().top;
@@ -381,11 +412,11 @@ export function Column({
       }
     }
 
-    document.addEventListener("mouseup", onMouseUp);
+    registerIpcListener(ich.releaseHandlesCC, listener1);
     document.addEventListener("mousemove", onMouseMove);
     return () => {
       containers.delete(nodeId);
-      document.removeEventListener("mouseup", onMouseUp);
+      unregisterIpcListener(ich.releaseHandlesCC, listener1);
       document.removeEventListener("mousemove", onMouseMove);
     };
   });
@@ -495,7 +526,7 @@ export function Tile({
   });
   const [bg, setBg] = useState<string | null>(thisNode.bg);
 
-  if (!colors.has(nodeId)) colors.set(nodeId, randomRgba({ multiplier: 0.3 }));
+  if (!colors.has(nodeId)) colors.set(nodeId, randomRgba({ brightness: 0.5, saturation: 0.3 }));
   const color = colors.get(nodeId);
   thisNode.ref = ref;
   thisNode.bgLoader.setter = setBg;
@@ -538,7 +569,7 @@ export function Tile({
   });
 
   function element(): ReactElement {
-    let divClass = "flex";
+    let divClass = "flex w-full h-full";
     if (!thisNode.parent) {
       divClass += " basis-full";
       delete style?.flexBasis;
@@ -548,7 +579,7 @@ export function Tile({
       return (
         <div
           key={uuidv4()}
-          className="flex"
+          className={divClass}
           style={{
             ...style,
             zIndex: -50,
