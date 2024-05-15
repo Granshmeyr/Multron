@@ -34,7 +34,8 @@ export abstract class ContainerNode extends BaseNode {
 }
 
 export class TileNode extends BaseNode {
-  bgLoader = new BgLoader();
+  bgLoader: BgLoader;
+  bg: string | null = null;
   viewRectEnforcer = new ViewRectEnforcer(this, fpsToMs(5));
   ref: React.RefObject<HTMLDivElement> | null = null;
   private _url?: URL;
@@ -43,6 +44,7 @@ export class TileNode extends BaseNode {
   constructor(contextBehavior?: ContextBehavior) {
     super();
     this.nodeId = uuidv4();
+    this.bgLoader = new BgLoader(this);
     if (contextBehavior !== undefined) this._contextBehavior = contextBehavior;
     else this._contextBehavior = () => console.log("default contextBehavior");
   }
@@ -59,10 +61,10 @@ export class TileNode extends BaseNode {
     );
   }
   setProps(props: TileProps) {
-    if (props.style !== undefined) this.style = props.style;
-    if (props.nodeId !== undefined) this.nodeId = props.nodeId;
-    if (props.url !== undefined) this._url = props.url;
-    if (props.contextBehavior !== undefined) this._contextBehavior = props.contextBehavior;
+    if (props.style) this.style = props.style;
+    if (props.nodeId) this.nodeId = props.nodeId;
+    if (props.url) this._url = props.url;
+    if (props.contextBehavior) this._contextBehavior = props.contextBehavior;
   }
 
   get url(): URL | undefined { return this._url; }
@@ -88,10 +90,13 @@ export class TileNode extends BaseNode {
     };
   }
   split(pos: Vector2, direction: Direction) {
+    console.log(`splitting from ${this.nodeId} towards ${direction}`);
     this.contextBehavior(this.nodeId, { option: ContextOption.Split, direction: direction }, pos);
+    this.parent?.refreshRoot();
   }
   delete() {
     this.contextBehavior(this.nodeId, { option: ContextOption.Delete });
+    this.parent?.refreshRoot();
   }
 }
 

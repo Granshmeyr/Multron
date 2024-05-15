@@ -1,5 +1,6 @@
 import { IpcRendererEvent } from "electron";
 import React, { ReactElement, useContext, useEffect, useReducer, useRef, useState } from "react";
+import { v4 as uuidv4 } from "uuid";
 import { ContextOption, Direction } from "../../../common/enums.ts";
 import { ColumnHandleProps, ColumnProps, ContextParams, IpcListener, Rgba, RowHandleProps, RowProps, TileProps, Vector2, ViewData } from "../../../common/interfaces.ts";
 import * as ich from "../../../common/ipcChannels.ts";
@@ -8,6 +9,8 @@ import * as Context from "../../common/contextProviders.ts";
 import { BaseNode, ColumnNode, ContainerNode, RowNode, TileNode, containers, tiles } from "../../common/nodeTypes.jsx";
 import { getDivRect, percentAlongRectX, percentAlongRectY, randomRgba, registerIpcListener, rgbaAsCss, unregisterIpcListener } from "../../common/util.ts";
 import Greeting from "./app-components/TilesGreeting.tsx";
+
+const colors = new Map<string, Rgba>();
 
 export default function Main(): ReactElement {
   const [borderPx, setBorderPx] = useState<number>(8);
@@ -182,7 +185,9 @@ export default function Main(): ReactElement {
   return (
     <Context.HandleRgba.Provider value={handleRgba}>
       <Context.BorderPx.Provider value={borderPx}>
-        <div className="abyss">
+        <div
+          className="abyss"
+        >
           <div
             className="flex w-screen h-screen border-glow"
             style={{
@@ -309,7 +314,7 @@ export function Row({
     switch (params.option) {
     case ContextOption.Split: split(); break;
     case ContextOption.Delete: deletion(
-      nodeId as string,
+      nodeId,
       tileId,
       refreshRoot,
       setRoot,
@@ -448,7 +453,7 @@ export function Column({
     switch (params.option) {
     case ContextOption.Split: split(); break;
     case ContextOption.Delete: deletion(
-      nodeId as string,
+      nodeId,
       tileId,
       refreshRoot,
       setRoot,
@@ -481,7 +486,6 @@ export function Tile({
   nodeId,
   thisNode
 }: TileProps): ReactElement {
-  const [bg, setBg] = useState<string | null>(null);
   const ref = useRef<HTMLDivElement>(null);
   const rectangle = useRef<Electron.Rectangle>({
     height: 100,
@@ -489,11 +493,16 @@ export function Tile({
     x: 0,
     y: 0
   });
+  const [bg, setBg] = useState<string | null>(thisNode.bg);
+
+  if (!colors.has(nodeId)) colors.set(nodeId, randomRgba({ multiplier: 0.3 }));
+  const color = colors.get(nodeId);
+  thisNode.ref = ref;
+  thisNode.bgLoader.setter = setBg;
 
   useEffect(() => {
     tiles.set(nodeId, thisNode);
-    thisNode.ref = ref;
-    thisNode.bgLoader.setter = setBg;
+
     async function createViewOrResizeAsync() {
       const viewData = await window.electronAPI.invoke(ich.getViewData) as Map<string, ViewData>;
       if (!(viewData.has(nodeId))) {
@@ -510,6 +519,7 @@ export function Tile({
       }
     }
     const resizeObserver = new ResizeObserver(async () => {
+      console.log("resize detected");
       rectangle.current = {
         height: ref.current?.offsetHeight ?? 100,
         width: ref.current?.offsetWidth ?? 100,
@@ -520,24 +530,33 @@ export function Tile({
     });
     createViewOrResizeAsync();
     if (ref.current !== null) {
+      console.log("observing!");
       resizeObserver.observe(ref.current);
     }
     return () => {
       tiles.delete(nodeId);
       resizeObserver.disconnect();
     };
-  }, [nodeId, thisNode]);
+  });
 
   function element(): ReactElement {
-    function withImg() {
+    let divClass = "flex";
+    if (!thisNode.parent) {
+      divClass += " basis-full";
+      delete style?.flexBasis;
+    }
+
+    function withImg(): ReactElement {
       return (
         <div
+          key={uuidv4()}
           className="flex"
           style={{
-            zIndex: -2,
             ...style,
+            zIndex: -50,
+            pointerEvents: "all",
             backgroundRepeat: "round",
-            backgroundImage: `url(${bg})`
+            backgroundImage: `url(${bg})`,
           }}
           id={nodeId}
           ref={ref}
@@ -552,24 +571,18 @@ export function Tile({
         </div>
       );
     }
-
-    let divClass = "flex";
-    if (!thisNode.parent) {
-      divClass += " basis-full";
-      delete style?.flexBasis;
-    }
-
-    switch (bg !== null) {
-    case true:
-      return withImg();
-    default:
+    function withoutImg(): ReactElement {
       return (
         <div
+          key={uuidv4()}
           id={nodeId}
           ref={ref}
           className={divClass}
           style={{
             ...style,
+            pointerEvents: "all",
+            zIndex: -50,
+            backgroundColor: rgbaAsCss(color!)
           }}
           onContextMenu={(e) => {
             window.electronAPI.send(
@@ -588,6 +601,11 @@ export function Tile({
         </div>
       );
     }
+
+    switch (thisNode.bg !== null) {
+    case true: return withImg();
+    default: return withoutImg();
+    }
   }
   return element();
 }
@@ -602,6 +620,7 @@ function RowHandle({ onMouseDown, onMouseUp }: RowHandleProps): ReactElement {
       onMouseDown={onMouseDown}
       onMouseUp={onMouseUp}
       style={{
+        pointerEvents: "all",
         width: `${borderPx}px`,
         backgroundColor: rgbaAsCss(handleRgba),
       }}
@@ -619,6 +638,7 @@ function ColumnHandle({ onMouseDown, onMouseUp }: ColumnHandleProps): ReactEleme
       onMouseDown={onMouseDown}
       onMouseUp={onMouseUp}
       style={{
+        pointerEvents: "all",
         height: `${borderPx}px`,
         backgroundColor: rgbaAsCss(handleRgba),
       }}

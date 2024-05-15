@@ -1,6 +1,6 @@
 import { BrowserWindow, Menu, WebContentsView, WebContentsViewConstructorOptions, screen } from "electron";
 import * as ich from "../common/ipcChannels.ts";
-import { mainWindow, overlayWindow } from "../main/main.ts";
+import { hideWindow, mainWindow, overlayWindow } from "../main/main.ts";
 import { ContextOption, Direction } from "./enums.ts";
 import { ContextParams, DisplayMetrics, Vector2, ViewData } from "./interfaces.ts";
 import { ViewInstance, borderPx } from "./mainTypes.ts";
@@ -94,10 +94,14 @@ export function onGetViewData(): Map<string, ViewData> {
   return data;
 }
 export function onDeleteView(id: string) {
-  if (!(views.has(id))) {
-    return;
+  if (!(views.has(id))) return;
+  const v = views.get(id)!.view;
+  if (mainWindow!.contentView.children.includes(v)) {
+    mainWindow!.contentView.removeChildView(v);
   }
-  mainWindow?.contentView.removeChildView(views.get(id)!.view);
+  if (hideWindow!.contentView.children.includes(v)) {
+    hideWindow!.contentView.removeChildView(v);
+  }
   views.delete(id);
 }
 export function onGetViewRectangle(

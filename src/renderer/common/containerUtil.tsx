@@ -90,7 +90,9 @@ export function deletion(
   const parent = tiles.get(tileId)!.parent as ContainerNode;
   const grandparent = parent.parent;
   function deleteTileFromParent(index: number) {
-    parent.children.splice(index, 1);
+    console.log(`deleting index ${index}`);
+    const deleted: BaseNode[] = parent.children.splice(index, 1);
+    console.log(`deleted ${deleted[0].nodeId}`);
     parent.handlePercents.splice(index, 1);
     window.electronAPI.send(ich.deleteView, tileId);
     tiles.delete(tileId);
@@ -134,13 +136,21 @@ export function deletion(
     containers.delete(containerId);
     refreshRoot();
   }
-  for (let i = 0; i < parent.children.length; i++) {
+
+  const childCount = parent.children.length;
+  for (let i = 0; i < childCount; i++) {
     const node = parent.children[i];
-    const childCount = parent.children.length;
     if (node instanceof TileNode && node.nodeId === tileId) {
-      if (childCount !== 2) { deleteTileFromParent(i); break; }
-      if (grandparent !== null) { deleteParent(i); break; }
-      deleteParentAndSetRoot(i); break;
+      if (childCount !== 2) {
+        console.log("there are more than 2 children");
+        deleteTileFromParent(i);
+        break;
+      }
+      if (grandparent !== null) {
+        deleteParent(i);
+        break;
+      }
+      deleteParentAndSetRoot(i);
     }
   }
 }

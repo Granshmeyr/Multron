@@ -87,13 +87,27 @@ export function getDivRect(div: HTMLDivElement): Electron.Rectangle {
     height: div.offsetHeight
   };
 }
-export function randomRgba(randomAlpha?: boolean): Rgba {
-  function getRandom(): number { return Math.floor(Math.random() * 255) + 1; }
+export function randomRgba(options?: {
+  alpha?: boolean,
+  multiplier?: number
+}): Rgba {
+  function getRandom(multiplier?: number): number {
+    const value = Math.floor(Math.random() * 255) + 1;
+    return multiplier ? value * multiplier : value;
+  }
+  if (options) {
+    return {
+      r: getRandom(options.multiplier),
+      g: getRandom(options.multiplier),
+      b: getRandom(options.multiplier),
+      a: options.alpha ? Math.random() : 1
+    };
+  }
   return {
     r: getRandom(),
     g: getRandom(),
     b: getRandom(),
-    a: randomAlpha ? Math.random() : 1
+    a: 1
   };
 }
 export function rgbaAsCss(rgba: Rgba): string {

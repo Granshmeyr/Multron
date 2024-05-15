@@ -119,7 +119,10 @@ export default function Main(): ReactElement {
   };
 
   return (
-    <div onMouseDown={() => { window.electronAPI.send(ich.setOverlayIgnore, true); }}>
+    <div
+      style={{ pointerEvents: "all" }}
+      onMouseDown={() => { window.electronAPI.send(ich.setOverlayIgnore, true); }}
+    >
       <PieOverlay
         className="w-screen h-screen overflow-hidden"
         scale={1.2}

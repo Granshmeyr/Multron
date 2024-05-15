@@ -7,10 +7,17 @@ import { compareRects, registerIpcListener } from "./util.ts";
 export class BgLoader {
   setter: React.Dispatch<React.SetStateAction<string | null>> | null = null;
   private image = new Image();
+  private tileNode: TileNode;
+
+  constructor(tileNode: TileNode) {
+    this.tileNode = tileNode;
+  }
+
   loadUrl(url: string) {
     this.image.src = url;
     this.image.onload = () => {
       if (this.setter !== null) {
+        this.tileNode.bg = url;
         this.setter(url);
       }
     };

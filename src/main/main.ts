@@ -109,8 +109,8 @@ function createMainWindow() {
   mainWindow.webContents.loadURL(viteURL);
   // This is the production path
   // mainWindow.loadFile(path.join(app.getAppPath(), "out", "renderer", "index.html"));
-  const rdtPath: string = "C:\\Users\\Grindle\\AppData\\Local\\Chromium\\User Data\\Default\\Extensions\\fmkadmapgofadopljbjfkapdkoienihi\\5.2.0_0";
-  mainWindow.webContents.session.loadExtension(rdtPath);
+  //const rdtPath: string = "C:\\Users\\Grindle\\AppData\\Local\\Chromium\\User Data\\Default\\Extensions\\fmkadmapgofadopljbjfkapdkoienihi\\5.2.0_0";
+  //mainWindow.webContents.session.loadExtension(rdtPath);
   mainWindow.webContents.openDevTools({ mode: "detach" });
   registerSharedListeners(mainWindow, {
     focus: [
