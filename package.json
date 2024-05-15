@@ -19,6 +19,7 @@
     "@fontsource/roboto": "^5.0.12",
     "@mui/icons-material": "^5.15.15",
     "@mui/material": "^5.15.15",
+    "custom-electron-titlebar": "^4.2.8",
     "localforage": "^1.10.0",
     "match-sorter": "^6.3.4",
     "react": "^17.0.0 || ^18.0.0",

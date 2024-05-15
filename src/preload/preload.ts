@@ -1,6 +1,23 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { contextBridge, ipcRenderer } from "electron";
 import { IpcListener, IpcListenerFunction } from "../common/interfaces.ts";
+import { Titlebar } from "custom-electron-titlebar";
+
+let titlebar: Titlebar | null = null;
+
+if (window.location.href === "http://localhost:5173/") {
+  window.addEventListener("DOMContentLoaded", () => {
+    titlebar = new Titlebar({
+
+    });
+    const e = document.querySelector(".cet-titlebar") as HTMLElement | null;
+    const container = titlebar.containerElement;
+    if (e) {
+      e.style.pointerEvents = "all";
+      container.style.display = "flex";
+    }
+  });
+}
 
 class ListenerRegistry {
   private registry = new Map<string, Set<IpcListener>>();
@@ -64,5 +81,5 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ...args: any[]
   ): Promise<any> => {
     return ipcRenderer.invoke(channel, ...args);
-  }
+  },
 });

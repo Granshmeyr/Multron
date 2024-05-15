@@ -1,3 +1,4 @@
+import { attachTitlebarToWindow, setupTitlebar } from "custom-electron-titlebar/main";
 import { BrowserWindow, app, globalShortcut, ipcMain, screen } from "electron";
 import path from "path";
 import { CustomShortcuts, Shortcut } from "../common/interfaces.ts";
@@ -11,6 +12,8 @@ export const editModeEnabled: boolean = false;
 export const viteURL: string = "http://localhost:5173";
 
 function main(): void {
+  setupTitlebar();
+
   // #region events
   ipcMain.handle(ich.createViewAsync, (_, id, options) => {
     return onCreateViewAsync(id, hideWindow!, options);
@@ -98,6 +101,8 @@ function createMainWindow() {
     title: "Multron",
     height: 700,
     width: 1400,
+    titleBarStyle: "hidden",
+    titleBarOverlay: false,
     webPreferences: {
       preload: path.join(app.getAppPath(), "out", "preload", "preload.mjs"),
       sandbox: false,
@@ -106,12 +111,13 @@ function createMainWindow() {
     }
   });
   mainWindow.setMenu(null);
-  mainWindow.webContents.loadURL(viteURL);
+  mainWindow.webContents.loadURL(`${viteURL}`);
   // This is the production path
   // mainWindow.loadFile(path.join(app.getAppPath(), "out", "renderer", "index.html"));
   //const rdtPath: string = "C:\\Users\\Grindle\\AppData\\Local\\Chromium\\User Data\\Default\\Extensions\\fmkadmapgofadopljbjfkapdkoienihi\\5.2.0_0";
   //mainWindow.webContents.session.loadExtension(rdtPath);
   mainWindow.webContents.openDevTools({ mode: "detach" });
+  attachTitlebarToWindow(mainWindow);
   registerSharedListeners(mainWindow, {
     focus: [
       {
@@ -131,6 +137,8 @@ function createOverlayWindow() {
     transparent: true,
     frame: false,
     skipTaskbar: true,
+    titleBarOverlay: false,
+    titleBarStyle: "hidden",
     webPreferences: {
       preload: path.join(app.getAppPath(), "out", "preload", "preload.mjs"),
       sandbox: false,

@@ -10,7 +10,7 @@ declare global {
             on: (
                 channel: string,
                 listener: IpcListener
-            ) => void
+            ) => void;
             once: (
                 channel: string,
                 listener: IpcListenerFunction
@@ -18,11 +18,11 @@ declare global {
             removeListener: (
                 channel: string,
                 listener: IpcListener
-            ) => void
+            ) => void;
             invoke: (
                 channel: string,
                 ...args: unknown[]
-            ) => Promise<unknown>
+            ) => Promise<unknown>;
         };
     }
 }

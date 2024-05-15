@@ -186,10 +186,10 @@ export default function Main(): ReactElement {
     <Context.HandleRgba.Provider value={handleRgba}>
       <Context.BorderPx.Provider value={borderPx}>
         <div
-          className="abyss"
+          className="w-full h-full flex abyss"
         >
           <div
-            className="flex w-screen h-screen border-glow"
+            className="flex w-full h-full border-glow"
             style={{
               borderColor: rgbaAsCss(borderRgba),
               borderWidth: borderPx,
@@ -519,7 +519,6 @@ export function Tile({
       }
     }
     const resizeObserver = new ResizeObserver(async () => {
-      console.log("resize detected");
       rectangle.current = {
         height: ref.current?.offsetHeight ?? 100,
         width: ref.current?.offsetWidth ?? 100,
@@ -530,7 +529,6 @@ export function Tile({
     });
     createViewOrResizeAsync();
     if (ref.current !== null) {
-      console.log("observing!");
       resizeObserver.observe(ref.current);
     }
     return () => {

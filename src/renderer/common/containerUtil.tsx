@@ -90,9 +90,6 @@ export function deletion(
   const parent = tiles.get(tileId)!.parent as ContainerNode;
   const grandparent = parent.parent;
   function deleteTileFromParent(index: number) {
-    console.log(`deleting index ${index}`);
-    const deleted: BaseNode[] = parent.children.splice(index, 1);
-    console.log(`deleted ${deleted[0].nodeId}`);
     parent.handlePercents.splice(index, 1);
     window.electronAPI.send(ich.deleteView, tileId);
     tiles.delete(tileId);
@@ -142,7 +139,6 @@ export function deletion(
     const node = parent.children[i];
     if (node instanceof TileNode && node.nodeId === tileId) {
       if (childCount !== 2) {
-        console.log("there are more than 2 children");
         deleteTileFromParent(i);
         break;
       }

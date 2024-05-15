@@ -90,7 +90,6 @@ export class TileNode extends BaseNode {
     };
   }
   split(pos: Vector2, direction: Direction) {
-    console.log(`splitting from ${this.nodeId} towards ${direction}`);
     this.contextBehavior(this.nodeId, { option: ContextOption.Split, direction: direction }, pos);
     this.parent?.refreshRoot();
   }
